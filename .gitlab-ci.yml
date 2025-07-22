@@ -1,0 +1,94 @@
+image: php:8.1
+
+variables:
+  COMPOSER_HOME: /cache/composer
+  POSTGRES_DB: mapu
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: 01*@Pqlamznx
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  CI_DEBUG_TRACE: "true"
+
+services:
+  - postgres:14-alpine
+
+stages:
+  - preparation
+  - test
+  - quality
+  - security
+
+cache:
+  paths:
+    - vendor/
+    - .composer-cache/
+
+before_script:
+  - php -v
+  - pwd
+  - apt-get update -yqq
+  - apt-get install -yqq git unzip libzip-dev libpq-dev libicu-dev
+  - docker-php-ext-install zip pdo_pgsql intl
+  
+  - curl -sS https://getcomposer.org/installer | php
+  - mv composer.phar /usr/local/bin/composer
+  
+  - php -r "try {new PDO('pgsql:host=$DB_HOST;dbname=$POSTGRES_DB', '$POSTGRES_USER', '$POSTGRES_PASSWORD');echo 'DB Connection OK!\n';} catch(PDOException \$e) {echo \$e->getMessage();}"
+
+preparation:
+  stage: preparation
+  script:
+    - cp .env.example .env || cp env .env
+    
+    - sed -i "s/database.default.hostname = localhost/database.default.hostname = ${DB_HOST}/" .env
+    - sed -i "s/database.default.database = ci4/database.default.database = ${POSTGRES_DB}/" .env
+    - sed -i "s/database.default.username = root/database.default.username = ${POSTGRES_USER}/" .env
+    - sed -i "s/database.default.password = /database.default.password = ${POSTGRES_PASSWORD}/" .env
+    - sed -i "s/database.default.DBDriver = MySQLi/database.default.DBDriver = Postgre/" .env
+    - sed -i "s/database.default.port = 3306/database.default.port = ${DB_PORT}/" .env
+    
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress
+    - composer dump-autoload
+    
+    - php spark migrate --all -v
+  artifacts:
+    paths:
+      - vendor/
+      - .env
+    expire_in: 1 days
+    when: always
+  retry: 2
+
+test:
+  stage: test
+  dependencies:
+    - preparation
+  script:
+    - php spark test --debug
+    - if [ -f "phpunit.xml" ]; then vendor/bin/phpunit --configuration phpunit.xml --coverage-text --colors=never; fi
+  coverage: '/^\s*Lines:\s*\d+.\d+\%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/logs/clover.xml
+  retry: 1
+
+code_quality:
+  stage: quality
+  script:
+    - composer require --dev squizlabs/php_codesniffer
+    - vendor/bin/phpcs --standard=PSR12 --warning-severity=0 app/ || true
+    - composer require --dev phpmd/phpmd
+    - vendor/bin/phpmd app/ text cleancode,codesize,controversial,design,naming,unusedcode || true
+  allow_failure: true
+
+security_check:
+  stage: security
+  script:
+    - curl -L https://github.com/fabpot/local-php-security-checker/releases/download/v2.0.6/local-php-security-checker_2.0.6_linux_amd64 -o security-checker
+    - chmod +x security-checker
+    - ./security-checker
+    - composer audit
+  allow_failure: true
