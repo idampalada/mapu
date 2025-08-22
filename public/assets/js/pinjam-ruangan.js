@@ -1778,3 +1778,281 @@ document.addEventListener("DOMContentLoaded", function () {
     return date.toLocaleDateString("id-ID", options);
   }
 });
+
+function openEditRuangan(id) {
+  const cleanId = parseInt(id);
+  if (!cleanId) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "ID ruangan tidak valid",
+    });
+    return;
+  }
+
+  fetch(`${baseUrl}/admin/User/Ruangan/detail/${cleanId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        const ruangan = data.data;
+
+        // Populate existing fields
+        document.getElementById("edit_nama_ruangan").value =
+          ruangan.nama_ruangan || "";
+        document.getElementById("edit_lokasi").value = ruangan.lokasi || "";
+        document.getElementById("edit_kapasitas").value =
+          ruangan.kapasitas || "";
+
+        // NEW: Handle status aktif field dengan PostgreSQL support
+        const isActiveCheckbox = document.getElementById("edit_is_active");
+        const statusLabel = document.getElementById("status_label");
+
+        // DEBUG: Log nilai is_active dari database
+        console.log("DB is_active value:", ruangan.is_active);
+        console.log("DB is_active type:", typeof ruangan.is_active);
+
+        // Set checkbox berdasarkan database value (support PostgreSQL 't'/'f')
+        const isActive =
+          ruangan.is_active === true ||
+          ruangan.is_active === "t" ||
+          ruangan.is_active === "1" ||
+          ruangan.is_active === 1;
+
+        console.log("Converted isActive:", isActive);
+
+        if (isActive) {
+          isActiveCheckbox.checked = true;
+          statusLabel.innerHTML =
+            '<i class="bi bi-check-circle text-success"></i> Aktif (Dapat dipinjam)';
+          statusLabel.className = "form-check-label text-success fw-bold";
+        } else {
+          isActiveCheckbox.checked = false;
+          statusLabel.innerHTML =
+            '<i class="bi bi-x-circle text-warning"></i> Non-aktif (Maintenance)';
+          statusLabel.className = "form-check-label text-warning fw-bold";
+        }
+
+        // Add change event listener untuk update label real-time
+        isActiveCheckbox.addEventListener("change", function () {
+          console.log("Checkbox changed to:", this.checked);
+          if (this.checked) {
+            statusLabel.innerHTML =
+              '<i class="bi bi-check-circle text-success"></i> Aktif (Dapat dipinjam)';
+            statusLabel.className = "form-check-label text-success fw-bold";
+          } else {
+            statusLabel.innerHTML =
+              '<i class="bi bi-x-circle text-warning"></i> Non-aktif (Maintenance)';
+            statusLabel.className = "form-check-label text-warning fw-bold";
+          }
+        });
+
+        // Handle fasilitas (existing code)
+        const fasilitasCheckboxes = document.querySelectorAll(
+          '#modalEditRuangan input[name="fasilitas[]"]'
+        );
+        fasilitasCheckboxes.forEach((checkbox) => (checkbox.checked = false));
+
+        const fasilitasText = ruangan.fasilitas || "";
+        const fasilitasItems = [
+          "Proyektor",
+          "Whiteboard",
+          "Microphone",
+          "Sound System",
+          "AC",
+          "Wifi",
+        ];
+        let keteranganExisting = fasilitasText;
+
+        fasilitasItems.forEach((item) => {
+          const checkbox = document.getElementById(
+            `edit_fasilitas_${item
+              .toLowerCase()
+              .replace(/\s+/g, "_")
+              .replace("microphone", "mic")}`
+          );
+          if (checkbox && fasilitasText.includes(item)) {
+            checkbox.checked = true;
+            keteranganExisting = keteranganExisting.replace(
+              new RegExp(item + ",?\\s*", "gi"),
+              ""
+            );
+          }
+        });
+
+        keteranganExisting = keteranganExisting.replace(
+          /^[,.\s]+|[,.\s]+$/g,
+          ""
+        );
+        document.getElementById("edit_keterangan").value = keteranganExisting;
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalEditRuangan")
+        );
+        const form = document.getElementById("formEditRuangan");
+
+        form.onsubmit = function (e) {
+          e.preventDefault();
+
+          // Get fresh checkbox state
+          const isActiveCheckbox = document.getElementById("edit_is_active");
+          const isActiveValue = isActiveCheckbox.checked ? "1" : "0";
+
+          // DEBUG: Log checkbox state sebelum submit
+          console.log(
+            "Before submit - Checkbox checked:",
+            isActiveCheckbox.checked
+          );
+          console.log("Before submit - Will send is_active:", isActiveValue);
+
+          const formData = new FormData(this);
+
+          // Force set is_active value untuk memastikan
+          formData.set("is_active", isActiveValue);
+
+          // DEBUG: Verify formData
+          console.log("FormData is_active:", formData.get("is_active"));
+
+          // Show loading
+          Swal.fire({
+            title: "Mohon Tunggu",
+            text: "Sedang menyimpan perubahan...",
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          const editEndpoint = `${baseUrl}/admin/User/Ruangan/edit/${ruangan.id}`;
+
+          fetch(editEndpoint, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              console.log("Server response:", result);
+
+              if (result.success === true || result.success === "true") {
+                Swal.fire({
+                  icon: "success",
+                  title: "Berhasil!",
+                  text: result.message || "Data ruangan berhasil diperbarui",
+                  confirmButtonText: "OK",
+                }).then(() => {
+                  window.location.reload();
+                });
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "Gagal!",
+                  text:
+                    result.error ||
+                    result.message ||
+                    "Gagal memperbarui data ruangan",
+                  confirmButtonText: "Tutup",
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Error!",
+                text: "Terjadi kesalahan pada server",
+                confirmButtonText: "Tutup",
+              });
+            });
+        };
+
+        modal.show();
+      } else {
+        throw new Error(data.message || "Gagal mengambah data ruangan");
+      }
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Gagal mengambil data ruangan",
+      });
+    });
+}
+
+// Optional: Function untuk quick toggle status (tanpa buka modal)
+function toggleRuanganStatus(id) {
+  const cleanId = parseInt(id);
+  if (!cleanId) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "ID ruangan tidak valid",
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: "Konfirmasi",
+    text: "Apakah Anda yakin ingin mengubah status ruangan?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Ya, Ubah Status",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Show loading
+      Swal.fire({
+        title: "Mohon Tunggu",
+        text: "Sedang mengubah status ruangan...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      fetch(`${baseUrl}/admin/User/Ruangan/toggleActive/${cleanId}`, {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Berhasil!",
+              text: result.message,
+              confirmButtonText: "OK",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Gagal!",
+              text: result.error || "Gagal mengubah status ruangan",
+              confirmButtonText: "Tutup",
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error!",
+            text: "Terjadi kesalahan pada server",
+            confirmButtonText: "Tutup",
+          });
+        });
+    }
+  });
+}

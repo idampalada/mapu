@@ -21,34 +21,34 @@ class PeralatanDanMesin extends BaseController
 
     // ================== 3.02 ALAT ANGKUTAN ==================
     public function alatangkutan()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan');
-    }
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan');
+}
 
-    public function alatangkutandaratbermotor()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan/daratbermotor');
-    }
+public function alatangkutandaratbermotor()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/ALAT ANGKUTAN DARAT BERMOTOR');
+}
 
-    public function alatangkutandarattakbermotor()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan/darattakbermotor');
-    }
+public function alatangkutandarattakbermotor()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/ALAT ANGKUTAN DARAT TAK BERMOTOR');
+}
 
-    public function alatangkutanapungbermotor()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan/apungbermotor');
-    }
+public function alatangkutanapungbermotor()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/ALAT ANGKUTAN APUNG BERMOTOR');
+}
 
-    public function alatangkutanapungtakbermotor()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan/apungtakbermotor');
-    }
+public function alatangkutanapungtakbermotor()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/ALAT ANGKUTAN APUNG TAK BERMOTOR');
+}
 
-    public function alatangkutanbermotorudara()
-    {
-        return view('user/barang/peralatandanmesin/alatangkutan/bermotorudara');
-    }
+public function alatangkutanbermotorudara()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/ALAT ANGKUTAN BERMOTOR UDARA');
+}
 
     // ================== 3.03 ALAT BENGKEL DAN ALAT UKUR ==================
     public function alatbengkelukur()
@@ -214,19 +214,19 @@ class PeralatanDanMesin extends BaseController
 
     // ================== 3.10 KOMPUTER ==================
     public function komputer()
-    {
-        return view('user/barang/peralatandanmesin/komputer');
-    }
+{
+    return redirect()->to('user/barang/peralatandanmesin/komputer/kelompokkomputer');
+}
 
-    public function komputerunit()
-    {
-        return view('user/barang/peralatandanmesin/komputer/komputerunit');
-    }
+public function komputerunit()
+{
+    return redirect()->to('user/barang/peralatandanmesin/komputer/kelompokkomputer/KOMPUTER UNIT');
+}
 
-    public function peralatankomputer()
-    {
-        return view('user/barang/peralatandanmesin/komputer/peralatankomputer');
-    }
+public function peralatankomputer()
+{
+    return redirect()->to('user/barang/peralatandanmesin/komputer/kelompokkomputer/PERALATAN KOMPUTER');
+}
 
     // ================== 3.11 ALAT EKSPLORASI ==================
     public function alateksplorasi()

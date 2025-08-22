@@ -489,6 +489,67 @@ $routes->get('user/barang/peralatandanmesin/alatangkutan/apungbermotor', 'User\B
 $routes->get('user/barang/peralatandanmesin/alatangkutan/apungtakbermotor', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatangkutanapungtakbermotor');
 $routes->get('user/barang/peralatandanmesin/alatangkutan/bermotorudara', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatangkutanbermotorudara');
 
+// ========== ROUTES UNTUK ALAT ANGKUTAN (TERPUSAT) ==========
+
+// Routes melalui PeralatanDanMesin (untuk redirect)
+$routes->get('user/barang/peralatandanmesin/kelompokalatangkutan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokalatangkutan');
+$routes->get('user/barang/peralatandanmesin/kelompokalatangkutan/(:segment)', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokalatangkutan/$1');
+
+// Routes langsung ke AlatAngkutan controller (yang sebenarnya memproses data)
+// 1. Dashboard Alat Angkutan - Menampilkan data dari API
+$routes->get('user/barang/peralatandanmesin/alatangkutan/dashboard', 'User\Barang\PeralatanDanMesin\AlatAngkutan::dashboard');
+
+// 2. Kelompok Alat Angkutan - Overview semua kategori (tanpa parameter)
+$routes->get('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokAlatAngkutan');
+
+// 3. Kelompok Detail - Menampilkan data per kategori dengan parameter
+$routes->get('user/barang/peralatandanmesin/alatangkutan/kelompokalatangkutan/(:segment)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/$1');
+
+// 4. Form Tambah Alat Angkutan - POST handler untuk form tambah manual
+$routes->post('user/barang/peralatandanmesin/alatangkutan/tambah', 'User\Barang\PeralatanDanMesin\AlatAngkutan::tambah');
+
+// 5. Import dari API - POST handler untuk import/sync data dari API
+$routes->post('user/barang/peralatandanmesin/alatangkutan/importFromApi', 'User\Barang\PeralatanDanMesin\AlatAngkutan::importFromApi');
+
+// 6. Reset Data - POST handler untuk menghapus semua data
+$routes->post('user/barang/peralatandanmesin/alatangkutan/resetData', 'User\Barang\PeralatanDanMesin\AlatAngkutan::resetData');
+
+// 7. Export Data - GET handler untuk export CSV per kategori
+$routes->get('user/barang/peralatandanmesin/alatangkutan/exportAlatAngkutanList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::exportAlatAngkutanList/$1');
+
+// 8. Statistik - GET handler untuk menampilkan statistik database
+$routes->get('user/barang/peralatandanmesin/alatangkutan/stats', 'User\Barang\PeralatanDanMesin\AlatAngkutan::stats');
+
+// 9. Test API - GET handler untuk test koneksi API
+$routes->get('user/barang/peralatandanmesin/alatangkutan/test-api', 'User\Barang\PeralatanDanMesin\AlatAngkutan::testApi');
+
+// ========== ROUTES ALTERNATIF (UNTUK BACKWARD COMPATIBILITY) ==========
+// Jika masih ada link lama yang mengarah ke controller terpisah, redirect ke yang baru
+
+// Redirect dari route lama Darat Bermotor ke yang baru
+$routes->get('user/barang/peralatandanmesin/alatangkutan/daratbermotor', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN DARAT BERMOTOR');
+$routes->get('user/barang/peralatandanmesin/alatangkutan/daratbermotor/(:any)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN DARAT BERMOTOR');
+
+// Redirect dari route lama Darat Tak Bermotor ke yang baru  
+$routes->get('user/barang/peralatandanmesin/alatangkutan/darattakbermotor', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN DARAT TAK BERMOTOR');
+$routes->get('user/barang/peralatandanmesin/alatangkutan/darattakbermotor/(:any)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN DARAT TAK BERMOTOR');
+
+// Redirect dari route lama Apung Bermotor ke yang baru
+$routes->get('user/barang/peralatandanmesin/alatangkutan/apungbermotor', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN APUNG BERMOTOR');
+$routes->get('user/barang/peralatandanmesin/alatangkutan/apungbermotor/(:any)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN APUNG BERMOTOR');
+
+// Redirect dari route lama Apung Tak Bermotor ke yang baru
+$routes->get('user/barang/peralatandanmesin/alatangkutan/apungtakbermotor', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN APUNG TAK BERMOTOR');
+$routes->get('user/barang/peralatandanmesin/alatangkutan/apungtakbermotor/(:any)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN APUNG TAK BERMOTOR');
+
+// Redirect dari route lama Bermotor Udara ke yang baru
+$routes->get('user/barang/peralatandanmesin/alatangkutan/bermotorudara', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN BERMOTOR UDARA');
+$routes->get('user/barang/peralatandanmesin/alatangkutan/bermotorudara/(:any)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/ALAT ANGKUTAN BERMOTOR UDARA');
+
+// ROUTES UNTUK URL PENDEK
+$routes->get('user/alatangkutan', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokAlatAngkutan');
+$routes->get('user/alatangkutan/kelompokalatangkutan', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokAlatAngkutan');
+$routes->get('user/alatangkutan/kelompokalatangkutan/(:segment)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/$1');
 // 3.03 Alat Bengkel dan Alat Ukur
 $routes->get('user/barang/peralatandanmesin/alatbengkelukur', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbengkelukur');
 $routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkelbermesin', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbengkelbermesin');
@@ -535,10 +596,112 @@ $routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjatasinar', 'Use
 $routes->get('user/barang/peralatandanmesin/alatpersenjataan/alatkhususkepolisian', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkhususkepolisian');
 
 // 3.10 Komputer
+// 3.10 Komputer - ROUTES LENGKAP
 $routes->get('user/barang/peralatandanmesin/komputer', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::komputer');
 $routes->get('user/barang/peralatandanmesin/komputer/komputerunit', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::komputerunit');
 $routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatankomputer');
 
+// ========== ROUTES UNTUK KOMPUTER (TERPUSAT) ==========
+
+// Routes melalui PeralatanDanMesin (untuk redirect)
+$routes->get('user/barang/peralatandanmesin/kelompokkomputer', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokkomputer');
+$routes->get('user/barang/peralatandanmesin/kelompokkomputer/(:segment)', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokkomputer/$1');
+
+// Routes langsung ke Komputer controller (yang sebenarnya memproses data)
+// 1. Dashboard Komputer - Menampilkan data dari API
+$routes->get('user/barang/peralatandanmesin/komputer/dashboard', 'User\Barang\PeralatanDanMesin\Komputer::dashboard');
+
+// 2. Kelompok Komputer - Overview semua kategori (tanpa parameter)
+$routes->get('user/barang/peralatandanmesin/komputer/kelompokkomputer', 'User\Barang\PeralatanDanMesin\Komputer::kelompokKomputer');
+
+// 3. Kelompok Detail - Menampilkan data per kategori dengan parameter
+$routes->get('user/barang/peralatandanmesin/komputer/kelompokkomputer/(:segment)', 'User\Barang\PeralatanDanMesin\Komputer::kelompokDetail/$1');
+
+// 4. Form Tambah Komputer - POST handler untuk form tambah manual
+$routes->post('user/barang/peralatandanmesin/komputer/tambah', 'User\Barang\PeralatanDanMesin\Komputer::tambah');
+
+// 5. Import dari API - POST handler untuk import/sync data dari API
+$routes->post('user/barang/peralatandanmesin/komputer/importFromApi', 'User\Barang\PeralatanDanMesin\Komputer::importFromApi');
+
+// 6. Reset Data - POST handler untuk menghapus semua data
+$routes->post('user/barang/peralatandanmesin/komputer/resetData', 'User\Barang\PeralatanDanMesin\Komputer::resetData');
+
+// 7. Export Data - GET handler untuk export CSV per kategori
+$routes->get('user/barang/peralatandanmesin/komputer/exportKomputerList/(:segment)', 'User\Barang\PeralatanDanMesin\Komputer::exportKomputerList/$1');
+
+// 8. Statistik - GET handler untuk menampilkan statistik database
+$routes->get('user/barang/peralatandanmesin/komputer/stats', 'User\Barang\PeralatanDanMesin\Komputer::stats');
+
+// ========== ROUTES ALTERNATIF (UNTUK BACKWARD COMPATIBILITY) ==========
+// Jika masih ada link lama yang mengarah ke controller terpisah, redirect ke yang baru
+
+// Redirect dari route lama KomputerUnit ke yang baru
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit', 'User\Barang\PeralatanDanMesin\Komputer::kelompokDetail/KOMPUTER UNIT');
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/(:any)', 'User\Barang\PeralatanDanMesin\Komputer::kelompokDetail/KOMPUTER UNIT');
+
+// Redirect dari route lama PeralatanKomputer ke yang baru  
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer', 'User\Barang\PeralatanDanMesin\Komputer::kelompokDetail/PERALATAN KOMPUTER');
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/(:any)', 'User\Barang\PeralatanDanMesin\Komputer::kelompokDetail/PERALATAN KOMPUTER');
+
+// CRUD ROUTES (yang sudah ada)
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::index');
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/detail/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::detail/$1');
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/komputerunit/tambah', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::tambah');
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/komputerunit/edit/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::edit/$1');
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/hapus/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::hapus/$1');
+
+// IMPORT & EXPORT ROUTES (tambahkan ini)
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::index', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/komputerunit/tambah', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::tambah', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/komputerunit/importFromApi', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::importFromApi', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/komputerunit/resetData', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::resetData', ['filter' => 'login']);
+
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/export', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::exportKomputerList');
+
+// DEBUG & STATS ROUTES (opsional, bisa ditambahkan)
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/komputerunit/debug-form', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::debugForm');
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/stats', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::stats');
+
+// ROUTES UNTUK URL PENDEK (tambahkan ini untuk mengatasi 404)
+$routes->get('user/komputerunit', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::index');
+$routes->get('user/komputerunit/kelompokkomputerunit', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::kelompokkomputerunit');
+$routes->get('user/komputerunit/kelompokkomputerunit/(:segment)', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::kelompokDetail/$1');
+
+// PARENT ROUTES (yang sudah ada)
+$routes->get('user/barang/peralatandanmesin/komputer', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::komputer');
+$routes->get('user/barang/peralatandanmesin/komputer/komputerunit/test-api', 'User\Barang\PeralatanDanMesin\Komputer\KomputerUnit::testApi');
+
+//PERALATAN KOMPUTER
+// ROUTES PERALATAN KOMPUTER - MASUK DALAM KATEGORI KOMPUTER
+
+// CRUD ROUTES
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::index');
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/detail/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::detail/$1');
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/peralatankomputer/tambah', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::tambah');
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/peralatankomputer/edit/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::edit/$1');
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/hapus/(:num)', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::hapus/$1');
+
+// IMPORT & EXPORT ROUTES
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::index', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/peralatankomputer/tambah', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::tambah', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/peralatankomputer/importFromApi', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::importFromApi', ['filter' => 'login']);
+$routes->post('user/barang/peralatandanmesin/komputer/peralatankomputer/resetData', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::resetData', ['filter' => 'login']);
+
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/export', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::exportPeralatanKomputerList');
+
+// DEBUG & STATS ROUTES
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/testDatabase', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::testDatabase');
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/debug', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::debug');
+$routes->match(['GET', 'POST'], 'user/barang/peralatandanmesin/komputer/peralatankomputer/debug-form', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::debugForm');
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/stats', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::stats');
+
+// ROUTES UNTUK URL PENDEK
+$routes->get('user/peralatankomputer', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::index');
+$routes->get('user/peralatankomputer/kelompokperalatankomputer', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::kelompokperalatankomputer');
+$routes->get('user/peralatankomputer/kelompokperalatankomputer/(:segment)', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::kelompokDetail/$1');
+
+// TEST API ROUTE (opsional)
+$routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/test-api', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::testApi');
 // 3.11 Alat Eksplorasi
 $routes->get('user/barang/peralatandanmesin/alateksplorasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alateksplorasi');
 $routes->get('user/barang/peralatandanmesin/alateksplorasi/alateksplorasitopografi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alateksplorasitopografi');

@@ -16,6 +16,7 @@ class RuanganModel extends Model
         'kapasitas',
         'fasilitas',
         'foto_ruangan',
+        'is_active',
         'created_at',
         'updated_at',
         'deleted_at'
@@ -31,6 +32,7 @@ class RuanganModel extends Model
         'nama_ruangan' => 'required',
         'lokasi' => 'required',
         'kapasitas' => 'required|numeric',
+        
     ];
 
     protected $validationMessages = [
@@ -43,7 +45,7 @@ class RuanganModel extends Model
         'kapasitas' => [
             'required' => 'Kapasitas harus diisi',
             'numeric' => 'Kapasitas harus berupa angka'
-        ]
+            ],
     ];
 
     protected $skipValidation = false;
@@ -52,26 +54,37 @@ class RuanganModel extends Model
     // 1. Get ruangan stats (converted to Query Builder)
     public function getRuanganStats()
     {
-        // Count total ruangan
+        // Count total ruangan aktif
         $builderTotal = $this->builder();
         $total = $builderTotal->where('deleted_at', null)
+                             ->where('is_active', true)
                              ->countAllResults();
         
-        // Count ruangan yang digunakan (disetujui)
-        $builderDigunakan = $this->db->table('pinjam_ruangan');
-        $digunakan = $builderDigunakan->where('status', 'disetujui')
-                                    ->where('deleted_at', null)
-                                    ->select('ruangan_id')
+        // Count ruangan yang digunakan (disetujui) dan aktif
+        $builderDigunakan = $this->db->table('pinjam_ruangan pr');
+        $digunakan = $builderDigunakan->join('ruangan r', 'r.id = pr.ruangan_id')
+                                    ->where('pr.status', 'disetujui')
+                                    ->where('pr.deleted_at', null)
+                                    ->where('r.is_active', true)
+                                    ->select('pr.ruangan_id')
                                     ->distinct()
                                     ->countAllResults();
         
-        // Count ruangan menunggu verifikasi
-        $builderPending = $this->db->table('pinjam_ruangan');
-        $menungguVerifikasi = $builderPending->where('status', 'pending')
-                                           ->where('deleted_at', null)
-                                           ->select('ruangan_id')
+        // Count ruangan menunggu verifikasi dan aktif
+        $builderPending = $this->db->table('pinjam_ruangan pr');
+        $menungguVerifikasi = $builderPending->join('ruangan r', 'r.id = pr.ruangan_id')
+                                           ->where('pr.status', 'pending')
+                                           ->where('pr.deleted_at', null)
+                                           ->where('r.is_active', true)
+                                           ->select('pr.ruangan_id')
                                            ->distinct()
                                            ->countAllResults();
+        
+        // Count ruangan non-aktif (maintenance)
+        $builderMaintenance = $this->builder();
+        $maintenance = $builderMaintenance->where('deleted_at', null)
+                                         ->where('is_active', false)
+                                         ->countAllResults();
         
         $tersedia = $total - $digunakan - $menungguVerifikasi;
 
@@ -79,7 +92,8 @@ class RuanganModel extends Model
             'total' => $total,
             'digunakan' => $digunakan,
             'menunggu_verifikasi' => $menungguVerifikasi,
-            'tersedia' => $tersedia
+            'tersedia' => $tersedia,
+            'maintenance' => $maintenance // Status baru untuk ruangan non-aktif
         ];
     }
 
@@ -132,4 +146,38 @@ class RuanganModel extends Model
         return $builder->where('id', $id)
                       ->update($data);
     }
+     // 7. Method untuk ruangan aktif
+        public function getActiveRuangan()
+    {
+        return $this->where('is_active', true)
+                   ->where('deleted_at', null)
+                   ->findAll();
+    }
+    // 8. Method untuk mendapatkan ruangan berdasarkan lokasi dan status aktif
+        public function getRuanganByLokasiAndStatus($lokasi, $isActive = true)
+    {
+        return $this->where('lokasi', $lokasi)
+                   ->where('is_active', $isActive)
+                   ->where('deleted_at', null)
+                   ->findAll();
+    }
+    // 9. Method untuk mengubah status aktif ruangany
+    public function toggleActiveStatus($id, $isActive)
+    {
+        return $this->update($id, ['is_active' => $isActive]);
+    }
+
+    // Method untuk cek apakah ruangan bisa dipinjam
+    public function isRuanganAvailableForBooking($id)
+    {
+        $ruangan = $this->find($id);
+        if (!$ruangan) {
+            return false;
+        }
+        
+        // Ruangan harus aktif untuk bisa dipinjam
+        return $ruangan['is_active'] == true;
+    }
 }
+    
+

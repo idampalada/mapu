@@ -151,65 +151,88 @@
                                 $cleanFasilitas = str_replace(["'", '"'], ["\\'", '\\"'], $cleanFasilitas);
                                 ?>
 
-                                <!-- PERBAIKAN: Semua ruangan bisa dibooking, konflik akan dicek di time picker -->
-                                <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
-                                        style="background-color: #133E87; color: white; border: none; height: 2.2rem;" 
-                                        data-ruangan-id="<?= $ruangan['id'] ?>"
-                                        data-ruangan-nama="<?= $cleanRuanganName ?>"
-                                        data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                        data-ruangan-fasilitas="<?= $cleanFasilitas ?>">
-                                    <i class="bi bi-calendar-plus"></i>
-                                    <span>Pinjam</span>
-                                </button>
-                                
-                                <!-- Info Status untuk Reference User -->
-                                <?php if (!empty($ruangan['jam_mulai']) && !empty($ruangan['jam_selesai'])): ?>
-                                    <small class="text-center mt-2 text-muted">
-                                        <i class="bi bi-info-circle"></i>
-                                        Dipinjam hari ini: <?= substr($ruangan['jam_mulai'], 0, 5) ?> - <?= substr($ruangan['jam_selesai'], 0, 5) ?> WIB
-                                    </small>
-                                <?php elseif ($isPending): ?>
-                                    <small class="text-center mt-2 text-warning">
-                                        <i class="bi bi-clock"></i>
-                                        Ada booking menunggu verifikasi
-                                    </small>
-                                <?php else: ?>
-                                    <small class="text-center mt-2 text-success">
-                                        <i class="bi bi-check-circle"></i>
-                                        Tersedia untuk booking
-                                    </small>
-                                <?php endif; ?>
 
-                                <!-- Admin buttons -->
-                                <?php if (in_groups('admin_gedungutama') || 
-                                    in_groups('admin_pusdatin') || 
-                                    in_groups('admin_binamarga') || 
-                                    in_groups('admin_ciptakarya') || 
-                                    in_groups('admin_sda') || 
-                                    in_groups('admin_gedungg') ||
-                                    in_groups('admin_heritage') ||
-                                    in_groups('admin') ||
-                                    in_groups('admin_auditorium')): ?>
-                                    <div class="d-flex flex-column gap-2 mt-2">
-                                        <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
-                                            style="background-color: #608BC1; color: white; border: none;"
-                                            onclick="openEditRuangan('<?= $ruangan['id'] ?>')">
-                                            <i class="bi bi-pencil"></i> Edit
-                                        </button>
-                                        <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2" 
-                                            style="background-color: #AE445A; color: white; border: none;"
-                                            onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </button>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
+
+<!-- Cek status aktif ruangan -->
+    <?php 
+    // Cek status aktif untuk PostgreSQL (support 't', 'f', true, false)
+    $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+    ?>
+    
+    <?php if ($isRuanganActive): ?>
+        <!-- TOMBOL PINJAM AKTIF -->
+        <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
+                style="background-color: #133E87; color: white; border: none; height: 2.2rem;" 
+                data-ruangan-id="<?= $ruangan['id'] ?>"
+                data-ruangan-nama="<?= $cleanRuanganName ?>"
+                data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
+                data-ruangan-fasilitas="<?= $cleanFasilitas ?>">
+            <i class="bi bi-calendar-plus"></i>
+            <span>Pinjam</span>
+        </button>
+    
+    <!-- Info Status untuk Reference User -->
+    <?php if (!empty($ruangan['jam_mulai']) && !empty($ruangan['jam_selesai'])): ?>
+        <small class="text-center mt-2 text-muted">
+            <i class="bi bi-info-circle"></i>
+            Dipinjam hari ini: <?= substr($ruangan['jam_mulai'], 0, 5) ?> - <?= substr($ruangan['jam_selesai'], 0, 5) ?> WIB
+        </small>
+    <?php elseif ($isPending): ?>
+        <small class="text-center mt-2 text-warning">
+            <i class="bi bi-clock"></i>
+            Ada booking menunggu verifikasi
+        </small>
+    <?php else: ?>
+        <small class="text-center mt-2 text-success">
+            <i class="bi bi-check-circle"></i>
+            Tersedia untuk booking
+        </small>
+    <?php endif; ?>
+
+    <?php else: ?>
+        <!-- TOMBOL MAINTENANCE - LOCKED -->
+        <button class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
+                style="height: 2.2rem; cursor: not-allowed;" disabled>
+            <i class="bi bi-tools"></i>
+            <span>Maintenance</span>
+        </button>
+    
+        <small class="text-center mt-2 text-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Ruangan sedang maintenance, tidak dapat dipinjam
+        </small>
+    <?php endif; ?>
+
+<!-- Admin buttons -->
+<?php if (in_groups('admin_gedungutama') || 
+    in_groups('admin_pusdatin') || 
+    in_groups('admin_binamarga') || 
+    in_groups('admin_ciptakarya') || 
+    in_groups('admin_sda') || 
+    in_groups('admin_gedungg') ||
+    in_groups('admin_heritage') ||
+    in_groups('admin') ||
+    in_groups('admin_auditorium')): ?>
+    <div class="d-flex flex-column gap-2 mt-2">
+        <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
+            style="background-color: #608BC1; color: white; border: none;"
+            onclick="openEditRuangan('<?= $ruangan['id'] ?>')">
+            <i class="bi bi-pencil"></i> Edit
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2" 
+            style="background-color: #AE445A; color: white; border: none;"
+            onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
+            <i class="bi bi-trash"></i> Hapus
+        </button>
+    </div>
+<?php endif; ?>
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </section>
+<?php endif; ?>
 </div>
 
 <!-- Modal Detail Ruangan -->
@@ -246,6 +269,7 @@
 </div>
 
 <!-- Modal Edit Ruangan -->
+<!-- Modal Edit Ruangan -->
 <div class="modal fade" id="modalEditRuangan" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -255,55 +279,82 @@
             </div>
             <form id="formEditRuangan" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" id="edit_ruangan_id" name="id">
-                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Nama Ruangan</label>
-                                <input type="text" class="form-control" id="edit_nama_ruangan" name="nama_ruangan" required>
+                                <input type="text" class="form-control" name="nama_ruangan" id="edit_nama_ruangan" required>
                             </div>
+                            
                             <div class="mb-3">
                                 <label class="form-label">Lokasi</label>
-                                <input type="text" class="form-control" id="edit_lokasi" name="lokasi" readonly style="background-color: #f8f9fa;">
-                                <small class="text-muted">Lokasi tidak dapat diubah</small>
+                                <select class="form-select" name="lokasi" id="edit_lokasi" required>
+                                    <option value="">Pilih Lokasi</option>
+                                    <option value="Gedung Utama">Gedung Utama</option>
+                                    <option value="Pusat Data dan Teknologi Informasi">Pusat Data dan Teknologi Informasi</option>
+                                    <option value="Bina Marga">Bina Marga</option>
+                                    <option value="Cipta Karya">Cipta Karya</option>
+                                    <option value="Sumber Daya Air">Sumber Daya Air</option>
+                                    <option value="Gedung G">Gedung G</option>
+                                    <option value="Heritage">Heritage</option>
+                                    <option value="Auditorium">Auditorium</option>
+                                </select>
                             </div>
+                            
                             <div class="mb-3">
                                 <label class="form-label">Kapasitas</label>
-                                <input type="number" class="form-control" id="edit_kapasitas" name="kapasitas" required>
+                                <input type="number" class="form-control" name="kapasitas" id="edit_kapasitas" required>
+                            </div>
+
+                            <!-- STATUS AKTIF - HANYA SATU INI SAJA -->
+                            <div class="mb-3">
+                                <label class="form-label">Status Ruangan</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="edit_is_active" value="1">
+                                    <label class="form-check-label" for="edit_is_active">
+                                        <span id="status_label">Aktif (Dapat dipinjam)</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Nonaktifkan jika ruangan sedang maintenance atau tidak dapat dipinjam
+                                </small>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
+                            <!-- Fasilitas -->
                             <div class="mb-3">
                                 <label class="form-label">Fasilitas</label>
-                                <div class="row px-3">
-                                    <div class="col-md-6">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="TV" id="edit_fasilitas_tv">
-                                            <label class="form-check-label" for="edit_fasilitas_tv">TV</label>
+                                <div id="edit_fasilitas_container">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Proyektor" id="edit_fasilitas_proyektor">
+                                                <label class="form-check-label" for="edit_fasilitas_proyektor">Proyektor</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Whiteboard" id="edit_fasilitas_whiteboard">
+                                                <label class="form-check-label" for="edit_fasilitas_whiteboard">Whiteboard</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Microphone" id="edit_fasilitas_mic">
+                                                <label class="form-check-label" for="edit_fasilitas_mic">Microphone</label>
+                                            </div>
                                         </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Projector" id="edit_fasilitas_projector">
-                                            <label class="form-check-label" for="edit_fasilitas_projector">Projector</label>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Papan Tulis" id="edit_fasilitas_papantulis">
-                                            <label class="form-check-label" for="edit_fasilitas_papantulis">Papan Tulis</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Sound System" id="edit_fasilitas_sound">
-                                            <label class="form-check-label" for="edit_fasilitas_sound">Sound System</label>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="AC" id="edit_fasilitas_ac">
-                                            <label class="form-check-label" for="edit_fasilitas_ac">AC</label>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Wifi" id="edit_fasilitas_wifi">
-                                            <label class="form-check-label" for="edit_fasilitas_wifi">Wifi</label>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Sound System" id="edit_fasilitas_sound">
+                                                <label class="form-check-label" for="edit_fasilitas_sound">Sound System</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="AC" id="edit_fasilitas_ac">
+                                                <label class="form-check-label" for="edit_fasilitas_ac">AC</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="fasilitas[]" value="Wifi" id="edit_fasilitas_wifi">
+                                                <label class="form-check-label" for="edit_fasilitas_wifi">Wifi</label>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -316,6 +367,17 @@
                                           placeholder="Tambahkan keterangan detail fasilitas..."></textarea>
                                 <small class="text-muted">Keterangan akan digabung dengan fasilitas yang dipilih</small>
                             </div>
+
+                            <!-- HAPUS SEMUA YANG INI - DUPLIKAT! -->
+                            <!-- 
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="edit_is_active" value="1">
+                                <label class="form-check-label" for="edit_is_active">
+                                    Aktif (Dapat dipinjam)
+                                </label>
+                            </div>
+                            -->
                             
                             <div class="mb-3">
                                 <label class="form-label">Foto Ruangan (Opsional)</label>

@@ -323,7 +323,7 @@ class Ruangan extends BaseController {
     }
 }
 
-    public function edit($id)
+public function edit($id)
 {
     try {
         $ruanganModel = new RuanganModel();
@@ -338,15 +338,26 @@ class Ruangan extends BaseController {
             throw new \Exception('Anda tidak memiliki akses untuk mengedit ruangan');
         }
 
-        if ($ruangan['status'] !== 'Tersedia') {
-            throw new \Exception('Ruangan tidak dapat diedit karena sedang dalam peminjaman');
+        // Cek status ruangan hanya jika ada peminjaman aktif
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+        $activeLoan = $pinjamModel->where('ruangan_id', $id)
+                                 ->whereIn('status', ['disetujui', 'dipinjam'])
+                                 ->where('deleted_at', null)
+                                 ->first();
+        
+        if ($activeLoan) {
+            throw new \Exception('Ruangan tidak dapat diedit karena sedang dalam peminjaman aktif');
         }
+
+        // DEBUG: Log semua data POST yang diterima
+        log_message('debug', 'POST Data received: ' . json_encode($this->request->getPost()));
         
         $validation = \Config\Services::validation();
         $validation->setRules([
             'nama_ruangan' => 'required',
             'lokasi' => 'required',
             'kapasitas' => 'required|numeric'
+            // HAPUS validasi is_active dulu untuk debug
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -356,18 +367,14 @@ class Ruangan extends BaseController {
             ]);
         }
 
-        // ===== PERBAIKAN: HANDLING FORM EDIT YANG BERBEDA =====
+        // ===== HANDLING FORM EDIT YANG BERBEDA =====
         
-        // Cek apakah data dari form edit (1 field fasilitas) atau form tambah (checkbox + keterangan)
-        $fasilitasArray = $this->request->getPost('fasilitas'); // Dari form edit: string, dari form tambah: array
-        $keteranganText = $this->request->getPost('keterangan'); // Hanya ada di form tambah
+        $fasilitasArray = $this->request->getPost('fasilitas');
+        $keteranganText = $this->request->getPost('keterangan');
         
         $fasilitasGabungan = '';
         
         if (is_array($fasilitasArray)) {
-            // === FORM TAMBAH (ada checkbox array) ===
-            log_message('debug', 'Processing as ADD form (checkbox array detected)');
-            
             $fasilitasFromCheckbox = '';
             if (!empty($fasilitasArray)) {
                 $fasilitasFromCheckbox = implode(', ', $fasilitasArray);
@@ -375,7 +382,6 @@ class Ruangan extends BaseController {
             
             $keteranganClean = !empty($keteranganText) ? trim($keteranganText) : '';
             
-            // Gabungkan checkbox + keterangan
             if (!empty($fasilitasFromCheckbox) && !empty($keteranganClean)) {
                 $fasilitasGabungan = $fasilitasFromCheckbox . '. ' . $keteranganClean;
             } elseif (!empty($fasilitasFromCheckbox)) {
@@ -383,52 +389,95 @@ class Ruangan extends BaseController {
             } elseif (!empty($keteranganClean)) {
                 $fasilitasGabungan = $keteranganClean;
             }
-            
         } else {
-            // === FORM EDIT (single textarea field) ===
-            log_message('debug', 'Processing as EDIT form (single textarea detected)');
-            
-            // Langsung gunakan value dari textarea fasilitas
-            $fasilitasGabungan = !empty($fasilitasArray) ? trim($fasilitasArray) : '';
+            $fasilitasGabungan = trim($fasilitasArray ?: '');
         }
 
-        log_message('debug', 'Final fasilitasGabungan: ' . $fasilitasGabungan);
-
-        $updateData = [
-            'id' => $id,
-            'nama_ruangan' => $this->request->getPost('nama_ruangan'),
-            'lokasi' => $this->request->getPost('lokasi'),
-            'kapasitas' => $this->request->getPost('kapasitas'),
-            'fasilitas' => $fasilitasGabungan // Hasil yang benar
-        ];
-
-        // Handle foto upload (tetap sama)
+        // Handle foto upload
+        $paths = json_decode($ruangan['foto_ruangan'] ?: '[]', true);
         $files = $this->request->getFiles();
-        if (!empty($files['foto_ruangan'][0]->getName())) {
-            $paths = [];
-            foreach($files['foto_ruangan'] as $file) {
+        
+        if (isset($files['foto_ruangan'])) {
+            foreach ($files['foto_ruangan'] as $file) {
                 if ($file->isValid() && !$file->hasMoved()) {
                     $newName = $file->getRandomName();
-                    $file->move(ROOTPATH . 'public/uploads/ruangan', $newName);
+                    $file->move(WRITEPATH . '../public/uploads/ruangan', $newName);
                     $paths[] = $newName;
                 }
             }
-            if (!empty($paths)) {
-                $updateData['foto_ruangan'] = json_encode($paths);
-            }
         }
 
-        if (!$ruanganModel->save($updateData)) {
-            throw new \Exception('Gagal mengupdate data ruangan');
+        // Get lokasi dan validasi
+        $lokasiRuangan = $this->request->getPost('lokasi');
+        $allowedLokasi = [
+            'Gedung Utama', 'Pusat Data dan Teknologi Informasi', 'Bina Marga',
+            'Cipta Karya', 'Sumber Daya Air', 'Gedung G', 'Heritage', 'Auditorium'
+        ];
+
+        if (!in_array($lokasiRuangan, $allowedLokasi)) {
+            throw new \Exception('Lokasi ruangan tidak valid');
         }
+
+        // DEBUG: Cek is_active handling
+        $isActive = $this->request->getPost('is_active');
+        log_message('debug', 'is_active raw value: ' . var_export($isActive, true));
+        log_message('debug', 'is_active type: ' . gettype($isActive));
+        
+        $isActiveValue = ($isActive === '1' || $isActive === 'on') ? true : false;
+        log_message('debug', 'is_active converted to: ' . var_export($isActiveValue, true));
+
+        // Prepare data untuk update
+        $data = [
+            'nama_ruangan' => $this->request->getPost('nama_ruangan'),
+            'lokasi' => $lokasiRuangan,
+            'kapasitas' => $this->request->getPost('kapasitas'),
+            'fasilitas' => $fasilitasGabungan,
+            'foto_ruangan' => json_encode($paths),
+            'is_active' => $isActiveValue,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        // DEBUG: Log data yang akan diupdate dan allowedFields
+        log_message('debug', 'Update data: ' . json_encode($data));
+        
+        // DEBUG: Cek allowedFields
+        $reflection = new \ReflectionClass($ruanganModel);
+        $property = $reflection->getProperty('allowedFields');
+        $property->setAccessible(true);
+        $allowedFields = $property->getValue($ruanganModel);
+        log_message('debug', 'Model allowedFields: ' . json_encode($allowedFields));
+
+        // DEBUG: Coba update dengan error handling yang lebih detail
+        $updateResult = $ruanganModel->update($id, $data);
+        log_message('debug', 'Update result: ' . var_export($updateResult, true));
+        
+        if (!$updateResult) {
+            $errors = $ruanganModel->errors();
+            log_message('error', 'Model validation errors: ' . json_encode($errors));
+            log_message('error', 'Last query: ' . $ruanganModel->db->getLastQuery());
+            throw new \Exception('Gagal memperbarui data ruangan. Errors: ' . json_encode($errors));
+        }
+
+        // DEBUG: Verifikasi data setelah update
+        $updatedData = $ruanganModel->find($id);
+        log_message('debug', 'Data after update: ' . json_encode($updatedData));
+
+        $statusMessage = $isActiveValue ? 'diaktifkan' : 'dinonaktifkan (maintenance)';
+        log_message('info', "Ruangan ID {$id} berhasil diperbarui dan {$statusMessage} oleh user " . user_id());
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => 'Data ruangan berhasil diperbarui'
+            'message' => 'Data ruangan berhasil diperbarui. Status: ' . ($isActiveValue ? 'Aktif' : 'Non-aktif (Maintenance)'),
+            'debug' => [
+                'is_active_received' => $isActive,
+                'is_active_converted' => $isActiveValue,
+                'updated_data' => $updatedData
+            ]
         ]);
 
     } catch (\Exception $e) {
         log_message('error', 'Error edit ruangan: ' . $e->getMessage());
+        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
         return $this->response->setJSON([
             'success' => false,
             'error' => $e->getMessage()
@@ -1350,6 +1399,43 @@ public function getBookingPublik()
         return $this->response->setJSON([
             'success' => false,
             'error' => 'Gagal memuat data booking'
+        ]);
+    }
+}
+public function toggleActive($id)
+{
+    try {
+        $ruanganModel = new RuanganModel();
+        $ruangan = $ruanganModel->find($id);
+        
+        if (!$ruangan) {
+            throw new \Exception('Ruangan tidak ditemukan');
+        }
+
+        $gedungRole = $this->getGedungRole($ruangan['lokasi']);
+        if (!in_groups('admin') && !in_groups($gedungRole)) {
+            throw new \Exception('Anda tidak memiliki akses untuk mengubah status ruangan');
+        }
+
+        // Toggle status
+        $newStatus = !$ruangan['is_active'];
+        
+        if (!$ruanganModel->update($id, ['is_active' => $newStatus])) {
+            throw new \Exception('Gagal mengubah status ruangan');
+        }
+
+        $statusText = $newStatus ? 'diaktifkan' : 'dinonaktifkan (maintenance)';
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => "Ruangan berhasil {$statusText}",
+            'new_status' => $newStatus
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => $e->getMessage()
         ]);
     }
 }
