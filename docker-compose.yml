@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   app:
     build:
@@ -14,16 +16,12 @@ services:
       - db
     environment:
       - CI_ENVIRONMENT=development
-      - database.default.hostname=localhost
+      - database.default.hostname=db
       - database.default.database=mapu
       - database.default.username=postgres
-      - database.default.password=pqowie
+      - database.default.password=123
       - database.default.DBDriver=Postgre
       - database.default.port=5432
-      # MythAuth specific configurations
-      - auth.allowRegistration=true
-      - auth.requireActivation=false
-      - auth.emailActivation=false
 
   db:
     image: postgres:14
@@ -32,7 +30,7 @@ services:
     environment:
       - POSTGRES_DB=mapu
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=pqowie
+      - POSTGRES_PASSWORD=123
     ports:
       - "5432:5432"
     volumes:
