@@ -747,7 +747,24 @@ $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintas_udara', '
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga');
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga_detail');
 
+// Routes untuk Aset Tak Berwujud (mengikuti pola Peralatan dan Mesin)
+$routes->get('user/barang/asettakberwujud', 'User\Barang\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud::kelompokDetail/$1');
 
+// CRUD Operations
+$routes->post('user/barang/asettakberwujud/tambah', 'User\Barang\AsetTakBerwujud::tambah');
+$routes->post('user/barang/asettakberwujud/importFromApi', 'User\Barang\AsetTakBerwujud::importFromApi');
+$routes->post('user/barang/asettakberwujud/resetData', 'User\Barang\AsetTakBerwujud::resetData');
+$routes->get('user/barang/asettakberwujud/exportAsetTakBerwujudList/(:segment)', 'User\Barang\AsetTakBerwujud::exportAsetTakBerwujudList/$1');
+
+// Routes untuk Aset Tak Berwujud
+$routes->get('user/barang/asettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokDetail/$1');
+$routes->post('user/barang/asettakberwujud/tambah', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::tambah');
+$routes->post('user/barang/asettakberwujud/importFromApi', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::importFromApi');
+$routes->post('user/barang/asettakberwujud/resetData', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::resetData');
 // ULTRA CLEAN SIMAN API ROUTES - NO ERRORS
 // ==========================================
 $routes->get('siman-test', 'SimanApi::testConnection');
