@@ -746,25 +746,58 @@ $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintas_udara', '
 // 3.19 Peralatan Olahraga
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga');
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga_detail');
-
-// Routes untuk Aset Tak Berwujud (mengikuti pola Peralatan dan Mesin)
-$routes->get('user/barang/asettakberwujud', 'User\Barang\AsetTakBerwujud::kelompokAsetTakBerwujud');
-$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud::kelompokAsetTakBerwujud');
-$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud::kelompokDetail/$1');
-
-// CRUD Operations
-$routes->post('user/barang/asettakberwujud/tambah', 'User\Barang\AsetTakBerwujud::tambah');
-$routes->post('user/barang/asettakberwujud/importFromApi', 'User\Barang\AsetTakBerwujud::importFromApi');
-$routes->post('user/barang/asettakberwujud/resetData', 'User\Barang\AsetTakBerwujud::resetData');
-$routes->get('user/barang/asettakberwujud/exportAsetTakBerwujudList/(:segment)', 'User\Barang\AsetTakBerwujud::exportAsetTakBerwujudList/$1');
-
-// Routes untuk Aset Tak Berwujud
+// Routes untuk Aset Tak Berwujud (mengikuti pola Alat Besar yang benar)
 $routes->get('user/barang/asettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
 $routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
 $routes->get('user/barang/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokDetail/$1');
+
+// CRUD Operations - DIPERBAIKI
 $routes->post('user/barang/asettakberwujud/tambah', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::tambah');
 $routes->post('user/barang/asettakberwujud/importFromApi', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::importFromApi');
 $routes->post('user/barang/asettakberwujud/resetData', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::resetData');
+$routes->get('user/barang/asettakberwujud/exportAsetTakBerwujudList/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::exportAsetTakBerwujudList/$1');
+
+// ========== ROUTES UNTUK ASET TAK BERWUJUD (TERPUSAT) ==========
+
+// Routes melalui PeralatanDanMesin (untuk redirect) - jika diperlukan
+$routes->get('user/barang/peralatandanmesin/kelompokasettakberwujud', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokasettakberwujud');
+$routes->get('user/barang/peralatandanmesin/kelompokasettakberwujud/(:segment)', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::kelompokasettakberwujud/$1');
+
+// Routes langsung ke AsetTakBerwujud controller (yang sebenarnya memproses data)
+// 1. Dashboard Aset Tak Berwujud - Menampilkan data dari API
+$routes->get('user/barang/asettakberwujud/dashboard', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::dashboard');
+
+// 2. Kelompok Aset Tak Berwujud - Overview semua kategori (tanpa parameter)
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
+
+// 3. Kelompok Detail - Menampilkan data per kategori dengan parameter
+$routes->get('user/barang/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokDetail/$1');
+
+// 4. Form Tambah Aset Tak Berwujud - POST handler untuk form tambah manual
+$routes->post('user/barang/asettakberwujud/tambah', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::tambah');
+
+// 5. Import dari API - POST handler untuk import/sync data dari API
+$routes->post('user/barang/asettakberwujud/importFromApi', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::importFromApi');
+
+// 6. Reset Data - POST handler untuk menghapus semua data
+$routes->post('user/barang/asettakberwujud/resetData', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::resetData');
+
+// 7. Export Data - GET handler untuk export CSV per kategori
+$routes->get('user/barang/asettakberwujud/exportAsetTakBerwujudList/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::exportAsetTakBerwujudList/$1');
+
+// 8. Statistik - GET handler untuk menampilkan statistik database (jika diperlukan)
+$routes->get('user/barang/asettakberwujud/stats', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::stats');
+
+// ========== ROUTES ALTERNATIF (UNTUK BACKWARD COMPATIBILITY) ==========
+// Jika masih ada link lama yang mengarah ke controller lama, redirect ke yang baru
+
+// ROUTES UNTUK URL PENDEK
+$routes->get('user/asettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
+$routes->get('user/asettakberwujud/kelompokasettakberwujud/(:segment)', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokDetail/$1');
+
+// TEST API ROUTE (opsional)
+$routes->get('user/barang/asettakberwujud/test-api', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::testApi');
 // ULTRA CLEAN SIMAN API ROUTES - NO ERRORS
 // ==========================================
 $routes->get('siman-test', 'SimanApi::testConnection');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\User\Barang;
+namespace App\Controllers\User\Barang\AsetTakBerwujud; // PERBAIKAN NAMESPACE
 
 use App\Controllers\BaseController;
 use App\Models\AsetTakBerwujudModel;
@@ -127,7 +127,7 @@ class AsetTakBerwujud extends BaseController
         $pager->setPath('user/barang/asettakberwujud/kelompokasettakberwujud/' . urlencode($kelompok));
         $totalPages = ceil($totalItems / $perPage);
 
-        return view('user/barang/asettakberwujud/kelompokasettakberwujud', [
+        return view('user/barang/asettakberwujud/asettakberwujud/kelompokasettakberwujud', [
             'asetTakBerwujudList' => $asetTakBerwujudList,
             'kelompok' => strtoupper($kelompok),
             'activeKelompok' => strtoupper($kelompok),
@@ -303,6 +303,174 @@ class AsetTakBerwujud extends BaseController
         } catch (\Exception $e) {
             session()->setFlashdata('error', 'Gagal import data: ' . $e->getMessage());
             return redirect()->back();
+        }
+    }
+
+    // METHOD EXPORT YANG HILANG - TAMBAHAN BARU
+    public function exportAsetTakBerwujudList($kategori = 'all')
+    {
+        try {
+            $builder = $this->asetTakBerwujudModel->builder();
+            
+            // Filter berdasarkan kategori
+            switch (strtolower($kategori)) {
+                case 'aset_tak_berwujud':
+                    $builder->where('UPPER(kelompok)', 'ASET TAK BERWUJUD');
+                    $filename = 'aset_tak_berwujud_' . date('Y-m-d_H-i-s') . '.csv';
+                    break;
+                case 'aset_tak_berwujud_dalam_penyelesaian':
+                    $builder->where('UPPER(kelompok)', 'ASET TAK BERWUJUD DALAM PENYELESAIAN');
+                    $filename = 'aset_tak_berwujud_dalam_penyelesaian_' . date('Y-m-d_H-i-s') . '.csv';
+                    break;
+                case 'aset_kemitraan':
+                    $builder->where('UPPER(kelompok)', 'ASET KEMITRAAN');
+                    $filename = 'aset_kemitraan_' . date('Y-m-d_H-i-s') . '.csv';
+                    break;
+                default:
+                    $filename = 'semua_aset_tak_berwujud_' . date('Y-m-d_H-i-s') . '.csv';
+                    break;
+            }
+            
+            $data = $builder->orderBy('kode_barang', 'ASC')->get()->getResultArray();
+            
+            if (empty($data)) {
+                session()->setFlashdata('error', 'Tidak ada data untuk diekspor');
+                return redirect()->back();
+            }
+
+            // Generate CSV content
+            $csvContent = '';
+            
+            // Header CSV
+            $headers = [
+                'Kode Barang',
+                'Nama Barang',
+                'NUP',
+                'No KIB',
+                'Merk',
+                'Kelompok',
+                'Sub Kelompok',
+                'Kondisi',
+                'Kuantitas',
+                'Status Penggunaan',
+                'Nilai Perolehan',
+                'Nilai Penyusutan',
+                'Nilai Buku',
+                'Tanggal Perolehan',
+                'Created At',
+                'Updated At'
+            ];
+            
+            $csvContent .= '"' . implode('","', $headers) . "\"\n";
+            
+            // Data rows
+            foreach ($data as $row) {
+                $csvData = [
+                    $row['kode_barang'] ?? '',
+                    $row['nama_barang'] ?? '',
+                    $row['nup'] ?? '',
+                    $row['no_kib'] ?? '',
+                    $row['merk'] ?? '',
+                    $row['kelompok'] ?? '',
+                    $row['sub_kelompok'] ?? '',
+                    $row['kondisi'] ?? '',
+                    $row['kuantitas'] ?? '0',
+                    $row['status_penggunaan'] ?? '',
+                    number_format($row['nilai_perolehan'] ?? 0, 2, ',', '.'),
+                    number_format($row['nilai_penyusutan'] ?? 0, 2, ',', '.'),
+                    number_format($row['nilai_buku'] ?? 0, 2, ',', '.'),
+                    $row['tanggal_perolehan'] ?? '',
+                    $row['created_at'] ?? '',
+                    $row['updated_at'] ?? ''
+                ];
+                
+                $csvContent .= '"' . implode('","', $csvData) . "\"\n";
+            }
+
+            // Set headers for download
+            $this->response->setHeader('Content-Type', 'text/csv; charset=UTF-8');
+            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            $this->response->setHeader('Pragma', 'no-cache');
+            $this->response->setHeader('Expires', '0');
+            
+            // Add BOM for proper UTF-8 encoding in Excel
+            return $this->response->setBody("\xEF\xBB\xBF" . $csvContent);
+
+        } catch (\Exception $e) {
+            session()->setFlashdata('error', 'Gagal mengekspor data: ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
+
+    // METHOD STATISTIK - TAMBAHAN BARU
+    public function stats()
+    {
+        try {
+            $builder = $this->asetTakBerwujudModel->builder();
+            
+            // Total semua data
+            $totalAll = $builder->countAllResults(false);
+            
+            // Per kelompok
+            $asetTakBerwujud = $builder->where('UPPER(kelompok)', 'ASET TAK BERWUJUD')->countAllResults(false);
+            $asetTakBerwujudDalamPenyelesaian = $builder->resetQuery()->where('UPPER(kelompok)', 'ASET TAK BERWUJUD DALAM PENYELESAIAN')->countAllResults(false);
+            $asetKemitraan = $builder->resetQuery()->where('UPPER(kelompok)', 'ASET KEMITRAAN')->countAllResults(false);
+            
+            // Total nilai perolehan per kelompok
+            $nilaiAsetTakBerwujud = $builder->resetQuery()
+                ->selectSum('nilai_perolehan')
+                ->where('UPPER(kelompok)', 'ASET TAK BERWUJUD')
+                ->get()->getRow()->nilai_perolehan ?? 0;
+                
+            $nilaiAsetTakBerwujudDalamPenyelesaian = $builder->resetQuery()
+                ->selectSum('nilai_perolehan')
+                ->where('UPPER(kelompok)', 'ASET TAK BERWUJUD DALAM PENYELESAIAN')
+                ->get()->getRow()->nilai_perolehan ?? 0;
+                
+            $nilaiAsetKemitraan = $builder->resetQuery()
+                ->selectSum('nilai_perolehan')
+                ->where('UPPER(kelompok)', 'ASET KEMITRAAN')
+                ->get()->getRow()->nilai_perolehan ?? 0;
+
+            $stats = [
+                'total_all' => $totalAll,
+                'aset_tak_berwujud' => $asetTakBerwujud,
+                'aset_tak_berwujud_dalam_penyelesaian' => $asetTakBerwujudDalamPenyelesaian,
+                'aset_kemitraan' => $asetKemitraan,
+                'nilai_aset_tak_berwujud' => $nilaiAsetTakBerwujud,
+                'nilai_aset_tak_berwujud_dalam_penyelesaian' => $nilaiAsetTakBerwujudDalamPenyelesaian,
+                'nilai_aset_kemitraan' => $nilaiAsetKemitraan,
+                'total_nilai' => $nilaiAsetTakBerwujud + $nilaiAsetTakBerwujudDalamPenyelesaian + $nilaiAsetKemitraan
+            ];
+
+            return view('user/barang/asettakberwujud/stats', ['stats' => $stats]);
+
+        } catch (\Exception $e) {
+            session()->setFlashdata('error', 'Gagal mengambil statistik: ' . $e->getMessage());
+            return redirect()->to('user/barang/asettakberwujud/kelompokasettakberwujud');
+        }
+    }
+
+    // METHOD TEST API - TAMBAHAN BARU
+    public function testApi()
+    {
+        try {
+            $apiData = $this->getApiData();
+            
+            $result = [
+                'status' => 'success',
+                'total_data' => count($apiData),
+                'sample_data' => array_slice($apiData, 0, 5), // 5 data pertama sebagai contoh
+                'message' => 'Koneksi API berhasil'
+            ];
+            
+            return $this->response->setJSON($result);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Gagal mengakses API: ' . $e->getMessage()
+            ]);
         }
     }
 
