@@ -746,6 +746,88 @@ $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintas_udara', '
 // 3.19 Peralatan Olahraga
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga');
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga_detail');
+
+// ========== ROUTES UNTUK ASET TETAP LAINNYA ==========
+// Halaman utama Aset Tetap Lainnya
+$routes->get('user/barang/asettetaplainnya', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::index');
+
+// ========== ROUTES UNTUK BAHAN PERPUSTAKAAN (TERPUSAT) ==========
+// Routes melalui AsetTetapLainnya (untuk redirect)
+$routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan');
+$routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan/(:segment)', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan/$1');
+
+// Routes langsung ke BahanPerpustakaan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/dashboard', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::dashboard');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::kelompokBahanPerpustakaan');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/kelompokbahanperpustakaan/(:segment)', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/tambah', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::tambah');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/importFromApi', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::importFromApi');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/resetData', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::resetData');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/exportBahanPerpustakaanList/(:segment)', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::exportBahanPerpustakaanList/$1');
+
+// 6.01 Bahan Perpustakaan - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::bahanperpustakaan');
+
+// ========== ROUTES UNTUK BARANG BERCORAK (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/barangbercorak/kelompokbarangbercorak', 'User\Barang\AsetTetapLainnya\BarangBercorak::kelompokBarangBercorak');
+$routes->get('user/barang/asettetaplainnya/barangbercorak/kelompokbarangbercorak/(:segment)', 'User\Barang\AsetTetapLainnya\BarangBercorak::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/barangbercorak/importFromApi', 'User\Barang\AsetTetapLainnya\BarangBercorak::importFromApi');
+$routes->post('user/barang/asettetaplainnya/barangbercorak/resetData', 'User\Barang\AsetTetapLainnya\BarangBercorak::resetData');
+$routes->get('user/barang/asettetaplainnya/barangbercorak/exportBarangBercorakList/(:segment)', 'User\Barang\AsetTetapLainnya\BarangBercorak::exportBarangBercorakList/$1');
+
+// 6.02 Barang Bercorak - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/barangbercorak', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::barangbercorak');
+
+// ========== ROUTES UNTUK HEWAN (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/hewan/kelompokhewan', 'User\Barang\AsetTetapLainnya\Hewan::kelompokHewan');
+$routes->get('user/barang/asettetaplainnya/hewan/kelompokhewan/(:segment)', 'User\Barang\AsetTetapLainnya\Hewan::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/hewan/importFromApi', 'User\Barang\AsetTetapLainnya\Hewan::importFromApi');
+$routes->post('user/barang/asettetaplainnya/hewan/resetData', 'User\Barang\AsetTetapLainnya\Hewan::resetData');
+$routes->get('user/barang/asettetaplainnya/hewan/exportHewanList/(:segment)', 'User\Barang\AsetTetapLainnya\Hewan::exportHewanList/$1');
+
+// 6.03 Hewan - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/hewan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::hewan');
+
+// ========== ROUTES UNTUK IKAN (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/ikan/kelompokikan', 'User\Barang\AsetTetapLainnya\Ikan::kelompokIkan');
+$routes->get('user/barang/asettetaplainnya/ikan/kelompokikan/(:segment)', 'User\Barang\AsetTetapLainnya\Ikan::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/ikan/importFromApi', 'User\Barang\AsetTetapLainnya\Ikan::importFromApi');
+$routes->post('user/barang/asettetaplainnya/ikan/resetData', 'User\Barang\AsetTetapLainnya\Ikan::resetData');
+$routes->get('user/barang/asettetaplainnya/ikan/exportIkanList/(:segment)', 'User\Barang\AsetTetapLainnya\Ikan::exportIkanList/$1');
+
+// 6.04 Ikan - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/ikan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::ikan');
+
+// ========== ROUTES UNTUK TANAMAN (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/tanaman/kelompoktanaman', 'User\Barang\AsetTetapLainnya\Tanaman::kelompokTanaman');
+$routes->get('user/barang/asettetaplainnya/tanaman/kelompoktanaman/(:segment)', 'User\Barang\AsetTetapLainnya\Tanaman::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/tanaman/importFromApi', 'User\Barang\AsetTetapLainnya\Tanaman::importFromApi');
+$routes->post('user/barang/asettetaplainnya/tanaman/resetData', 'User\Barang\AsetTetapLainnya\Tanaman::resetData');
+$routes->get('user/barang/asettetaplainnya/tanaman/exportTanamanList/(:segment)', 'User\Barang\AsetTetapLainnya\Tanaman::exportTanamanList/$1');
+
+// 6.05 Tanaman - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/tanaman', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::tanaman');
+
+// ========== ROUTES UNTUK BARANG KOLEKSI NON BUDAYA (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/barangkoleksinonbudaya/kelompokbarangkoleksinonbudaya', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::kelompokBarangKoleksiNonBudaya');
+$routes->get('user/barang/asettetaplainnya/barangkoleksinonbudaya/kelompokbarangkoleksinonbudaya/(:segment)', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/barangkoleksinonbudaya/importFromApi', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::importFromApi');
+$routes->post('user/barang/asettetaplainnya/barangkoleksinonbudaya/resetData', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::resetData');
+$routes->get('user/barang/asettetaplainnya/barangkoleksinonbudaya/exportBarangKoleksiNonBudayaList/(:segment)', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::exportBarangKoleksiNonBudayaList/$1');
+
+// 6.06 Barang Koleksi Non Budaya - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/barangkoleksinonbudaya', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::barangkoleksinonbudaya');
+
+// ========== ROUTES UNTUK ASET TETAP DALAM RENOVASI (TERPUSAT) ==========
+$routes->get('user/barang/asettetaplainnya/asettetapdalamrenovasi/kelompokasettetapdalamrenovasi', 'User\Barang\AsetTetapLainnya\AsetTetapDalamRenovasi::kelompokAsetTetapDalamRenovasi');
+$routes->get('user/barang/asettetaplainnya/asettetapdalamrenovasi/kelompokasettetapdalamrenovasi/(:segment)', 'User\Barang\AsetTetapLainnya\AsetTetapDalamRenovasi::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/asettetapdalamrenovasi/importFromApi', 'User\Barang\AsetTetapLainnya\AsetTetapDalamRenovasi::importFromApi');
+$routes->post('user/barang/asettetaplainnya/asettetapdalamrenovasi/resetData', 'User\Barang\AsetTetapLainnya\AsetTetapDalamRenovasi::resetData');
+$routes->get('user/barang/asettetaplainnya/asettetapdalamrenovasi/exportAsetTetapDalamRenovasiList/(:segment)', 'User\Barang\AsetTetapLainnya\AsetTetapDalamRenovasi::exportAsetTetapDalamRenovasiList/$1');
+
+// 6.07 Aset Tetap Dalam Renovasi - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/asettetapdalamrenovasi', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::asettetapdalamrenovasi');
+
 // Routes untuk Aset Tak Berwujud (mengikuti pola Alat Besar yang benar)
 $routes->get('user/barang/asettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
 $routes->get('user/barang/asettakberwujud/kelompokasettakberwujud', 'User\Barang\AsetTakBerwujud\AsetTakBerwujud::kelompokAsetTakBerwujud');
