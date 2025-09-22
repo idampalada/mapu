@@ -11,14 +11,13 @@ class CreateTanamanTable extends Migration
         $this->forge->addField([
             'id' => [
                 'type'           => 'INT',
-                'constraint'     => 11,
+                'constraint'     => 5,
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
             'tgl_tarik' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
-                'null'       => true,
+                'type' => 'DATE',
+                'null' => true,
             ],
             'nama_kl' => [
                 'type'       => 'VARCHAR',
@@ -46,22 +45,22 @@ class CreateTanamanTable extends Migration
                 'null'       => false,
             ],
             'nilai_perolehan' => [
-                'type'       => 'DECIMAL',
+                'type' => 'DECIMAL',
                 'constraint' => '15,2',
-                'null'       => true,
-                'default'    => 0,
+                'null' => true,
+                'default' => 0.00,
             ],
             'nilai_penyusutan' => [
-                'type'       => 'DECIMAL',
+                'type' => 'DECIMAL',
                 'constraint' => '15,2',
-                'null'       => true,
-                'default'    => 0,
+                'null' => true,
+                'default' => 0.00,
             ],
             'nilai_buku' => [
-                'type'       => 'DECIMAL',
+                'type' => 'DECIMAL',
                 'constraint' => '15,2',
-                'null'       => true,
-                'default'    => 0,
+                'null' => true,
+                'default' => 0.00,
             ],
             'nup' => [
                 'type'       => 'VARCHAR',
@@ -105,8 +104,8 @@ class CreateTanamanTable extends Migration
                 'null'       => true,
             ],
             'lokasi_tanam' => [
-                'type'       => 'TEXT',
-                'null'       => true,
+                'type' => 'TEXT',
+                'null' => true,
             ],
             'umur_tanaman' => [
                 'type'       => 'VARCHAR',
@@ -130,7 +129,7 @@ class CreateTanamanTable extends Migration
 
         $this->forge->addKey('id', true);
         $this->forge->addKey('kode_barang');
-        $this->forge->addKey('kelompok');
+        $this->forge->addKey(['kelompok', 'sub_kelompok']);
         
         $this->forge->createTable('tanaman');
     }

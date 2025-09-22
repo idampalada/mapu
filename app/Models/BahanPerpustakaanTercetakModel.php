@@ -2,9 +2,9 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class BahanPerpustakaanModel extends Model
+class BahanPerpustakaanTercetakModel extends Model
 {
-    protected $table = 'bahan_perpustakaan';
+    protected $table = 'bahan_perpustakaan_tercetak';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
     protected $returnType = 'array';
@@ -27,7 +27,7 @@ class BahanPerpustakaanModel extends Model
         'merk',
         'kuantitas',
         'status_penggunaan',
-        'kelompok', // BAHAN PERPUSTAKAAN TERCETAK, BAHAN PERPUSTAKAAN TEREKAM DAN BENTUK MIKRO, KARTOGRAFI NASKAH DAN LUKISAN
+        'kelompok',
         'sub_kelompok',
         'created_at',
         'updated_at',
@@ -86,8 +86,6 @@ class BahanPerpustakaanModel extends Model
     protected $skipValidation = false;
     protected $cleanValidationRules = true;
     
-    
-    // ============ CRUD DASAR ============
     
     // 1. CRUD DASAR - Get all data
     public function getAllData($limit = null, $offset = 0)
@@ -151,9 +149,7 @@ class BahanPerpustakaanModel extends Model
         return $builder->countAllResults();
     }
     
-    // ============ BUSINESS LOGIC ============
-    
-    // 7. BUSINESS LOGIC - Find by kode barang
+    // 7. BUSINESS LOGIC - Find by kode barang (converted to Query Builder)
     public function findByKodeBarang($kodeBarang)
     {
         $builder = $this->builder();
@@ -162,17 +158,15 @@ class BahanPerpustakaanModel extends Model
                       ->getRowArray();
     }
     
-    // 8. BUSINESS LOGIC - Search functionality dengan filter kelompok
-    public function searchBahanPerpustakaan($searchTerm = '', $kelompok = '', $limit = 100, $offset = 0)
+    // 8. BUSINESS LOGIC - Search functionality (converted to Query Builder)  
+    public function searchBahanPerpustakaanTercetak($searchTerm = '', $subKelompok = '', $limit = 100, $offset = 0)
     {
         $builder = $this->builder();
         
-        // Filter berdasarkan kelompok jika ada
-        if (!empty($kelompok)) {
-            $builder->where('UPPER(kelompok)', strtoupper($kelompok));
+        if (!empty($subKelompok)) {
+            $builder->where('sub_kelompok', $subKelompok);
         }
         
-        // Filter pencarian jika ada
         if (!empty($searchTerm)) {
             $searchTerm = $this->db->escapeLikeString($searchTerm);
             
@@ -182,6 +176,7 @@ class BahanPerpustakaanModel extends Model
                 ->orLike('merk', $searchTerm)
                 ->orLike('sub_kelompok', $searchTerm)
                 ->orLike('nup', $searchTerm)
+                ->orLike('nama_satker', $searchTerm)
                 ->groupEnd();
         }
         
@@ -191,118 +186,9 @@ class BahanPerpustakaanModel extends Model
                       ->getResultArray();
     }
     
-    // 9. BUSINESS LOGIC - Get data by kelompok (untuk filter kategori)
-    public function getByKelompok($kelompok, $limit = null, $offset = 0)
-    {
-        $builder = $this->builder();
-        
-        $builder->where('UPPER(kelompok)', strtoupper($kelompok));
-        
-        if ($limit) {
-            $builder->limit($limit, $offset);
-        }
-        
-        return $builder->orderBy('kode_barang', 'ASC')
-                      ->get()
-                      ->getResultArray();
-    }
+    // ============ VALIDATION METHOD (Pure PHP - bukan database operation) ============
     
-    // 10. BUSINESS LOGIC - Count by kelompok
-    public function countByKelompok($kelompok)
-    {
-        $builder = $this->builder();
-        return $builder->where('UPPER(kelompok)', strtoupper($kelompok))
-                      ->countAllResults();
-    }
-    
-    // 11. BUSINESS LOGIC - Get statistics per kelompok
-    public function getStatistikKelompok()
-    {
-        $builder = $this->builder();
-        
-        return $builder->select('kelompok, COUNT(*) as jumlah')
-                      ->groupBy('kelompok')
-                      ->orderBy('kelompok', 'ASC')
-                      ->get()
-                      ->getResultArray();
-    }
-    
-    // 12. BUSINESS LOGIC - Get statistics per kondisi
-    public function getStatistikKondisi($kelompok = '')
-    {
-        $builder = $this->builder();
-        
-        if (!empty($kelompok)) {
-            $builder->where('UPPER(kelompok)', strtoupper($kelompok));
-        }
-        
-        return $builder->select('kondisi, COUNT(*) as jumlah')
-                      ->groupBy('kondisi')
-                      ->orderBy('kondisi', 'ASC')
-                      ->get()
-                      ->getResultArray();
-    }
-    
-    // 13. BUSINESS LOGIC - Get data untuk dashboard (ringkasan per kelompok)
-    public function getDashboardData()
-    {
-        $data = [];
-        
-        // Total semua data
-        $data['total_all'] = $this->countAll();
-        
-        // Per kelompok
-        $kelompokList = [
-            'BAHAN PERPUSTAKAAN TERCETAK', 
-            'BAHAN PERPUSTAKAAN TEREKAM DAN BENTUK MIKRO', 
-            'KARTOGRAFI, NASKAH DAN LUKISAN'
-        ];
-        
-        foreach ($kelompokList as $kelompok) {
-            $key = strtolower(str_replace([' ', ','], ['_', ''], $kelompok));
-            $data[$key] = $this->countByKelompok($kelompok);
-        }
-        
-        // Statistik kondisi
-        $data['kondisi_stats'] = $this->getStatistikKondisi();
-        
-        return $data;
-    }
-    
-    // 14. BUSINESS LOGIC - Check if kode_barang exists (untuk validasi import)
-    public function isKodeBarangExists($kodeBarang, $excludeId = null)
-    {
-        $builder = $this->builder();
-        $builder->where('kode_barang', $kodeBarang);
-        
-        if ($excludeId) {
-            $builder->where('id !=', $excludeId);
-        }
-        
-        return $builder->countAllResults() > 0;
-    }
-    
-    // 15. BUSINESS LOGIC - Bulk insert for import (dengan validasi)
-    public function bulkInsert($dataArray)
-    {
-        if (empty($dataArray)) {
-            return false;
-        }
-        
-        $builder = $this->builder();
-        
-        // Add timestamps to all records
-        foreach ($dataArray as &$data) {
-            $data['created_at'] = date('Y-m-d H:i:s');
-            $data['updated_at'] = date('Y-m-d H:i:s');
-        }
-        
-        return $builder->insertBatch($dataArray);
-    }
-    
-    // ============ VALIDATION METHODS (Pure PHP) ============
-    
-    // 16. Validation method - Pure PHP validation untuk import data
+    // 9. Validation method - Pure PHP
     public function validateImportData($data)
     {
         $errors = [];
@@ -334,14 +220,10 @@ class BahanPerpustakaanModel extends Model
             }
         }
         
-        // Kelompok validation (harus salah satu dari kelompok yang valid)
-        $validKelompok = [
-            'BAHAN PERPUSTAKAAN TERCETAK', 
-            'BAHAN PERPUSTAKAAN TEREKAM DAN BENTUK MIKRO', 
-            'KARTOGRAFI, NASKAH DAN LUKISAN'
-        ];
-        if (isset($data['kelompok']) && !in_array(strtoupper($data['kelompok']), $validKelompok)) {
-            $errors[] = 'Kelompok harus salah satu dari: ' . implode(', ', $validKelompok);
+        // Kelompok validation - khusus untuk bahan perpustakaan tercetak
+        if (isset($data['kelompok']) && 
+            strtoupper($data['kelompok']) !== 'BAHAN PERPUSTAKAAN TERCETAK') {
+            $errors[] = 'Kelompok harus "BAHAN PERPUSTAKAAN TERCETAK"';
         }
         
         // Kondisi validation (jika ada)
@@ -374,66 +256,26 @@ class BahanPerpustakaanModel extends Model
         return $errors;
     }
     
-    // 17. Validation method - Validate kelompok (untuk form input)
-    public function validateKelompok($kelompok)
-    {
-        $validKelompok = [
-            'BAHAN PERPUSTAKAAN TERCETAK', 
-            'BAHAN PERPUSTAKAAN TEREKAM DAN BENTUK MIKRO', 
-            'KARTOGRAFI, NASKAH DAN LUKISAN'
-        ];
-        return in_array(strtoupper($kelompok), $validKelompok);
-    }
-    
-    // 18. Helper method - Get valid kelompok list
-    public function getValidKelompok()
+    // 10. Helper method - Get valid sub kelompok untuk bahan perpustakaan tercetak
+    public function getValidSubKelompok()
     {
         return [
-            'BAHAN PERPUSTAKAAN TERCETAK', 
-            'BAHAN PERPUSTAKAAN TEREKAM DAN BENTUK MIKRO', 
-            'KARTOGRAFI, NASKAH DAN LUKISAN'
+            'BUKU',
+            'MAJALAH',
+            'KORAN',
+            'JURNAL',
+            'SKRIPSI',
+            'TESIS',
+            'DISERTASI',
+            'LAPORAN',
+            'DOKUMEN LAINNYA'
         ];
     }
     
-    // 19. Helper method - Clean data untuk import
-    public function cleanImportData($data)
+    // 11. Helper method - Validate sub kelompok
+    public function validateSubKelompok($subKelompok)
     {
-        $cleaned = [];
-        
-        // Clean dan assign nilai default
-        $cleaned['kode_barang'] = trim($data['kode_barang'] ?? '');
-        $cleaned['nama_barang'] = trim($data['nama_barang'] ?? '') ?: 'Unknown';
-        $cleaned['kelompok'] = strtoupper(trim($data['kelompok'] ?? ''));
-        $cleaned['nup'] = trim($data['nup'] ?? '');
-        $cleaned['merk'] = trim($data['merk'] ?? '');
-        $cleaned['sub_kelompok'] = trim($data['sub_kelompok'] ?? '');
-        $cleaned['kondisi'] = strtoupper(trim($data['kondisi'] ?? ''));
-        $cleaned['kuantitas'] = intval($data['kuantitas'] ?? 1);
-        $cleaned['status_penggunaan'] = trim($data['status_penggunaan'] ?? '');
-        $cleaned['nama_satker'] = trim($data['nama_satker'] ?? '');
-        
-        // Handle numeric fields
-        $cleaned['nilai_perolehan'] = $this->safeFloat($data['nilai_perolehan'] ?? 0);
-        $cleaned['nilai_penyusutan'] = $this->safeFloat($data['nilai_penyusutan'] ?? 0);
-        $cleaned['nilai_buku'] = $this->safeFloat($data['nilai_buku'] ?? 0);
-        
-        // Handle date
-        $cleaned['tanggal_perolehan'] = !empty($data['tanggal_perolehan']) ? $data['tanggal_perolehan'] : null;
-        
-        return $cleaned;
-    }
-    
-    // 20. Helper method - Safe float conversion
-    private function safeFloat($value)
-    {
-        if (is_null($value) || $value === '') {
-            return 0.0;
-        }
-        
-        if (is_string($value)) {
-            $value = str_replace(',', '.', $value);
-        }
-        
-        return floatval($value);
+        $validSubKelompok = $this->getValidSubKelompok();
+        return in_array(strtoupper($subKelompok), $validSubKelompok);
     }
 }

@@ -766,15 +766,23 @@ $routes->post('user/barang/asettetaplainnya/bahanperpustakaan/resetData', 'User\
 $routes->get('user/barang/asettetaplainnya/bahanperpustakaan/exportBahanPerpustakaanList/(:segment)', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::exportBahanPerpustakaanList/$1');
 
 // 6.01 Bahan Perpustakaan - redirect ke kelompok
+$routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan');
+$routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan/(:segment)', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan/$1');
+
+// Routes langsung ke BahanPerpustakaan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/dashboard', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::dashboard');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::kelompokBahanPerpustakaan');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/kelompokbahanperpustakaan/(:segment)', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/tambah', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::tambah');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/importFromApi', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::importFromApi');
+$routes->post('user/barang/asettetaplainnya/bahanperpustakaan/resetData', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::resetData');
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/exportBahanPerpustakaanList/(:segment)', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::exportBahanPerpustakaanList/$1');
+
+// 6.01 Bahan Perpustakaan - redirect ke kelompok
 $routes->get('user/barang/asettetaplainnya/bahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::bahanperpustakaan');
 
-// ========== ROUTES UNTUK BARANG BERCORAK (TERPUSAT) ==========
-$routes->get('user/barang/asettetaplainnya/barangbercorak/kelompokbarangbercorak', 'User\Barang\AsetTetapLainnya\BarangBercorak::kelompokBarangBercorak');
-$routes->get('user/barang/asettetaplainnya/barangbercorak/kelompokbarangbercorak/(:segment)', 'User\Barang\AsetTetapLainnya\BarangBercorak::kelompokDetail/$1');
-$routes->post('user/barang/asettetaplainnya/barangbercorak/importFromApi', 'User\Barang\AsetTetapLainnya\BarangBercorak::importFromApi');
-$routes->post('user/barang/asettetaplainnya/barangbercorak/resetData', 'User\Barang\AsetTetapLainnya\BarangBercorak::resetData');
-$routes->get('user/barang/asettetaplainnya/barangbercorak/exportBarangBercorakList/(:segment)', 'User\Barang\AsetTetapLainnya\BarangBercorak::exportBarangBercorakList/$1');
-
+// Debug route untuk test API (bisa dihapus setelah selesai debugging)
+$routes->get('user/barang/asettetaplainnya/bahanperpustakaan/test-api', 'User\Barang\AsetTetapLainnya\BahanPerpustakaan::testApi');
 // 6.02 Barang Bercorak - redirect ke kelompok
 $routes->get('user/barang/asettetaplainnya/barangbercorak', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::barangbercorak');
 
@@ -799,14 +807,18 @@ $routes->get('user/barang/asettetaplainnya/ikan/exportIkanList/(:segment)', 'Use
 $routes->get('user/barang/asettetaplainnya/ikan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::ikan');
 
 // ========== ROUTES UNTUK TANAMAN (TERPUSAT) ==========
+// Routes langsung ke Tanaman controller
+$routes->get('user/barang/asettetaplainnya/tanaman/dashboard', 'User\Barang\AsetTetapLainnya\Tanaman::dashboard');
 $routes->get('user/barang/asettetaplainnya/tanaman/kelompoktanaman', 'User\Barang\AsetTetapLainnya\Tanaman::kelompokTanaman');
 $routes->get('user/barang/asettetaplainnya/tanaman/kelompoktanaman/(:segment)', 'User\Barang\AsetTetapLainnya\Tanaman::kelompokDetail/$1');
+$routes->post('user/barang/asettetaplainnya/tanaman/tambah', 'User\Barang\AsetTetapLainnya\Tanaman::tambah');
 $routes->post('user/barang/asettetaplainnya/tanaman/importFromApi', 'User\Barang\AsetTetapLainnya\Tanaman::importFromApi');
 $routes->post('user/barang/asettetaplainnya/tanaman/resetData', 'User\Barang\AsetTetapLainnya\Tanaman::resetData');
 $routes->get('user/barang/asettetaplainnya/tanaman/exportTanamanList/(:segment)', 'User\Barang\AsetTetapLainnya\Tanaman::exportTanamanList/$1');
 
-// 6.05 Tanaman - redirect ke kelompok
+// 6.05 Tanaman - redirect ke kelompok  
 $routes->get('user/barang/asettetaplainnya/tanaman', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::tanaman');
+
 
 // ========== ROUTES UNTUK BARANG KOLEKSI NON BUDAYA (TERPUSAT) ==========
 $routes->get('user/barang/asettetaplainnya/barangkoleksinonbudaya/kelompokbarangkoleksinonbudaya', 'User\Barang\AsetTetapLainnya\BarangKoleksiNonBudaya::kelompokBarangKoleksiNonBudaya');
