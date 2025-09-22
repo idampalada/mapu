@@ -1,0 +1,174 @@
+<?php
+
+namespace App\Controllers\User\Barang\JalanIrigasiJaringan;
+
+use App\Controllers\BaseController;
+
+class JalanIrigasiJaringan extends BaseController
+{
+    // ================== MAIN PAGE ==================
+    public function index()
+    {
+        return view('user/barang/jalanirigasijaringan/jalanirigasijaringan');
+    }
+
+    // ================== 5.01 JALAN DAN JEMBATAN ==================
+    public function jalandanjembatan()
+    {
+        return view('user/barang/jalanirigasijaringan/jalandanjembatan');
+    }
+
+    public function jalan()
+    {
+        return view('user/barang/jalanirigasijaringan/jalandanjembatan/jalan');
+    }
+
+    public function jembatan()
+    {
+        return view('user/barang/jalanirigasijaringan/jalandanjembatan/jembatan');
+    }
+
+    // ================== 5.02 BANGUNAN AIR ==================
+    public function bangunanair()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair');
+    }
+
+    public function bangunanairrigasi()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairrigasi');
+    }
+
+    public function bangunanpengairanpasangsurut()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengairanpasangsurut');
+    }
+
+    public function bangunanpengembanganrawa()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembanganrawa');
+    }
+
+    public function bangunanpengamansungai()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengamansungai');
+    }
+
+    public function bangunanpengembangansumberair()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembangansumberair');
+    }
+
+    public function bangunanairbersih()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairbersih');
+    }
+
+    public function bangunanairkotor()
+    {
+        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairkotor');
+    }
+
+    // ================== 5.03 INSTALASI ==================
+    public function instalasi()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi');
+    }
+
+    public function instalasiairbersih()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasiairbersih');
+    }
+
+    public function instalasiairkotor()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasiairkotor');
+    }
+
+    public function instalasipengolahansampah()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengolahansampah');
+    }
+
+    public function instalasipengolahanbahan()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengolahanbahan');
+    }
+
+    public function instalasipembangkitlistrik()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasipembangkitlistrik');
+    }
+
+    public function instalasigardulistrik()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasigardulistrik');
+    }
+
+    public function instalasipertahanan()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasipertahanan');
+    }
+
+    public function instalasigas()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasigas');
+    }
+
+    public function instalasipengaman()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengaman');
+    }
+
+    public function instalasiliain()
+    {
+        return view('user/barang/jalanirigasijaringan/instalasi/instalasiliain');
+    }
+
+    // ================== 5.04 JARINGAN ==================
+    public function jaringan()
+    {
+        return view('user/barang/jalanirigasijaringan/jaringan');
+    }
+
+    public function jaringanair()
+    {
+        return view('user/barang/jalanirigasijaringan/jaringan/jaringanair');
+    }
+
+    public function jaringanlistrik()
+    {
+        return view('user/barang/jalanirigasijaringan/jaringan/jaringanlistrik');
+    }
+
+    public function jaringantelepon()
+    {
+        return view('user/barang/jalanirigasijaringan/jaringan/jaringantelepon');
+    }
+
+    public function jaringangas()
+    {
+        return view('user/barang/jalanirigasijaringan/jaringan/jaringangas');
+    }
+
+    // ================== CRUD OPERATIONS ==================
+    public function tambah()
+    {
+        // Implementation for adding new Jalan, Irigasi dan Jaringan
+    }
+
+    public function importFromApi()
+    {
+        // Implementation for importing data from API
+    }
+
+    public function resetData()
+    {
+        // Implementation for resetting data
+    }
+
+    public function exportJalanIrigasiJaringanList($kelompok)
+    {
+        // Implementation for exporting data
+    }
+}
