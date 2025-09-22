@@ -6,7 +6,7 @@ use App\Controllers\BaseController;
 
 class JalanIrigasiJaringan extends BaseController
 {
-    // ================== MAIN PAGE ==================
+    // Method untuk halaman utama Jalan, Irigasi dan Jaringan
     public function index()
     {
         return view('user/barang/jalanirigasijaringan/jalanirigasijaringan');
@@ -31,42 +31,42 @@ class JalanIrigasiJaringan extends BaseController
     // ================== 5.02 BANGUNAN AIR ==================
     public function bangunanair()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair');
     }
 
     public function bangunanairrigasi()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairrigasi');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN AIR IRIGASI');
     }
 
     public function bangunanpengairanpasangsurut()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengairanpasangsurut');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN PENGAIRAN PASANG SURUT');
     }
 
     public function bangunanpengembanganrawa()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembanganrawa');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN PENGEMBANGAN RAWA DAN POLDER');
     }
 
     public function bangunanpengamansungai()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengamansungai');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN PENGAMAN SUNGAI/PANTAI & PENANGGULAN BENCANA ALAM');
     }
 
     public function bangunanpengembangansumberair()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembangansumberair');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN PENGEMBANGAN SUMBER AIR DAN AIR TANAH');
     }
 
     public function bangunanairbersih()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairbersih');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN AIR BERSIH/AIR BAKU');
     }
 
     public function bangunanairkotor()
     {
-        return view('user/barang/jalanirigasijaringan/bangunanair/bangunanairkotor');
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/BANGUNAN AIR KOTOR');
     }
 
     // ================== 5.03 INSTALASI ==================
@@ -151,24 +151,28 @@ class JalanIrigasiJaringan extends BaseController
         return view('user/barang/jalanirigasijaringan/jaringan/jaringangas');
     }
 
-    // ================== CRUD OPERATIONS ==================
+    // ================== CRUD OPERATIONS (LEGACY) ==================
     public function tambah()
     {
         // Implementation for adding new Jalan, Irigasi dan Jaringan
+        // This will be handled by specific controllers like BangunanAir
     }
 
     public function importFromApi()
     {
         // Implementation for importing data from API
+        // This will be handled by specific controllers like BangunanAir
     }
 
     public function resetData()
     {
         // Implementation for resetting data
+        // This will be handled by specific controllers like BangunanAir
     }
 
     public function exportJalanIrigasiJaringanList($kelompok)
     {
         // Implementation for exporting data
+        // This will be handled by specific controllers like BangunanAir
     }
 }

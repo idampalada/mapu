@@ -756,15 +756,34 @@ $routes->get('user/barang/jalanirigasijaringan/jalandanjembatan', 'User\Barang\J
 $routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/jalan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jalan');
 $routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/jembatan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jembatan');
 
-// ========== 5.02 BANGUNAN AIR ==========
+//BANGUNAN AIR
+// 5.02 Bangunan Air
 $routes->get('user/barang/jalanirigasijaringan/bangunanair', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanair');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanairrigasi', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanairrigasi');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanpengairanpasangsurut', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanpengairanpasangsurut');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembanganrawa', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanpengembanganrawa');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanpengamansungai', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanpengamansungai');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanpengembangansumberair', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanpengembangansumberair');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanairbersih', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanairbersih');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/bangunanairkotor', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::bangunanairkotor');
+
+// ========== ROUTES UNTUK BANGUNAN AIR (TERPUSAT) ==========
+// Routes langsung ke BangunanAir controller (yang sebenarnya memproses data)
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/dashboard', 'User\Barang\JalanIrigasiJaringan\BangunanAir::dashboard');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokBangunanAir');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/(:any)', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/jalanirigasijaringan/bangunanair/tambah', 'User\Barang\JalanIrigasiJaringan\BangunanAir::tambah');
+$routes->post('user/barang/jalanirigasijaringan/bangunanair/importFromApi', 'User\Barang\JalanIrigasiJaringan\BangunanAir::importFromApi');
+$routes->post('user/barang/jalanirigasijaringan/bangunanair/resetData', 'User\Barang\JalanIrigasiJaringan\BangunanAir::resetData');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/exportBangunanAirList/(:segment)', 'User\Barang\JalanIrigasiJaringan\BangunanAir::exportBangunanAirList/$1');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/stats', 'User\Barang\JalanIrigasiJaringan\BangunanAir::stats');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/test-api', 'User\Barang\JalanIrigasiJaringan\BangunanAir::testApi');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/irigasi', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR IRIGASI');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/pasangsurut', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGAIRAN PASANG SURUT');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/rawa', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGEMBANGAN RAWA DAN POLDER');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/pengaman', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGAMAN SUNGAI PANTAI & PENANGGULAN BENCANA ALAM');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/sumberair', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGEMBANGAN SUMBER AIR DAN AIR TANAH');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/airbersih', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR BERSIH AIR BAKU');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/airkotor', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR KOTOR');
+
 
 // ========== 5.03 INSTALASI ==========
 $routes->get('user/barang/jalanirigasijaringan/instalasi', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::instalasi');
