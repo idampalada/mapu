@@ -747,6 +747,70 @@ $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintas_udara', '
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga');
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga_detail');
 
+// ========== ROUTES UNTUK GEDUNG DAN BANGUNAN ==========
+// Halaman utama Gedung dan Bangunan
+$routes->get('user/barang/gedungdanbangunan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::index');
+
+// ========== 4.01 BANGUNAN GEDUNG ==========
+$routes->get('user/barang/gedungdanbangunan/bangunangedung', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunangedung');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/bangunangedungtempatkerja', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunangedungtempatkerja');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/bangunangedungtempattinggal', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunangedungtempattinggal');
+
+//BANGUNAN GEDUNG
+// 4.01 Bangunan Gedung
+$routes->get('user/barang/gedungdanbangunan/bangunangedung', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunangedung');
+
+// ========== ROUTES UNTUK BANGUNAN GEDUNG (TERPUSAT) ==========
+// Routes langsung ke BangunanGedung controller (yang sebenarnya memproses data)
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/dashboard', 'User\Barang\GedungDanBangunan\BangunanGedung::dashboard');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokBangunanGedung');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/(:segment)/(:segment)', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetailSegments/$1/$2');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/(:any)', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/gedungdanbangunan/bangunangedung/tambah', 'User\Barang\GedungDanBangunan\BangunanGedung::tambah');
+$routes->post('user/barang/gedungdanbangunan/bangunangedung/importFromApi', 'User\Barang\GedungDanBangunan\BangunanGedung::importFromApi');
+$routes->post('user/barang/gedungdanbangunan/bangunangedung/resetData', 'User\Barang\GedungDanBangunan\BangunanGedung::resetData');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/exportBangunanGedungList/(:segment)', 'User\Barang\GedungDanBangunan\BangunanGedung::exportBangunanGedungList/$1');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/stats', 'User\Barang\GedungDanBangunan\BangunanGedung::stats');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/test-api', 'User\Barang\GedungDanBangunan\BangunanGedung::testApi');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempatkerja', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/BANGUNAN GEDUNG TEMPAT KERJA');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempattinggal', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/BANGUNAN GEDUNG TEMPAT TINGGAL');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/candi', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/CANDI');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tuguperingatan', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/TUGU PERINGATAN');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/prasasti', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/PRASASTI');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/monumen', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/MONUMEN');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/menaraperambuan', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/BANGUNAN MENARA PERAMBUAN');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/menarapengawas', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/MENARA PENGAWAS');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/menara', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/MENARA');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tugubatas', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/TUGU BATAS');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tandabatas', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/TANDA BATAS');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tugukontrol', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/TUGU TITIK KONTROL');
+
+// ========== 4.02 MONUMEN ==========
+$routes->get('user/barang/gedungdanbangunan/monumen', 'User\Barang\GedungDanBangunan\GedungDanBangunan::monumen');
+$routes->get('user/barang/gedungdanbangunan/monumen/candituguperingatan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::candituguperingatan');
+
+// ========== 4.03 BANGUNAN MENARA ==========
+$routes->get('user/barang/gedungdanbangunan/bangunanmenara', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunanmenara');
+$routes->get('user/barang/gedungdanbangunan/bangunanmenara/bangunanmenaraperambuan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunanmenaraperambuan');
+
+// ========== 4.04 TUGU TITIK KONTROL/PASTI ==========
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tugutitikkontrol');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/tugutandabatas', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tugutandabatas');
+
+// CRUD Operations untuk Gedung dan Bangunan
+$routes->post('user/barang/gedungdanbangunan/tambah', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tambah');
+$routes->post('user/barang/gedungdanbangunan/importFromApi', 'User\Barang\GedungDanBangunan\GedungDanBangunan::importFromApi');
+$routes->post('user/barang/gedungdanbangunan/resetData', 'User\Barang\GedungDanBangunan\GedungDanBangunan::resetData');
+$routes->get('user/barang/gedungdanbangunan/exportGedungBangunanList/(:segment)', 'User\Barang\GedungDanBangunan\GedungDanBangunan::exportGedungBangunanList/$1');
+
+// Route khusus untuk kelompok dengan karakter bermasalah
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempatkerja-detail', 'User\Barang\GedungDanBangunan\BangunanGedung::tempatKerja');
+$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempattinggal-detail', 'User\Barang\GedungDanBangunan\BangunanGedung::tempatTinggal');
 // ========== ROUTES UNTUK JALAN, IRIGASI DAN JARINGAN ==========
 // Halaman utama Jalan, Irigasi dan Jaringan
 $routes->get('user/barang/jalanirigasijaringan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::index');
