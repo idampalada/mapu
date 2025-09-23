@@ -30,34 +30,34 @@ class GedungDanBangunan extends BaseController
 
     // ================== 4.02 MONUMEN ==================
     public function monumen()
-    {
-        return view('user/barang/gedungdanbangunan/monumen');
-    }
+{
+    return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen');
+}
 
-    public function candituguperingatan()
-    {
-        return view('user/barang/gedungdanbangunan/monumen/candituguperingatan');
-    }
+public function candituguperingatan()
+{
+    return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen');
+}
 
     // Method untuk redirect ke kelompok monumen spesifik
     public function candi()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/CANDI');
+        return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen/CANDI');
     }
 
     public function tuguperingatan()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/TUGU PERINGATAN');
+        return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen/TUGU PERINGATAN');
     }
 
     public function prasasti()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/PRASASTI');
+        return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen/PRASASTI');
     }
 
     public function monumentredirect()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/MONUMEN');
+        return redirect()->to('user/barang/gedungdanbangunan/monumen/kelompokmonumen/MONUMEN');
     }
 
     // ================== 4.03 BANGUNAN MENARA ==================
@@ -84,28 +84,28 @@ class GedungDanBangunan extends BaseController
     // ================== 4.04 TUGU TITIK KONTROL/PASTI ==================
     public function tugutitikkontrol()
     {
-        return view('user/barang/gedungdanbangunan/tugutitikkontrol');
+        return redirect()->to('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol');
     }
 
     public function tugutandabatas()
     {
-        return view('user/barang/gedungdanbangunan/tugutitikkontrol/tugutandabatas');
+        return redirect()->to('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol');
     }
 
-    // Method untuk redirect ke kelompok tugu spesifik
+    // Method untuk redirect ke kelompok tugu titik kontrol spesifik
     public function tugubatas()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/TUGU BATAS');
+        return redirect()->to('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol');
     }
 
     public function tandabatas()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/TANDA BATAS');
+        return redirect()->to('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol');
     }
 
     public function tugutitikkontrolredirect()
     {
-        return redirect()->to('user/barang/gedungdanbangunan/bangunangedung/kelompokbangunangedung/TUGU TITIK KONTROL');
+        return redirect()->to('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol');
     }
 
     // ================== CRUD OPERATIONS (LEGACY) ==================

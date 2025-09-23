@@ -791,26 +791,48 @@ $routes->get('user/barang/gedungdanbangunan/bangunangedung/tandabatas', 'User\Ba
 $routes->get('user/barang/gedungdanbangunan/bangunangedung/tugukontrol', 'User\Barang\GedungDanBangunan\BangunanGedung::kelompokDetail/TUGU TITIK KONTROL');
 
 // ========== 4.02 MONUMEN ==========
+// ========== 4.02 MONUMEN ==========
+// Routes dari GedungDanBangunan controller (redirect)
 $routes->get('user/barang/gedungdanbangunan/monumen', 'User\Barang\GedungDanBangunan\GedungDanBangunan::monumen');
 $routes->get('user/barang/gedungdanbangunan/monumen/candituguperingatan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::candituguperingatan');
+
+// ========== ROUTES UNTUK MONUMEN (TERPUSAT) ==========
+// Routes langsung ke Monumen controller (yang sebenarnya memproses data)
+$routes->get('user/barang/gedungdanbangunan/monumen/dashboard', 'User\Barang\GedungDanBangunan\Monumen::dashboard');
+$routes->get('user/barang/gedungdanbangunan/monumen/kelompokmonumen', 'User\Barang\GedungDanBangunan\Monumen::kelompokMonumen');
+
+// CRUD Operations untuk Monumen
+$routes->post('user/barang/gedungdanbangunan/monumen/tambah', 'User\Barang\GedungDanBangunan\Monumen::tambah');
+$routes->post('user/barang/gedungdanbangunan/monumen/importFromApi', 'User\Barang\GedungDanBangunan\Monumen::importFromApi');
+$routes->post('user/barang/gedungdanbangunan/monumen/resetData', 'User\Barang\GedungDanBangunan\Monumen::resetData');
+$routes->get('user/barang/gedungdanbangunan/monumen/exportMonumenList/(:segment)', 'User\Barang\GedungDanBangunan\Monumen::exportMonumenList/$1');
+$routes->get('user/barang/gedungdanbangunan/monumen/stats', 'User\Barang\GedungDanBangunan\Monumen::stats');
+$routes->get('user/barang/gedungdanbangunan/monumen/test-api', 'User\Barang\GedungDanBangunan\Monumen::testApi');
+$routes->get('user/barang/gedungdanbangunan/monumen/search', 'User\Barang\GedungDanBangunan\Monumen::search');
 
 // ========== 4.03 BANGUNAN MENARA ==========
 $routes->get('user/barang/gedungdanbangunan/bangunanmenara', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunanmenara');
 $routes->get('user/barang/gedungdanbangunan/bangunanmenara/bangunanmenaraperambuan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::bangunanmenaraperambuan');
 
-// ========== 4.04 TUGU TITIK KONTROL/PASTI ==========
+// ========== ROUTES UNTUK TUGU TITIK KONTROL/PASTI (4.04) ==========
+// Routes dari GedungDanBangunan controller (redirect)
 $routes->get('user/barang/gedungdanbangunan/tugutitikkontrol', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tugutitikkontrol');
 $routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/tugutandabatas', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tugutandabatas');
 
-// CRUD Operations untuk Gedung dan Bangunan
-$routes->post('user/barang/gedungdanbangunan/tambah', 'User\Barang\GedungDanBangunan\GedungDanBangunan::tambah');
-$routes->post('user/barang/gedungdanbangunan/importFromApi', 'User\Barang\GedungDanBangunan\GedungDanBangunan::importFromApi');
-$routes->post('user/barang/gedungdanbangunan/resetData', 'User\Barang\GedungDanBangunan\GedungDanBangunan::resetData');
-$routes->get('user/barang/gedungdanbangunan/exportGedungBangunanList/(:segment)', 'User\Barang\GedungDanBangunan\GedungDanBangunan::exportGedungBangunanList/$1');
+// ========== ROUTES UNTUK TUGU TITIK KONTROL (TERPUSAT) ==========
+// Routes langsung ke TuguTitikKontrol controller (yang sebenarnya memproses data)
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/dashboard', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::dashboard');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/kelompoktugutitikkontrol', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::kelompokTuguTitikKontrol');
 
-// Route khusus untuk kelompok dengan karakter bermasalah
-$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempatkerja-detail', 'User\Barang\GedungDanBangunan\BangunanGedung::tempatKerja');
-$routes->get('user/barang/gedungdanbangunan/bangunangedung/tempattinggal-detail', 'User\Barang\GedungDanBangunan\BangunanGedung::tempatTinggal');
+// CRUD Operations untuk TuguTitikKontrol
+$routes->post('user/barang/gedungdanbangunan/tugutitikkontrol/tambah', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::tambah');
+$routes->post('user/barang/gedungdanbangunan/tugutitikkontrol/importFromApi', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::importFromApi');
+$routes->post('user/barang/gedungdanbangunan/tugutitikkontrol/resetData', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::resetData');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/exportTuguTitikKontrolList/(:segment)', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::exportTuguTitikKontrolList/$1');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/stats', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::stats');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/test-api', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::testApi');
+$routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/search', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::search');
+
 // ========== ROUTES UNTUK JALAN, IRIGASI DAN JARINGAN ==========
 // Halaman utama Jalan, Irigasi dan Jaringan
 $routes->get('user/barang/jalanirigasijaringan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::index');
