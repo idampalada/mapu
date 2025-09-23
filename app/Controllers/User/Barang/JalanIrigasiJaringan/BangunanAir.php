@@ -103,65 +103,81 @@ class BangunanAir extends BaseController
     ]);
 }
 
-    public function kelompokDetail($kelompok)
-    {
-            // Decode URL untuk handle karakter khusus
+   public function kelompokDetail($kelompok)
+{
+    // Decode URL untuk handle karakter khusus
     $kelompok = urldecode($kelompok);
     
     // Log untuk debugging
     log_message('info', "kelompokDetail called with: " . $kelompok);
-        $searchTerm = $this->request->getGet('search') ?? '';
-        $sort = $this->request->getGet('sort') ?? 'kode_barang';
-        $order = $this->request->getGet('order') ?? 'asc';
-        $perPage = 100;
-        $page = $this->request->getGet('page') ?? 1;
-
-        // Gunakan database sebagai sumber data
-        $builder = $this->bangunanAirModel->builder();
-        
-        // Filter berdasarkan kelompok
-        $builder->where('UPPER(kelompok)', strtoupper($kelompok));
-        
-        // Filter berdasarkan pencarian
-        if (!empty($searchTerm)) {
-            $builder->groupStart()
-                ->like('nama_barang', $searchTerm)
-                ->orLike('kode_barang', $searchTerm) 
-                ->orLike('merk', $searchTerm)
-                ->orLike('sub_kelompok', $searchTerm)
-                ->groupEnd();
-        }
-        
-        // Hitung total data
-        $totalItems = $builder->countAllResults(false);
-        
-        // Sorting
-        if (!empty($sort)) {
-            $builder->orderBy($sort, $order);
-        }
-        
-        // Pagination
-        $offset = ($page - 1) * $perPage;
-        $bangunanAirList = $builder->limit($perPage, $offset)->get()->getResultArray();
-
-        // Setup pagination
-        $pager = service('pager');
-        $pager->setPath('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/' . urlencode($kelompok));
-        $totalPages = ceil($totalItems / $perPage);
-
-        return view('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair', [
-            'bangunanAirList' => $bangunanAirList,
-            'kelompok' => strtoupper($kelompok),
-            'activeKelompok' => strtoupper($kelompok),
-            'pager' => $pager,
-            'searchTerm' => $searchTerm,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalItems' => $totalItems, 
-            'sort' => $sort, 
-            'order' => $order  
-        ]);
+    
+    // Validasi kelompok yang valid
+    if (!$this->bangunanAirModel->isValidKelompokBangunanAir($kelompok)) {
+        session()->setFlashdata('error', 'Kelompok tidak valid: ' . $kelompok);
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair');
     }
+    
+    // Debug: cek data di database
+    $debugCount = $this->bangunanAirModel->where('UPPER(kelompok)', strtoupper($kelompok))->countAllResults();
+    log_message('info', "Data found for kelompok '{$kelompok}': {$debugCount}");
+    
+    if ($debugCount == 0) {
+        session()->setFlashdata('error', "Tidak ada data untuk kelompok: {$kelompok}");
+        return redirect()->to('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair');
+    }
+    
+    $searchTerm = $this->request->getGet('search') ?? '';
+    $sort = $this->request->getGet('sort') ?? 'kode_barang';
+    $order = $this->request->getGet('order') ?? 'asc';
+    $perPage = 100;
+    $page = $this->request->getGet('page') ?? 1;
+
+    // Gunakan database sebagai sumber data
+    $builder = $this->bangunanAirModel->builder();
+    
+    // Filter berdasarkan kelompok
+    $builder->where('UPPER(kelompok)', strtoupper($kelompok));
+    
+    // Filter berdasarkan pencarian
+    if (!empty($searchTerm)) {
+        $builder->groupStart()
+            ->like('nama_barang', $searchTerm)
+            ->orLike('kode_barang', $searchTerm) 
+            ->orLike('merk', $searchTerm)
+            ->orLike('sub_kelompok', $searchTerm)
+            ->groupEnd();
+    }
+    
+    // Hitung total data
+    $totalItems = $builder->countAllResults(false);
+    
+    // Sorting
+    if (!empty($sort)) {
+        $builder->orderBy($sort, $order);
+    }
+    
+    // Pagination
+    $offset = ($page - 1) * $perPage;
+    $bangunanAirList = $builder->limit($perPage, $offset)->get()->getResultArray();
+
+    // Setup pagination
+    $pager = service('pager');
+    $pager->setPath('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/' . urlencode($kelompok));
+    $totalPages = ceil($totalItems / $perPage);
+
+    return view('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair', [
+        'bangunanAirList' => $bangunanAirList,
+        'kelompok' => strtoupper($kelompok),
+        'activeKelompok' => strtoupper($kelompok),
+        'pager' => $pager,
+        'searchTerm' => $searchTerm,
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'totalItems' => $totalItems, 
+        'sort' => $sort, 
+        'order' => $order  
+    ]);
+}
 
     // Method untuk menambah bangunan air manual
     public function tambah()
@@ -308,7 +324,8 @@ class BangunanAir extends BaseController
             foreach ($apiData as $index => $item) {
                 try {
                     $kode_barang = trim($item['kode_barang'] ?? '');
-                    $kelompok_api = strtoupper(trim($item['kelompok'] ?? ''));
+                    $kelompok_api_raw = strtoupper(trim($item['kelompok'] ?? ''));
+$kelompok_api = $this->mapKelompokFromApi($kelompok_api_raw);
                     
                     if (empty($kode_barang)) {
                         $skipped++;
@@ -550,4 +567,41 @@ class BangunanAir extends BaseController
             echo "<p style='color: red;'>Tidak ada data dari API atau terjadi error!</p>";
         }
     }
+    // Method khusus untuk handle air bersih (karena ada slash)
+public function kelompokDetailSegments($segment1, $segment2 = null)
+{
+    if ($segment2) {
+        // Gabungkan segment dengan slash
+        $kelompok = $segment1 . '/' . $segment2;
+    } else {
+        $kelompok = $segment1;
+    }
+    
+    return $this->kelompokDetail($kelompok);
+}
+
+// Method khusus untuk air bersih
+public function airBersih()
+{
+    return $this->kelompokDetail('BANGUNAN AIR BERSIH/AIR BAKU');
+}
+// Method khusus untuk pengaman sungai (karena masalah & di URL)
+public function pengamanSungai()
+{
+    return $this->kelompokDetail('BANGUNAN PENGAMAN SUNGAI/PANTAI & PENANGGULAN BENCANA ALAM');
+}
+// Method helper untuk mapping kelompok API yang terpotong
+private function mapKelompokFromApi($kelompok_api)
+{
+    $kelompok_api = strtoupper(trim($kelompok_api));
+    
+    // Cek dengan partial matching untuk kelompok pengaman yang terpotong
+    if (stripos($kelompok_api, 'BANGUNAN PENGAMAN SUNGAI/PANTAI') !== false && 
+        stripos($kelompok_api, 'PENANGGULAN') !== false) {
+        return 'BANGUNAN PENGAMAN SUNGAI/PANTAI & PENANGGULAN BENCANA ALAM';
+    }
+    
+    return $kelompok_api;
+}
+
 }

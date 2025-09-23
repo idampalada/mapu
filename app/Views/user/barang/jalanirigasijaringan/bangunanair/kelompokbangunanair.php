@@ -190,8 +190,17 @@
             foreach ($buttons as $label => $icon):
                 $isActive = $active === $label;
         ?>
-        <a href="<?= base_url('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/' . urlencode($label)) ?>"
-           class="item <?= $isActive ? 'active' : '' ?>">
+        <?php 
+    // Gunakan route khusus untuk kelompok dengan karakter bermasalah
+    if ($label === 'BANGUNAN AIR BERSIH/AIR BAKU') {
+        $url = base_url('user/barang/jalanirigasijaringan/bangunanair/airbersih-detail');
+    } elseif ($label === 'BANGUNAN PENGAMAN SUNGAI/PANTAI & PENANGGULAN BENCANA ALAM') {
+        $url = base_url('user/barang/jalanirigasijaringan/bangunanair/pengaman-detail');
+    } else {
+        $url = base_url('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/' . urlencode($label));
+    }
+?>
+<a href="<?= $url ?>" class="item <?= $isActive ? 'active' : '' ?>">
             <div class="icon"><i class="bi <?= $icon ?>"></i></div>
             <div class="item-title"><?= $label ?></div>
         </a>

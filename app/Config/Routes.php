@@ -764,6 +764,7 @@ $routes->get('user/barang/jalanirigasijaringan/bangunanair', 'User\Barang\JalanI
 // Routes langsung ke BangunanAir controller (yang sebenarnya memproses data)
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/dashboard', 'User\Barang\JalanIrigasiJaringan\BangunanAir::dashboard');
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokBangunanAir');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/(:segment)/(:segment)', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetailSegments/$1/$2');
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/kelompokbangunanair/(:any)', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/$1');
 
 // CRUD Operations
@@ -781,7 +782,7 @@ $routes->get('user/barang/jalanirigasijaringan/bangunanair/pasangsurut', 'User\B
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/rawa', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGEMBANGAN RAWA DAN POLDER');
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/pengaman', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGAMAN SUNGAI PANTAI & PENANGGULAN BENCANA ALAM');
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/sumberair', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN PENGEMBANGAN SUMBER AIR DAN AIR TANAH');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/airbersih', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR BERSIH AIR BAKU');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/airbersih', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR BERSIH/AIR BAKU');
 $routes->get('user/barang/jalanirigasijaringan/bangunanair/airkotor', 'User\Barang\JalanIrigasiJaringan\BangunanAir::kelompokDetail/BANGUNAN AIR KOTOR');
 
 
@@ -810,6 +811,9 @@ $routes->post('user/barang/jalanirigasijaringan/tambah', 'User\Barang\JalanIriga
 $routes->post('user/barang/jalanirigasijaringan/importFromApi', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::importFromApi');
 $routes->post('user/barang/jalanirigasijaringan/resetData', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::resetData');
 $routes->get('user/barang/jalanirigasijaringan/exportJalanIrigasiJaringanList/(:segment)', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::exportJalanIrigasiJaringanList/$1');
+// Route khusus untuk kelompok dengan karakter bermasalah
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/airbersih-detail', 'User\Barang\JalanIrigasiJaringan\BangunanAir::airBersih');
+$routes->get('user/barang/jalanirigasijaringan/bangunanair/pengaman-detail', 'User\Barang\JalanIrigasiJaringan\BangunanAir::pengamanSungai');
 // ========== ROUTES UNTUK ASET TETAP LAINNYA ==========
 // Halaman utama Aset Tetap Lainnya
 $routes->get('user/barang/asettetaplainnya', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::index');
