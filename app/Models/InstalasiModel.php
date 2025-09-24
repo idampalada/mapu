@@ -2,9 +2,9 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class JaringanModel extends Model
+class InstalasiModel extends Model
 {
-    protected $table = 'jaringan';
+    protected $table = 'instalasi';
     protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
     protected $returnType = 'array';
@@ -27,9 +27,8 @@ class JaringanModel extends Model
         'merk',
         'kuantitas',
         'status_penggunaan',
-        'panjang_jaringan',
         'kapasitas',
-        'kelompok', // JARINGAN AIR MINUM, JARINGAN LISTRIK, JARINGAN TELEPON, JARINGAN GAS
+        'kelompok', // INSTALASI AIR BERSIH/AIR BAKU, INSTALASI AIR KOTOR, dll
         'sub_kelompok',
         'kategori_utama',
         'kategori_detail',
@@ -53,7 +52,6 @@ class JaringanModel extends Model
         'kondisi' => 'permit_empty|max_length[50]',
         'kuantitas' => 'permit_empty|integer',
         'status_penggunaan' => 'permit_empty|max_length[200]',
-        'panjang_jaringan' => 'permit_empty|decimal',
         'kapasitas' => 'permit_empty|decimal',
         'nilai_perolehan' => 'permit_empty|decimal',
         'nilai_penyusutan' => 'permit_empty|decimal',
@@ -75,9 +73,6 @@ class JaringanModel extends Model
         ],
         'kuantitas' => [
             'integer' => 'Kuantitas harus berupa angka'
-        ],
-        'panjang_jaringan' => [
-            'decimal' => 'Panjang jaringan harus berupa angka'
         ],
         'kapasitas' => [
             'decimal' => 'Kapasitas harus berupa angka'
@@ -173,7 +168,7 @@ class JaringanModel extends Model
     }
     
     // 8. BUSINESS LOGIC - Search functionality dengan filter kelompok
-    public function searchJaringan($searchTerm = '', $kelompok = '', $limit = 100, $offset = 0)
+    public function searchInstalasi($searchTerm = '', $kelompok = '', $limit = 100, $offset = 0)
     {
         $builder = $this->builder();
         
@@ -264,10 +259,16 @@ class JaringanModel extends Model
         
         // Per kelompok
         $kelompokList = [
-            'JARINGAN AIR MINUM',
-            'JARINGAN LISTRIK',
-            'JARINGAN TELEPON',
-            'JARINGAN GAS'
+            'INSTALASI AIR BERSIH/AIR BAKU',
+            'INSTALASI AIR KOTOR',
+            'INSTALASI PENGOLAHAN SAMPAH',
+            'INSTALASI PENGOLAHAN BAHAN BANGUNAN',
+            'INSTALASI PEMBANGKIT LISTRIK',
+            'INSTALASI GARDU LISTRIK',
+            'INSTALASI PERTAHANAN',
+            'INSTALASI GAS',
+            'INSTALASI PENGAMAN',
+            'INSTALASI LAIN'
         ];
         
         foreach ($kelompokList as $kelompok) {
@@ -312,29 +313,41 @@ class JaringanModel extends Model
         return $builder->insertBatch($dataArray);
     }
     
-    // ============ BUSINESS LOGIC KHUSUS JARINGAN ============
+    // ============ BUSINESS LOGIC KHUSUS INSTALASI ============
     
     // 16. Mapping kelompok dari API ke kategori detail
     public function mapKelompokToKategori($kelompok_api) 
     {
         $mapping = [
-            'JARINGAN AIR MINUM' => 'Jaringan Air Minum',
-            'JARINGAN LISTRIK' => 'Jaringan Listrik', 
-            'JARINGAN TELEPON' => 'Jaringan Telepon',
-            'JARINGAN GAS' => 'Jaringan Gas'
+            'INSTALASI AIR BERSIH/AIR BAKU' => 'Instalasi Air Bersih/Air Baku',
+            'INSTALASI AIR KOTOR' => 'Instalasi Air Kotor',
+            'INSTALASI PENGOLAHAN SAMPAH' => 'Instalasi Pengolahan Sampah',
+            'INSTALASI PENGOLAHAN BAHAN BANGUNAN' => 'Instalasi Pengolahan Bahan Bangunan',
+            'INSTALASI PEMBANGKIT LISTRIK' => 'Instalasi Pembangkit Listrik',
+            'INSTALASI GARDU LISTRIK' => 'Instalasi Gardu Listrik',
+            'INSTALASI PERTAHANAN' => 'Instalasi Pertahanan',
+            'INSTALASI GAS' => 'Instalasi Gas',
+            'INSTALASI PENGAMAN' => 'Instalasi Pengaman',
+            'INSTALASI LAIN' => 'Instalasi Lain'
         ];
         
         return $mapping[strtoupper($kelompok_api)] ?? null;
     }
 
-    // 17. Cek apakah kelompok valid untuk jaringan
-    public function isValidKelompokJaringan($kelompok)
+    // 17. Cek apakah kelompok valid untuk instalasi
+    public function isValidKelompokInstalasi($kelompok)
     {
         $validKelompok = [
-            'JARINGAN AIR MINUM',
-            'JARINGAN LISTRIK',
-            'JARINGAN TELEPON',
-            'JARINGAN GAS'
+            'INSTALASI AIR BERSIH/AIR BAKU',
+            'INSTALASI AIR KOTOR',
+            'INSTALASI PENGOLAHAN SAMPAH',
+            'INSTALASI PENGOLAHAN BAHAN BANGUNAN',
+            'INSTALASI PEMBANGKIT LISTRIK',
+            'INSTALASI GARDU LISTRIK',
+            'INSTALASI PERTAHANAN',
+            'INSTALASI GAS',
+            'INSTALASI PENGAMAN',
+            'INSTALASI LAIN'
         ];
         return in_array(strtoupper($kelompok), $validKelompok);
     }
@@ -389,8 +402,8 @@ class JaringanModel extends Model
         }
         
         // Kelompok validation (harus salah satu dari kelompok yang valid)
-        if (isset($data['kelompok']) && !$this->isValidKelompokJaringan($data['kelompok'])) {
-            $errors[] = 'Kelompok harus salah satu dari kelompok jaringan yang valid';
+        if (isset($data['kelompok']) && !$this->isValidKelompokInstalasi($data['kelompok'])) {
+            $errors[] = 'Kelompok harus salah satu dari kelompok instalasi yang valid';
         }
         
         // Kondisi validation (jika ada)
@@ -402,7 +415,7 @@ class JaringanModel extends Model
         }
         
         // Numeric validation
-        $numericFields = ['kuantitas', 'nilai_perolehan', 'nilai_penyusutan', 'nilai_buku', 'panjang_jaringan', 'kapasitas'];
+        $numericFields = ['kuantitas', 'nilai_perolehan', 'nilai_penyusutan', 'nilai_buku', 'kapasitas'];
         foreach ($numericFields as $field) {
             if (isset($data[$field]) && 
                 !empty($data[$field]) && 
@@ -426,17 +439,23 @@ class JaringanModel extends Model
     // 21. Validation method - Validate kelompok (untuk form input)
     public function validateKelompok($kelompok)
     {
-        return $this->isValidKelompokJaringan($kelompok);
+        return $this->isValidKelompokInstalasi($kelompok);
     }
     
     // 22. Helper method - Get valid kelompok list
     public function getValidKelompok()
     {
         return [
-            'JARINGAN AIR MINUM',
-            'JARINGAN LISTRIK',
-            'JARINGAN TELEPON',
-            'JARINGAN GAS'
+            'INSTALASI AIR BERSIH/AIR BAKU',
+            'INSTALASI AIR KOTOR',
+            'INSTALASI PENGOLAHAN SAMPAH',
+            'INSTALASI PENGOLAHAN BAHAN BANGUNAN',
+            'INSTALASI PEMBANGKIT LISTRIK',
+            'INSTALASI GARDU LISTRIK',
+            'INSTALASI PERTAHANAN',
+            'INSTALASI GAS',
+            'INSTALASI PENGAMAN',
+            'INSTALASI LAIN'
         ];
     }
     
@@ -461,14 +480,13 @@ class JaringanModel extends Model
         $cleaned['nilai_perolehan'] = $this->safeFloat($data['nilai_perolehan'] ?? 0);
         $cleaned['nilai_penyusutan'] = $this->safeFloat($data['nilai_penyusutan'] ?? 0);
         $cleaned['nilai_buku'] = $this->safeFloat($data['nilai_buku'] ?? 0);
-        $cleaned['panjang_jaringan'] = $this->safeFloat($data['panjang_jaringan'] ?? 0);
         $cleaned['kapasitas'] = $this->safeFloat($data['kapasitas'] ?? 0);
         
         // Handle date
         $cleaned['tanggal_perolehan'] = !empty($data['tanggal_perolehan']) ? $data['tanggal_perolehan'] : null;
         
         // Set kategori
-        $cleaned['kategori_utama'] = 'JARINGAN';
+        $cleaned['kategori_utama'] = 'INSTALASI';
         $cleaned['kategori_detail'] = $this->mapKelompokToKategori($cleaned['kelompok']);
         
         return $cleaned;

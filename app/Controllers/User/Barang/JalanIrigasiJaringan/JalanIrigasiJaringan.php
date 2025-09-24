@@ -20,12 +20,12 @@ class JalanIrigasiJaringan extends BaseController
 
     public function jalan()
     {
-        return view('user/barang/jalanirigasijaringan/jalandanjembatan/jalan');
+        return redirect()->to('user/barang/jalanirigasijaringan/jalan');
     }
 
     public function jembatan()
     {
-        return view('user/barang/jalanirigasijaringan/jalandanjembatan/jembatan');
+        return redirect()->to('user/barang/jalanirigasijaringan/jembatan');
     }
 
     // ================== 5.02 BANGUNAN AIR ==================
@@ -72,57 +72,57 @@ class JalanIrigasiJaringan extends BaseController
     // ================== 5.03 INSTALASI ==================
     public function instalasi()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi');
     }
 
     public function instalasiairbersih()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasiairbersih');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI AIR BERSIH/AIR BAKU');
     }
 
     public function instalasiairkotor()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasiairkotor');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI AIR KOTOR');
     }
 
     public function instalasipengolahansampah()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengolahansampah');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI PENGOLAHAN SAMPAH');
     }
 
     public function instalasipengolahanbahan()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengolahanbahan');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI PENGOLAHAN BAHAN BANGUNAN');
     }
 
     public function instalasipembangkitlistrik()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasipembangkitlistrik');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI PEMBANGKIT LISTRIK');
     }
 
     public function instalasigardulistrik()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasigardulistrik');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI GARDU LISTRIK');
     }
 
     public function instalasipertahanan()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasipertahanan');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI PERTAHANAN');
     }
 
     public function instalasigas()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasigas');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI GAS');
     }
 
     public function instalasipengaman()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasipengaman');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI PENGAMAN');
     }
 
     public function instalasiliain()
     {
-        return view('user/barang/jalanirigasijaringan/instalasi/instalasiliain');
+        return redirect()->to('user/barang/jalanirigasijaringan/instalasi/kelompokinstalasi/INSTALASI LAIN');
     }
 
     // ================== 5.04 JARINGAN ==================
@@ -149,30 +149,5 @@ class JalanIrigasiJaringan extends BaseController
     public function jaringangas()
     {
         return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/JARINGAN GAS');
-    }
-
-    // ================== CRUD OPERATIONS (LEGACY) ==================
-    public function tambah()
-    {
-        // Implementation for adding new Jalan, Irigasi dan Jaringan
-        // This will be handled by specific controllers like BangunanAir and Jaringan
-    }
-
-    public function importFromApi()
-    {
-        // Implementation for importing data from API
-        // This will be handled by specific controllers like BangunanAir and Jaringan
-    }
-
-    public function resetData()
-    {
-        // Implementation for resetting data
-        // This will be handled by specific controllers like BangunanAir and Jaringan
-    }
-
-    public function exportJalanIrigasiJaringanList($kelompok)
-    {
-        // Implementation for exporting data
-        // This will be handled by specific controllers like BangunanAir and Jaringan
     }
 }
