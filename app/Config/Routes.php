@@ -884,26 +884,29 @@ $routes->get('user/barang/jalanirigasijaringan/instalasi/instalasipertahanan', '
 $routes->get('user/barang/jalanirigasijaringan/instalasi/instalasigas', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::instalasigas');
 $routes->get('user/barang/jalanirigasijaringan/instalasi/instalasipengaman', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::instalasipengaman');
 $routes->get('user/barang/jalanirigasijaringan/instalasi/instalasiliain', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::instalasiliain');
-
 // ========== 5.04 JARINGAN ==========
+// Route utama jaringan (redirect ke kelompokjaringan)
 $routes->get('user/barang/jalanirigasijaringan/jaringan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jaringan');
-$routes->get('user/barang/jalanirigasijaringan/jaringan/jaringanair', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jaringanair');
-$routes->get('user/barang/jalanirigasijaringan/jaringan/jaringanlistrik', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jaringanlistrik');
-$routes->get('user/barang/jalanirigasijaringan/jaringan/jaringantelepon', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jaringantelepon');
-$routes->get('user/barang/jalanirigasijaringan/jaringan/jaringangas', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jaringangas');
 
-// CRUD Operations untuk Jalan, Irigasi dan Jaringan
-$routes->post('user/barang/jalanirigasijaringan/tambah', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::tambah');
-$routes->post('user/barang/jalanirigasijaringan/importFromApi', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::importFromApi');
-$routes->post('user/barang/jalanirigasijaringan/resetData', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::resetData');
-$routes->get('user/barang/jalanirigasijaringan/exportJalanIrigasiJaringanList/(:segment)', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::exportJalanIrigasiJaringanList/$1');
-// Route khusus untuk kelompok dengan karakter bermasalah
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/airbersih-detail', 'User\Barang\JalanIrigasiJaringan\BangunanAir::airBersih');
-$routes->get('user/barang/jalanirigasijaringan/bangunanair/pengaman-detail', 'User\Barang\JalanIrigasiJaringan\BangunanAir::pengamanSungai');
-// ========== ROUTES UNTUK ASET TETAP LAINNYA ==========
-// Halaman utama Aset Tetap Lainnya
-$routes->get('user/barang/asettetaplainnya', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::index');
+// ========== ROUTES UNTUK JARINGAN (TERPUSAT) ==========
+// Routes langsung ke Jaringan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokJaringan');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/(:any)', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/$1');
 
+// CRUD Operations
+$routes->post('user/barang/jalanirigasijaringan/jaringan/tambah', 'User\Barang\JalanIrigasiJaringan\Jaringan::tambah');
+$routes->post('user/barang/jalanirigasijaringan/jaringan/importFromApi', 'User\Barang\JalanIrigasiJaringan\Jaringan::importFromApi');
+$routes->post('user/barang/jalanirigasijaringan/jaringan/resetData', 'User\Barang\JalanIrigasiJaringan\Jaringan::resetData');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/exportJaringanList/(:segment)', 'User\Barang\JalanIrigasiJaringan\Jaringan::exportJaringanList/$1');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/stats', 'User\Barang\JalanIrigasiJaringan\Jaringan::stats');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/test-api', 'User\Barang\JalanIrigasiJaringan\Jaringan::testApi');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/jalanirigasijaringan/jaringan/airminum', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN AIR MINUM');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/listrik', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN LISTRIK');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/telepon', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN TELEPON');
+$routes->get('user/barang/jalanirigasijaringan/jaringan/gas', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN GAS');
 // ========== ROUTES UNTUK BAHAN PERPUSTAKAAN (TERPUSAT) ==========
 // Routes melalui AsetTetapLainnya (untuk redirect)
 $routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan');

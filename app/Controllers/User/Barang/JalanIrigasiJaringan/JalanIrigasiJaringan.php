@@ -128,51 +128,51 @@ class JalanIrigasiJaringan extends BaseController
     // ================== 5.04 JARINGAN ==================
     public function jaringan()
     {
-        return view('user/barang/jalanirigasijaringan/jaringan');
+        return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan');
     }
 
     public function jaringanair()
     {
-        return view('user/barang/jalanirigasijaringan/jaringan/jaringanair');
+        return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/JARINGAN AIR MINUM');
     }
 
     public function jaringanlistrik()
     {
-        return view('user/barang/jalanirigasijaringan/jaringan/jaringanlistrik');
+        return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/JARINGAN LISTRIK');
     }
 
     public function jaringantelepon()
     {
-        return view('user/barang/jalanirigasijaringan/jaringan/jaringantelepon');
+        return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/JARINGAN TELEPON');
     }
 
     public function jaringangas()
     {
-        return view('user/barang/jalanirigasijaringan/jaringan/jaringangas');
+        return redirect()->to('user/barang/jalanirigasijaringan/jaringan/kelompokjaringan/JARINGAN GAS');
     }
 
     // ================== CRUD OPERATIONS (LEGACY) ==================
     public function tambah()
     {
         // Implementation for adding new Jalan, Irigasi dan Jaringan
-        // This will be handled by specific controllers like BangunanAir
+        // This will be handled by specific controllers like BangunanAir and Jaringan
     }
 
     public function importFromApi()
     {
         // Implementation for importing data from API
-        // This will be handled by specific controllers like BangunanAir
+        // This will be handled by specific controllers like BangunanAir and Jaringan
     }
 
     public function resetData()
     {
         // Implementation for resetting data
-        // This will be handled by specific controllers like BangunanAir
+        // This will be handled by specific controllers like BangunanAir and Jaringan
     }
 
     public function exportJalanIrigasiJaringanList($kelompok)
     {
         // Implementation for exporting data
-        // This will be handled by specific controllers like BangunanAir
+        // This will be handled by specific controllers like BangunanAir and Jaringan
     }
 }
