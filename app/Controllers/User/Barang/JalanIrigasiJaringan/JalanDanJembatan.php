@@ -21,7 +21,7 @@ class JalanDanJembatan extends BaseController
         $apiKey = 'c877acaa0de297a9e3b8bbdb101dd254d33a92a0444b979d599e04fdeaccdbc5';
         
         if (!$url) {
-            $url = "https://apigw.pu.go.id/v1/siman/jalan-dan-jembatan?api_key={$apiKey}";
+            $url = "https://apigw.pu.go.id/v1/siman/jalan-jembatan?api_key={$apiKey}";
         }
         
         try {
@@ -120,7 +120,6 @@ class JalanDanJembatan extends BaseController
                 ->orLike('kode_barang', $searchTerm) 
                 ->orLike('merk', $searchTerm)
                 ->orLike('sub_kelompok', $searchTerm)
-                ->orLike('konstruksi', $searchTerm)
                 ->groupEnd();
         }
         
@@ -155,16 +154,16 @@ class JalanDanJembatan extends BaseController
         ]);
     }
 
-    // Method untuk menambah data manual
+    // Method untuk menambah jalan dan jembatan manual
     public function tambah()
     {
         log_message('info', '=== TAMBAH JALAN DAN JEMBATAN METHOD DIPANGGIL ===');
         
-        $method2 = $_SERVER['REQUEST_METHOD'] ?? 'unknown';
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'unknown';
         $postData = $this->request->getPost();
         $postRaw = $_POST;
         
-        $isPost = (strtoupper($method2) === 'POST') || !empty($postData) || !empty($postRaw);
+        $isPost = (strtoupper($method) === 'POST') || !empty($postData) || !empty($postRaw);
         
         if ($isPost && (!empty($postData) || !empty($postRaw))) {
             log_message('info', 'MASUK KE PROSES POST');
@@ -189,7 +188,7 @@ class JalanDanJembatan extends BaseController
             $luas = $data_source['luas'] ?? '';
             $konstruksi = $data_source['konstruksi'] ?? '';
             
-            // Mapping kelompok
+            // Mapping kelompok menggunakan method dari model
             $kategori_detail = $this->jalanDanJembatanModel->mapKelompokToKategori($kelompok);
             
             $data = [
@@ -239,7 +238,7 @@ class JalanDanJembatan extends BaseController
                 
                 if ($insertResult) {
                     $insertId = $this->jalanDanJembatanModel->getInsertID();
-                    session()->setFlashdata('success', "Data berhasil disimpan! ID: {$insertId}");
+                    session()->setFlashdata('success', "Data jalan dan jembatan berhasil disimpan! ID: {$insertId}");
                 } else {
                     $errors = $this->jalanDanJembatanModel->errors();
                     session()->setFlashdata('error', 'Gagal menyimpan data: ' . implode(', ', $errors));
@@ -290,20 +289,24 @@ class JalanDanJembatan extends BaseController
 
             $this->jalanDanJembatanModel->skipValidation(true);
 
-            // Kelompok yang valid
-            $validKelompok = ['JALAN', 'JEMBATAN'];
+            // Kelompok yang valid untuk jalan dan jembatan
+            $validKelompok = [
+                'JALAN',
+                'JEMBATAN'
+            ];
 
             foreach ($apiData as $index => $item) {
                 try {
                     $kode_barang = trim($item['kode_barang'] ?? '');
-                    $kelompok_api = strtoupper(trim($item['kelompok'] ?? ''));
+                    $kelompok_api_raw = strtoupper(trim($item['kelompok'] ?? ''));
+                    $kelompok_api = $this->mapKelompokFromApi($kelompok_api_raw);
                     
                     if (empty($kode_barang)) {
                         $skipped++;
                         continue;
                     }
 
-                    // FILTER: Hanya import data dengan kelompok JALAN atau JEMBATAN
+                    // FILTER: Hanya import data dengan kelompok jalan dan jembatan yang valid
                     if (!in_array($kelompok_api, $validKelompok)) {
                         $filtered++;
                         log_message('info', "Filtered out: {$kode_barang} - Kelompok: '{$kelompok_api}' (bukan jalan/jembatan)");
@@ -314,7 +317,7 @@ class JalanDanJembatan extends BaseController
 
                     $unique_kode = $kode_barang . '_' . $index;
 
-                    // Mapping kelompok
+                    // Mapping kelompok menggunakan method dari model
                     $kategori_detail = $this->jalanDanJembatanModel->mapKelompokToKategori($kelompok_api);
 
                     $data = [
@@ -382,17 +385,25 @@ class JalanDanJembatan extends BaseController
             $jenis = 'semua';
         }
 
-        $allList = $this->jalanDanJembatanModel->findAll();
+        $allJalanDanJembatanList = $this->jalanDanJembatanModel->findAll();
         
         // Filter berdasarkan jenis
         if ($jenis !== 'semua') {
-            $list = array_filter($allList, function($item) use ($jenis) {
+            $jalanDanJembatanList = array_filter($allJalanDanJembatanList, function($item) use ($jenis) {
                 $kelompok = strtolower($item['kelompok'] ?? '');
-                return strpos($kelompok, $jenis) !== false;
+                
+                switch ($jenis) {
+                    case 'jalan':
+                        return $kelompok === 'jalan';
+                    case 'jembatan':
+                        return $kelompok === 'jembatan';
+                    default:
+                        return true;
+                }
             });
-            $list = array_values($list);
+            $jalanDanJembatanList = array_values($jalanDanJembatanList);
         } else {
-            $list = $allList;
+            $jalanDanJembatanList = $allJalanDanJembatanList;
         }
 
         $filename = 'jalan_dan_jembatan_' . $jenis . '_' . date('Y-m-d') . '.csv';
@@ -405,11 +416,11 @@ class JalanDanJembatan extends BaseController
         fputcsv($output, [
             'No', 'Kode Barang', 'Nama Barang', 'NUP', 'Merk', 'Kelompok', 'Sub Kelompok', 'Kondisi', 
             'Kuantitas', 'Status', 'Nilai Perolehan', 'Nilai Buku', 'Tanggal Perolehan', 'Nama Satker',
-            'Panjang (m)', 'Lebar (m)', 'Luas (m²)', 'Konstruksi'
+            'Panjang (m)', 'Lebar (m)', 'Luas (m2)', 'Konstruksi', 'Kategori Detail'
         ]);
 
         $no = 1;
-        foreach ($list as $item) {
+        foreach ($jalanDanJembatanList as $item) {
             fputcsv($output, [
                 $no++,
                 $item['kode_barang'] ?? '-',
@@ -428,7 +439,8 @@ class JalanDanJembatan extends BaseController
                 number_format(floatval($item['panjang'] ?? 0), 2, ',', '.'),
                 number_format(floatval($item['lebar'] ?? 0), 2, ',', '.'),
                 number_format(floatval($item['luas'] ?? 0), 2, ',', '.'),
-                $item['konstruksi'] ?? '-'
+                $item['konstruksi'] ?? '-',
+                $item['kategori_detail'] ?? '-'
             ]);
         }
 
@@ -436,7 +448,91 @@ class JalanDanJembatan extends BaseController
         return $response;
     }
 
-    // Helper method
+    // Method untuk cek statistik database
+    public function stats()
+    {
+        $totalData = $this->jalanDanJembatanModel->countAllResults();
+        $apiData = $this->getApiData();
+        $totalApi = count($apiData);
+        
+        // Statistik per kelompok
+        $dbStats = [
+            'total' => $totalData,
+            'jalan' => $this->jalanDanJembatanModel->where('kelompok', 'JALAN')->countAllResults(),
+            'jembatan' => $this->jalanDanJembatanModel->where('kelompok', 'JEMBATAN')->countAllResults(),
+        ];
+        
+        return view('user/jalandanjembatan/stats', [
+            'totalData' => $totalData,
+            'totalApi' => $totalApi,
+            'dbStats' => $dbStats
+        ]);
+    }
+
+    // Method untuk test API (debugging)
+    public function testApi()
+    {
+        $apiData = $this->getApiData();
+        
+        echo "<h3>Test API Jalan dan Jembatan</h3>";
+        echo "<p>Total data dari API: " . count($apiData) . "</p>";
+        
+        if (!empty($apiData)) {
+            echo "<h4>Sample data pertama:</h4>";
+            echo "<pre>" . json_encode($apiData[0], JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Analisis kelompok
+            $kelompokStats = [];
+            foreach ($apiData as $item) {
+                $kelompok = $item['kelompok'] ?? 'Unknown';
+                $kelompokStats[$kelompok] = ($kelompokStats[$kelompok] ?? 0) + 1;
+            }
+            
+            echo "<h4>Statistik Kelompok:</h4>";
+            echo "<pre>" . json_encode($kelompokStats, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Filter untuk jalan dan jembatan
+            $validKelompok = ['JALAN', 'JEMBATAN'];
+            $filteredData = array_filter($apiData, function($item) use ($validKelompok) {
+                return in_array(strtoupper($item['kelompok'] ?? ''), $validKelompok);
+            });
+            
+            echo "<h4>Data yang akan diimport (kelompok jalan dan jembatan):</h4>";
+            echo "<p>Total: " . count($filteredData) . " dari " . count($apiData) . " data</p>";
+            
+            if (!empty($filteredData)) {
+                echo "<h5>Sample data jalan dan jembatan:</h5>";
+                echo "<pre>" . json_encode(array_slice($filteredData, 0, 3), JSON_PRETTY_PRINT) . "</pre>";
+            }
+        } else {
+            echo "<p style='color: red;'>Tidak ada data dari API atau terjadi error!</p>";
+        }
+    }
+
+    // Method untuk search (AJAX)
+    public function search()
+    {
+        $searchTerm = $this->request->getGet('q');
+        $kelompok = $this->request->getGet('kelompok');
+        
+        if (empty($searchTerm)) {
+            return $this->response->setJSON(['data' => []]);
+        }
+
+        try {
+            $results = $this->jalanDanJembatanModel->searchJalanDanJembatan($searchTerm, $kelompok, 20);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => $results
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Search Error: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => 'Gagal melakukan pencarian']);
+        }
+    }
+
+    // Helper method untuk konversi float yang aman
     private function safeFloat($value)
     {
         if (is_null($value) || $value === '') {
@@ -450,55 +546,23 @@ class JalanDanJembatan extends BaseController
         return floatval($value);
     }
 
-    // Method untuk test API
-    public function testApi()
+    // Method helper untuk mapping kelompok API
+    private function mapKelompokFromApi($kelompok_api)
     {
-        echo "<h2>🔍 DEBUG API JALAN DAN JEMBATAN</h2>";
-        echo "<hr>";
+        $kelompok_api = strtoupper(trim($kelompok_api));
         
-        $apiKey = 'c877acaa0de297a9e3b8bbdb101dd254d33a92a0444b979d599e04fdeaccdbc5';
-        $apiUrl = "https://apigw.pu.go.id/v1/siman/jalan-dan-jembatan?api_key={$apiKey}";
-        
-        echo "<h3>1️⃣ Info API</h3>";
-        echo "<p><strong>URL:</strong> {$apiUrl}</p>";
-        echo "<hr>";
-        
-        $apiData = $this->getApiData();
-        
-        echo "<p><strong>Total data dari API:</strong> " . count($apiData) . "</p>";
-        
-        if (empty($apiData)) {
-            echo "<div style='background: #fee; padding: 15px;'>";
-            echo "<h4 style='color: red;'>❌ TIDAK ADA DATA!</h4>";
-            echo "</div>";
-            return;
+        // Direct mapping
+        if (in_array($kelompok_api, ['JALAN', 'JEMBATAN'])) {
+            return $kelompok_api;
         }
         
-        echo "<hr>";
-        echo "<h3>Sample Data (3 items)</h3>";
-        echo "<pre style='background: #f5f5f5; padding: 15px;'>";
-        echo json_encode(array_slice($apiData, 0, 3), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        echo "</pre>";
-        echo "<hr>";
-        
-        $kelompokStats = [];
-        foreach ($apiData as $item) {
-            $kelompok = strtoupper(trim($item['kelompok'] ?? 'UNKNOWN'));
-            $kelompokStats[$kelompok] = ($kelompokStats[$kelompok] ?? 0) + 1;
+        // Fallback mapping jika ada variasi nama
+        if (stripos($kelompok_api, 'JALAN') !== false) {
+            return 'JALAN';
+        } elseif (stripos($kelompok_api, 'JEMBATAN') !== false) {
+            return 'JEMBATAN';
         }
         
-        arsort($kelompokStats);
-        
-        echo "<table border='1' cellpadding='10' style='border-collapse: collapse;'>";
-        echo "<tr style='background: #333; color: white;'>";
-        echo "<th>No</th><th>Kelompok</th><th>Jumlah</th></tr>";
-        
-        $no = 1;
-        foreach ($kelompokStats as $kelompok => $jumlah) {
-            echo "<tr><td>{$no}</td><td><strong>{$kelompok}</strong></td><td>{$jumlah}</td></tr>";
-            $no++;
-        }
-        echo "</table>";
+        return $kelompok_api;
     }
 }
-    

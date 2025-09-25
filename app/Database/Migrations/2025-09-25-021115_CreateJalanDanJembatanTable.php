@@ -4,7 +4,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateJalanTable extends Migration
+class CreateJalanDanJembatanTable extends Migration
 {
     public function up()
     {
@@ -41,7 +41,7 @@ class CreateJalanTable extends Migration
             ],
             'kode_barang' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => 150,
                 'null'       => false,
                 'comment'    => 'Kode barang (wajib diisi)',
             ],
@@ -91,7 +91,7 @@ class CreateJalanTable extends Migration
             ],
             'merk' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => 255,
                 'null'       => true,
                 'comment'    => 'Merk/kontraktor aset',
             ],
@@ -108,41 +108,43 @@ class CreateJalanTable extends Migration
                 'null'       => true,
                 'comment'    => 'Status penggunaan aset',
             ],
-            // Field khusus untuk Jalan
+            // Field khusus untuk Jalan dan Jembatan
             'panjang' => [
                 'type'       => 'DECIMAL',
                 'constraint' => '15,2',
                 'null'       => true,
-                'comment'    => 'Panjang jalan (meter)',
+                'default'    => 0,
+                'comment'    => 'Panjang jalan/jembatan (meter)',
             ],
             'lebar' => [
                 'type'       => 'DECIMAL',
                 'constraint' => '10,2',
                 'null'       => true,
-                'comment'    => 'Lebar jalan (meter)',
+                'default'    => 0,
+                'comment'    => 'Lebar jalan/jembatan (meter)',
             ],
             'luas' => [
                 'type'       => 'DECIMAL',
                 'constraint' => '15,2',
                 'null'       => true,
-                'comment'    => 'Luas jalan (meter persegi)',
+                'default'    => 0,
+                'comment'    => 'Luas total (meter persegi)',
             ],
             'konstruksi' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => 150,
                 'null'       => true,
-                'comment'    => 'Jenis konstruksi jalan (Aspal, Beton, dll)',
+                'comment'    => 'Jenis konstruksi (beton, aspal, baja, dll)',
             ],
             'kelompok' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 50,
+                'constraint' => 100,
                 'null'       => false,
-                'default'    => 'JALAN',
-                'comment'    => 'Kelompok aset',
+                'comment'    => 'Kelompok aset: JALAN atau JEMBATAN',
             ],
             'sub_kelompok' => [
                 'type'       => 'VARCHAR',
-                'constraint' => 100,
+                'constraint' => 150,
                 'null'       => true,
                 'comment'    => 'Sub kelompok aset dari API',
             ],
@@ -156,9 +158,8 @@ class CreateJalanTable extends Migration
             'kategori_detail' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
-                'null'       => false,
-                'default'    => 'Jalan',
-                'comment'    => 'Kategori detail',
+                'null'       => true,
+                'comment'    => 'Kategori detail berdasarkan mapping kelompok API',
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -174,11 +175,12 @@ class CreateJalanTable extends Migration
         $this->forge->addKey('kode_barang');
         $this->forge->addKey('kelompok');
         $this->forge->addKey('kategori_utama');
-        $this->forge->createTable('jalan');
+        $this->forge->addKey('kategori_detail');
+        $this->forge->createTable('jalan_dan_jembatan');
     }
 
     public function down()
     {
-        $this->forge->dropTable('jalan');
+        $this->forge->dropTable('jalan_dan_jembatan');
     }
 }

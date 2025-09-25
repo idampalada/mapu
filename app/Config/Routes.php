@@ -833,22 +833,34 @@ $routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/stats', 'User\Baran
 $routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/test-api', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::testApi');
 $routes->get('user/barang/gedungdanbangunan/tugutitikkontrol/search', 'User\Barang\GedungDanBangunan\TuguTitikKontrol::search');
 
+
 // ========== ROUTES UNTUK JALAN, IRIGASI DAN JARINGAN ==========
 // Halaman utama Jalan, Irigasi dan Jaringan
 $routes->get('user/barang/jalanirigasijaringan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::index');
 
-// ========== 5.01 JALAN DAN JEMBATAN ==========
+// ========== 5.01 JALAN DAN JEMBATAN (TERPUSAT) ==========
 // Route untuk halaman utama Jalan dan Jembatan
 $routes->get('user/barang/jalanirigasijaringan/jalandanjembatan', 'User\Barang\JalanIrigasiJaringan\JalanIrigasiJaringan::jalandanjembatan');
 
-// Route untuk Jalan
-$routes->get('user/barang/jalanirigasijaringan/jalan', 'User\Barang\JalanIrigasiJaringan\Jalan::index');
-$routes->post('user/barang/jalanirigasijaringan/jalan/tambah', 'User\Barang\JalanIrigasiJaringan\Jalan::tambah');
-$routes->post('user/barang/jalanirigasijaringan/jalan/importFromApi', 'User\Barang\JalanIrigasiJaringan\Jalan::importFromApi');
-$routes->post('user/barang/jalanirigasijaringan/jalan/resetData', 'User\Barang\JalanIrigasiJaringan\Jalan::resetData');
-$routes->get('user/barang/jalanirigasijaringan/jalan/exportJalanList', 'User\Barang\JalanIrigasiJaringan\Jalan::exportJalanList');
-$routes->get('user/barang/jalanirigasijaringan/jalan/stats', 'User\Barang\JalanIrigasiJaringan\Jalan::stats');
-$routes->get('user/barang/jalanirigasijaringan/jalan/test-api', 'User\Barang\JalanIrigasiJaringan\Jalan::testApi');
+// Routes langsung ke JalanDanJembatan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/dashboard', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::dashboard');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/kelompokjalandanjembatan', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::kelompokJalanDanJembatan');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/kelompokjalandanjembatan/(:any)', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::kelompokDetail/$1');
+
+// CRUD Operations untuk JalanDanJembatan
+$routes->post('user/barang/jalanirigasijaringan/jalandanjembatan/tambah', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::tambah');
+$routes->post('user/barang/jalanirigasijaringan/jalandanjembatan/importFromApi', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::importFromApi');
+$routes->post('user/barang/jalanirigasijaringan/jalandanjembatan/resetData', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::resetData');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/exportJalanDanJembatanList/(:segment)', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::exportJalanDanJembatanList/$1');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/exportJalanDanJembatanList', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::exportJalanDanJembatanList');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/stats', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::stats');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/test-api', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::testApi');
+$routes->get('user/barang/jalanirigasijaringan/jalandanjembatan/search', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/jalanirigasijaringan/jalan', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::kelompokDetail/JALAN');
+$routes->get('user/barang/jalanirigasijaringan/jembatan', 'User\Barang\JalanIrigasiJaringan\JalanDanJembatan::kelompokDetail/JEMBATAN');
 
 // Route untuk Jembatan (nanti)
 // $routes->get('user/barang/jalanirigasijaringan/jembatan', 'User\Barang\JalanIrigasiJaringan\Jembatan::index');

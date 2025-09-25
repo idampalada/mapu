@@ -15,17 +15,19 @@ class JalanIrigasiJaringan extends BaseController
     // ================== 5.01 JALAN DAN JEMBATAN ==================
     public function jalandanjembatan()
     {
-        return view('user/barang/jalanirigasijaringan/jalandanjembatan');
+        // Langsung redirect ke kelompok jalan dan jembatan tanpa view terpisah
+        return redirect()->to('user/barang/jalanirigasijaringan/jalandanjembatan/kelompokjalandanjembatan');
     }
 
+    // Redirect methods untuk backward compatibility
     public function jalan()
     {
-        return redirect()->to('user/barang/jalanirigasijaringan/jalan');
+        return redirect()->to('user/barang/jalanirigasijaringan/jalandanjembatan/kelompokjalandanjembatan/JALAN');
     }
 
     public function jembatan()
     {
-        return redirect()->to('user/barang/jalanirigasijaringan/jembatan');
+        return redirect()->to('user/barang/jalanirigasijaringan/jalandanjembatan/kelompokjalandanjembatan/JEMBATAN');
     }
 
     // ================== 5.02 BANGUNAN AIR ==================
