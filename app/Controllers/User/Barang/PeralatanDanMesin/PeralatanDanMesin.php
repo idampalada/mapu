@@ -51,26 +51,25 @@ public function alatangkutanbermotorudara()
 }
 
     // ================== 3.03 ALAT BENGKEL DAN ALAT UKUR ==================
-    public function alatbengkelukur()
-    {
-        return view('user/barang/peralatandanmesin/alatbengkelukur');
-    }
+public function alatbengkelukur()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur');
+}
 
-    public function alatbengkelbermesin()
-    {
-        return view('user/barang/peralatandanmesin/alatbengkelukur/bengkelbermesin');
-    }
+public function alatbengkelbermesin()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur/ALAT BENGKEL BERMESIN');
+}
 
-    public function alatbengkeltakbermesin()
-    {
-        return view('user/barang/peralatandanmesin/alatbengkelukur/bengkeltakbermesin');
-    }
+public function alatbengkeltakbermesin()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur/ALAT BENGKEL TAK BERMESIN');
+}
 
-    public function alatukur()
-    {
-        return view('user/barang/peralatandanmesin/alatbengkelukur/alatukur');
-    }
-
+public function alatukur()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur/ALAT UKUR');
+}
     // ================== 3.04 ALAT PERTANIAN ==================
     public function alatpertanian()
     {

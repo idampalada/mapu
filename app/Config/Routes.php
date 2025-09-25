@@ -550,11 +550,38 @@ $routes->get('user/barang/peralatandanmesin/alatangkutan/bermotorudara/(:any)', 
 $routes->get('user/alatangkutan', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokAlatAngkutan');
 $routes->get('user/alatangkutan/kelompokalatangkutan', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokAlatAngkutan');
 $routes->get('user/alatangkutan/kelompokalatangkutan/(:segment)', 'User\Barang\PeralatanDanMesin\AlatAngkutan::kelompokDetail/$1');
-// 3.03 Alat Bengkel dan Alat Ukur
+// ================== 3.03 ALAT BENGKEL DAN ALAT UKUR ==================
+// Route utama alat bengkel ukur (redirect ke kelompokalatbengkelukur)
 $routes->get('user/barang/peralatandanmesin/alatbengkelukur', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbengkelukur');
-$routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkelbermesin', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbengkelbermesin');
-$routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkeltakbermesin', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbengkeltakbermesin');
-$routes->get('user/barang/peralatandanmesin/alatbengkelukur/alatukur', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatukur');
+
+// ========== ROUTES UNTUK ALAT BENGKEL DAN ALAT UKUR (TERPUSAT) ==========
+// Routes langsung ke AlatBengkelAlatUkur controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/dashboard', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokAlatBengkelAlatUkur');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur/(:any)', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatbengkelukur/tambah', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::tambah');
+$routes->post('user/barang/peralatandanmesin/alatbengkelukur/importFromApi', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatbengkelukur/resetData', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::resetData');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/exportAlatBengkelAlatUkurList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::exportAlatBengkelAlatUkurList/$1');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/stats', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::stats');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/test-api', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::testApi');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/search', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkelbermesin', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokDetail/ALAT BENGKEL BERMESIN');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkeltakbermesin', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokDetail/ALAT BENGKEL TAK BERMESIN');
+$routes->get('user/barang/peralatandanmesin/alatbengkelukur/alatukur', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokDetail/ALAT UKUR');
+
+
+// Debug routes (hanya untuk development)
+if (ENVIRONMENT === 'development') {
+    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-api', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugApi');
+    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-import', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugImport');
+    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-database', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugDatabase');
+}
 
 // 3.04 Alat Pertanian
 $routes->get('user/barang/peralatandanmesin/alatpertanian', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpertanian');
