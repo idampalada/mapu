@@ -631,22 +631,62 @@ $routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatstudio', 'U
 $routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatkomunikasi', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/ALAT KOMUNIKASI');
 $routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatanpemancar', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/PERALATAN PEMANCAR');
 $routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatankomunikasiNavigasi', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/PERALATAN KOMUNIKASI NAVIGASI');
-// 3.07 Alat Kedokteran dan Kesehatan
+// ================== 3.07 ALAT KEDOKTERAN DAN KESEHATAN ==================
+// Route utama alat kedokteran kesehatan (redirect ke kelompokalatkedokterankesehatan)
 $routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkedokterankesehatan');
-$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkedokteran', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkedokteran');
-$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkesehatanumum', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkesehatanumum');
 
-// 3.08 Alat Laboratorium
+// ========== ROUTES UNTUK ALAT KEDOKTERAN DAN KESEHATAN (TERPUSAT) ==========
+// Routes langsung ke AlatKedokteranKesehatan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/dashboard', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::kelompokAlatKedokteranKesehatan');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan/(:any)', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatkedokterankesehatan/tambah', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::tambah');
+$routes->post('user/barang/peralatandanmesin/alatkedokterankesehatan/importFromApi', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatkedokterankesehatan/resetData', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::resetData');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/exportAlatKedokteranKesehatanList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::exportAlatKedokteranKesehatanList/$1');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/stats', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::stats');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/test-api', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::testApi');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/search', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkedokteran', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::kelompokDetail/ALAT KEDOKTERAN');
+$routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkesehatanumum', 'User\Barang\PeralatanDanMesin\AlatKedokteranKesehatan::kelompokDetail/ALAT KESEHATAN UMUM');
+// ================== 3.08 ALAT LABORATORIUM ==================
+// Route utama alat laboratorium (redirect ke kelompokalatlaboratorium)
+// Tambahkan route khusus untuk yang bermasalah SEBELUM route umum
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/RADIATION_APPLICATION_NON_DESTRUCTIVE_TESTING_LABORATORY', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::radiationApplicationLab');
 $routes->get('user/barang/peralatandanmesin/alatlaboratorium', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatlaboratorium');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/unitalatlaboratorium', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::unitalatlaboratorium');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/unitalatlabkimiapelajar', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::unitalatlabkimiapelajar');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlabfisikanuklir', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatlabfisikanuklir');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatproteksiRadiasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatproteksiRadiasi');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/radiationApplication', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::radiationApplication');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlablingkunganhidup', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatlablingkunganhidup');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/peralatanlabhydrodinamica', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanlabhydrodinamica');
-$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlabstandarisasikalibrasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatlabstandarisasikalibrasi');
 
+// ========== ROUTES UNTUK ALAT LABORATORIUM (TERPUSAT) ==========
+// Routes langsung ke AlatLaboratorium controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/dashboard', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokAlatLaboratorium');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/(:any)', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatlaboratorium/tambah', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::tambah');
+$routes->post('user/barang/peralatandanmesin/alatlaboratorium/importFromApi', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatlaboratorium/resetData', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::resetData');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/exportAlatLaboratoriumList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::exportAlatLaboratoriumList/$1');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/stats', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::stats');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/test-api', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::testApi');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/search', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/unitalatlaboratorium', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/UNIT ALAT LABORATORIUM');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/unitalatlabkimiapelajar', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/UNIT ALAT LABORATORIUM KIMIA PELAJAR');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlabfisikanuklir', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatproteksiRadiasi', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/radiationApplication', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlablingkunganhidup', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/ALAT LABORATORIUM LINGKUNGAN HIDUP');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/peralatanlabhydrodinamica', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/PERALATAN LABORATORIUM HYDRODINAMICA');
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlabstandarisasikalibrasi', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI');
+// Tambahkan route khusus untuk yang bermasalah SEBELUM route umum
+$routes->get('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/RADIATION_APPLICATION_NON_DESTRUCTIVE_TESTING_LABORATORY', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::radiationApplicationLab');
 // 3.09 Alat Persenjataan
 $routes->get('user/barang/peralatandanmesin/alatpersenjataan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpersenjataan');
 $routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjataapi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::senjataapi');

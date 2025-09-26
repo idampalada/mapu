@@ -127,66 +127,65 @@ public function peralatankomunikasiNavigasi()
     return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/PERALATAN KOMUNIKASI NAVIGASI');
 }
 
-    // ================== 3.07 ALAT KEDOKTERAN DAN KESEHATAN ==================
+// ================== 3.07 ALAT KEDOKTERAN DAN KESEHATAN ==================
     public function alatkedokterankesehatan()
     {
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan');
+        return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
     }
 
     public function alatkedokteran()
     {
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkedokteran');
+        return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan/ALAT KEDOKTERAN');
     }
 
     public function alatkesehatanumum()
     {
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkesehatanumum');
+        return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan/ALAT KESEHATAN UMUM');
     }
-
     // ================== 3.08 ALAT LABORATORIUM ==================
     public function alatlaboratorium()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
     }
 
     public function unitalatlaboratorium()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/unitalatlaboratorium');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/UNIT ALAT LABORATORIUM');
     }
 
     public function unitalatlabkimiapelajar()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/unitalatlabkimiapelajar');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/UNIT ALAT LABORATORIUM KIMIA PELAJAR');
     }
 
     public function alatlabfisikanuklir()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/alatlabfisikanuklir');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA');
     }
 
     public function alatproteksiRadiasi()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/alatproteksiRadiasi');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN');
     }
 
     public function radiationApplication()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/radiationApplication');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY');
     }
 
     public function alatlablingkunganhidup()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/alatlablingkunganhidup');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/ALAT LABORATORIUM LINGKUNGAN HIDUP');
     }
 
     public function peralatanlabhydrodinamica()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/peralatanlabhydrodinamica');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/PERALATAN LABORATORIUM HYDRODINAMICA');
     }
 
     public function alatlabstandarisasikalibrasi()
     {
-        return view('user/barang/peralatandanmesin/alatlaboratorium/alatlabstandarisasikalibrasi');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI');
     }
 
     // ================== 3.09 ALAT PERSENJATAAN ==================

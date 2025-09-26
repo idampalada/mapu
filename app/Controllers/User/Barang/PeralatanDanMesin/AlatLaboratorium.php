@@ -3,15 +3,15 @@
 namespace App\Controllers\User\Barang\PeralatanDanMesin;
 
 use App\Controllers\BaseController;
-use App\Models\AlatKedokteranKesehatanModel;
+use App\Models\AlatLaboratoriumModel;
 
-class AlatKedokteranKesehatan extends BaseController
+class AlatLaboratorium extends BaseController
 {
-    protected $alatKedokteranKesehatanModel;
+    protected $alatLaboratoriumModel;
     
     public function __construct()
     {
-        $this->alatKedokteranKesehatanModel = new AlatKedokteranKesehatanModel();
+        $this->alatLaboratoriumModel = new AlatLaboratoriumModel();
     }
 
     // Method untuk mengambil data dari API
@@ -44,38 +44,47 @@ class AlatKedokteranKesehatan extends BaseController
 
     public function dashboard()
     {
-        $alatKedokteranKesehatanList = $this->getApiData();
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan/dashboard', [
-            'alatKedokteranKesehatanList' => $alatKedokteranKesehatanList
+        $alatLaboratoriumList = $this->getApiData();
+        return view('user/barang/peralatandanmesin/alatlaboratorium/dashboard', [
+            'alatLaboratoriumList' => $alatLaboratoriumList
         ]);
     }
 
-    public function kelompokAlatKedokteranKesehatan()
+    public function kelompokAlatLaboratorium()
     {
         $sort = $this->request->getGet('sort') ?? 'kode_barang';
         $order = $this->request->getGet('order') ?? 'asc';
         
-        $allAlatKedokteranKesehatanList = $this->alatKedokteranKesehatanModel->findAll();
+        $allAlatLaboratoriumList = $this->alatLaboratoriumModel->findAll();
         
-        // Filter data berdasarkan kelompok - 2 kategori
-        $alatKedokteranData = array_filter($allAlatKedokteranKesehatanList, function ($item) {
-            return strtoupper($item['kelompok'] ?? '') === 'ALAT KEDOKTERAN';
-        });
+        // Filter data berdasarkan kelompok - 8 kategori
+        $kelompokList = [
+            'UNIT ALAT LABORATORIUM',
+            'UNIT ALAT LABORATORIUM KIMIA PELAJAR',
+            'ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA',
+            'ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN',
+            'RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY',
+            'ALAT LABORATORIUM LINGKUNGAN HIDUP',
+            'PERALATAN LABORATORIUM HYDRODINAMICA',
+            'ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI'
+        ];
 
-        $alatKesehatanUmumData = array_filter($allAlatKedokteranKesehatanList, function ($item) {
-            return strtoupper($item['kelompok'] ?? '') === 'ALAT KESEHATAN UMUM';
-        });
+        $kelompokData = [];
+        foreach ($kelompokList as $kelompok) {
+            $data = array_filter($allAlatLaboratoriumList, function ($item) use ($kelompok) {
+                return strtoupper($item['kelompok'] ?? '') === $kelompok;
+            });
+            $kelompokData[$kelompok] = array_values($data);
+        }
 
-        // Reset array keys dan gabungkan
-        $allData = array_merge(
-            array_values($alatKedokteranData),
-            array_values($alatKesehatanUmumData)
-        );
+        // Gabungkan semua data
+        $allData = array_merge(...array_values($kelompokData));
 
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan', [
+        return view('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium', [
             'sort' => $sort,
             'order' => $order,
             'allData' => $allData,
+            'kelompokData' => $kelompokData
         ]);
     }
 
@@ -88,9 +97,9 @@ class AlatKedokteranKesehatan extends BaseController
         log_message('info', "kelompokDetail called with: " . $kelompok);
         
         // Validasi kelompok yang valid
-        if (!$this->alatKedokteranKesehatanModel->isValidKelompokAlatKedokteranKesehatan($kelompok)) {
+        if (!$this->alatLaboratoriumModel->isValidKelompokAlatLaboratorium($kelompok)) {
             session()->setFlashdata('error', 'Kelompok tidak valid: ' . $kelompok);
-            return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
+            return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
         }
         
         $page = $this->request->getGet('page') ?? 1;
@@ -100,7 +109,7 @@ class AlatKedokteranKesehatan extends BaseController
         $order = $this->request->getGet('order') ?? 'asc';
 
         // Get data dari model dengan search dan kelompok filter
-        $alatKedokteranKesehatanList = $this->alatKedokteranKesehatanModel->searchAlatKedokteranKesehatan(
+        $alatLaboratoriumList = $this->alatLaboratoriumModel->searchAlatLaboratorium(
             $searchTerm, 
             $kelompok, 
             $perPage, 
@@ -108,8 +117,8 @@ class AlatKedokteranKesehatan extends BaseController
         );
 
         // Jika hasil kosong dan ada search term, coba tanpa filter kelompok
-        if (empty($alatKedokteranKesehatanList) && !empty($searchTerm)) {
-            $alatKedokteranKesehatanList = $this->alatKedokteranKesehatanModel->searchAlatKedokteranKesehatan(
+        if (empty($alatLaboratoriumList) && !empty($searchTerm)) {
+            $alatLaboratoriumList = $this->alatLaboratoriumModel->searchAlatLaboratorium(
                 $searchTerm, 
                 '', 
                 $perPage, 
@@ -118,8 +127,8 @@ class AlatKedokteranKesehatan extends BaseController
         }
 
         // Sorting jika diperlukan
-        if (!empty($alatKedokteranKesehatanList)) {
-            usort($alatKedokteranKesehatanList, function($a, $b) use ($sort, $order) {
+        if (!empty($alatLaboratoriumList)) {
+            usort($alatLaboratoriumList, function($a, $b) use ($sort, $order) {
                 $aVal = $a[$sort] ?? '';
                 $bVal = $b[$sort] ?? '';
                 
@@ -135,16 +144,16 @@ class AlatKedokteranKesehatan extends BaseController
 
         // Hitung total items untuk pagination
         $totalItems = !empty($searchTerm) 
-            ? count($this->alatKedokteranKesehatanModel->searchAlatKedokteranKesehatan($searchTerm, $kelompok, 999999, 0))
-            : $this->alatKedokteranKesehatanModel->countByKelompok($kelompok);
+            ? count($this->alatLaboratoriumModel->searchAlatLaboratorium($searchTerm, $kelompok, 999999, 0))
+            : $this->alatLaboratoriumModel->countByKelompok($kelompok);
 
         $pager = service('pager');
-        $pager->setPath('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan/' . 
+        $pager->setPath('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/' . 
                         urlencode($kelompok));
         $totalPages = ceil($totalItems / $perPage);
 
-        return view('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan', [
-            'alatKedokteranKesehatanList' => $alatKedokteranKesehatanList,
+        return view('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium', [
+            'alatLaboratoriumList' => $alatLaboratoriumList,
             'kelompok' => strtoupper($kelompok),
             'activeKelompok' => strtoupper($kelompok),
             'pager' => $pager,
@@ -157,10 +166,10 @@ class AlatKedokteranKesehatan extends BaseController
         ]);
     }
 
-    // Method untuk menambah alat kedokteran kesehatan manual
+    // Method untuk menambah alat laboratorium manual
     public function tambah()
     {
-        log_message('info', '=== TAMBAH ALAT KEDOKTERAN KESEHATAN METHOD DIPANGGIL ===');
+        log_message('info', '=== TAMBAH ALAT LABORATORIUM METHOD DIPANGGIL ===');
         
         $method2 = $_SERVER['REQUEST_METHOD'] ?? 'unknown';
         $postData = $this->request->getPost();
@@ -189,7 +198,7 @@ class AlatKedokteranKesehatan extends BaseController
             $spek_lain = $data_source['spek_lain'] ?? '';
             
             // Mapping kelompok menggunakan method dari model
-            $kategori_detail = $this->alatKedokteranKesehatanModel->mapKelompokToKategori($kelompok);
+            $kategori_detail = $this->alatLaboratoriumModel->mapKelompokToKategori($kelompok);
             
             $data = [
                 'kode_barang' => trim($kode_barang),
@@ -206,7 +215,7 @@ class AlatKedokteranKesehatan extends BaseController
                 'tanggal_perolehan' => !empty($tanggal_perolehan) ? $tanggal_perolehan : null,
                 'nama_satker' => trim($nama_satker),
                 'spek_lain' => trim($spek_lain),
-                'kategori_utama' => 'ALAT KEDOKTERAN DAN KESEHATAN',
+                'kategori_utama' => 'ALAT LABORATORIUM',
                 'kategori_detail' => $kategori_detail,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -230,32 +239,32 @@ class AlatKedokteranKesehatan extends BaseController
             }
 
             try {
-                $this->alatKedokteranKesehatanModel->skipValidation(true);
-                $insertResult = $this->alatKedokteranKesehatanModel->insert($data);
+                $this->alatLaboratoriumModel->skipValidation(true);
+                $insertResult = $this->alatLaboratoriumModel->insert($data);
                 
                 if ($insertResult) {
-                    $insertId = $this->alatKedokteranKesehatanModel->getInsertID();
-                    session()->setFlashdata('success', "Data alat kedokteran kesehatan berhasil disimpan! ID: {$insertId}");
+                    $insertId = $this->alatLaboratoriumModel->getInsertID();
+                    session()->setFlashdata('success', "Data alat laboratorium berhasil disimpan! ID: {$insertId}");
                 } else {
-                    $errors = $this->alatKedokteranKesehatanModel->errors();
+                    $errors = $this->alatLaboratoriumModel->errors();
                     session()->setFlashdata('error', 'Gagal menyimpan data: ' . implode(', ', $errors));
                 }
                 
-                $this->alatKedokteranKesehatanModel->skipValidation(false);
+                $this->alatLaboratoriumModel->skipValidation(false);
                 
             } catch (\Exception $e) {
                 session()->setFlashdata('error', 'Error database: ' . $e->getMessage());
-                $this->alatKedokteranKesehatanModel->skipValidation(false);
+                $this->alatLaboratoriumModel->skipValidation(false);
             }
         }
         
-        return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
     }
 
     // Method untuk import data dari API
     public function importFromApi()
     {
-        log_message('info', '=== IMPORT ALAT KEDOKTERAN KESEHATAN FROM API STARTED ===');
+        log_message('info', '=== IMPORT ALAT LABORATORIUM FROM API STARTED ===');
         
         $imported = 0;
         $updated = 0;
@@ -273,12 +282,18 @@ class AlatKedokteranKesehatan extends BaseController
 
             log_message('info', 'Total data dari API: ' . count($allApiData));
             
-            $this->alatKedokteranKesehatanModel->skipValidation(true);
+            $this->alatLaboratoriumModel->skipValidation(true);
 
-            // Kelompok yang valid untuk kategori 3.07
+            // Kelompok yang valid untuk kategori 3.08
             $validKelompok = [
-                'ALAT KEDOKTERAN',
-                'ALAT KESEHATAN UMUM'
+                'UNIT ALAT LABORATORIUM',
+                'UNIT ALAT LABORATORIUM KIMIA PELAJAR',
+                'ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA',
+                'ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN',
+                'RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY',
+                'ALAT LABORATORIUM LINGKUNGAN HIDUP',
+                'PERALATAN LABORATORIUM HYDRODINAMICA',
+                'ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI'
             ];
             
             foreach ($allApiData as $index => $apiItem) {
@@ -295,10 +310,10 @@ class AlatKedokteranKesehatan extends BaseController
                         continue;
                     }
 
-                    // FILTER: Hanya import data dengan kelompok kategori 3.07 yang valid
+                    // FILTER: Hanya import data dengan kelompok kategori 3.08 yang valid
                     if (!in_array($kelompok_raw, $validKelompok)) {
                         $filtered++;
-                        log_message('info', "Filtered out: {$kode_barang_original} - Kelompok: '{$kelompok_raw}' (bukan kategori 3.07)");
+                        log_message('info', "Filtered out: {$kode_barang_original} - Kelompok: '{$kelompok_raw}' (bukan kategori 3.08)");
                         continue;
                     }
 
@@ -311,7 +326,7 @@ class AlatKedokteranKesehatan extends BaseController
                     log_message('info', "Importing: {$kode_barang_original} -> {$unique_kode} - Kelompok: '{$kelompok_raw}'");
 
                     // Clean data menggunakan kode yang sudah unik
-                    $cleanData = $this->alatKedokteranKesehatanModel->cleanImportData($apiItem);
+                    $cleanData = $this->alatLaboratoriumModel->cleanImportData($apiItem);
                     
                     // Pastikan kode unik digunakan
                     $cleanData['kode_barang'] = $unique_kode;
@@ -328,7 +343,7 @@ class AlatKedokteranKesehatan extends BaseController
                     }
                     
                     // Cek kelompok valid
-                    if (!$this->alatKedokteranKesehatanModel->isValidKelompokAlatKedokteranKesehatan($cleanData['kelompok'])) {
+                    if (!$this->alatLaboratoriumModel->isValidKelompokAlatLaboratorium($cleanData['kelompok'])) {
                         $validationErrors[] = "Kelompok tidak valid: " . $cleanData['kelompok'];
                     }
                     
@@ -339,11 +354,11 @@ class AlatKedokteranKesehatan extends BaseController
                     }
                     
                     // Check apakah data sudah exist berdasarkan kode_barang unik
-                    $existingData = $this->alatKedokteranKesehatanModel->findByKodeBarang($unique_kode);
+                    $existingData = $this->alatLaboratoriumModel->findByKodeBarang($unique_kode);
                     
                     if ($existingData) {
                         // Update existing data
-                        $result = $this->alatKedokteranKesehatanModel->updateData($existingData['id'], $cleanData);
+                        $result = $this->alatLaboratoriumModel->updateData($existingData['id'], $cleanData);
                         if ($result) {
                             $updated++;
                             log_message('info', "Updated: {$unique_kode}");
@@ -353,7 +368,7 @@ class AlatKedokteranKesehatan extends BaseController
                         }
                     } else {
                         // Insert new data
-                        $result = $this->alatKedokteranKesehatanModel->insertData($cleanData);
+                        $result = $this->alatLaboratoriumModel->insertData($cleanData);
                         if ($result) {
                             $imported++;
                             log_message('info', "Inserted: {$unique_kode}");
@@ -370,7 +385,7 @@ class AlatKedokteranKesehatan extends BaseController
                 }
             }
             
-            $this->alatKedokteranKesehatanModel->skipValidation(false);
+            $this->alatLaboratoriumModel->skipValidation(false);
             
             $total = count($allApiData);
             $processed = $imported + $updated;
@@ -389,31 +404,37 @@ class AlatKedokteranKesehatan extends BaseController
             session()->setFlashdata('error', 'Error saat import: ' . $e->getMessage());
         }
         
-        return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
+        return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
     }
 
     // Method untuk reset semua data
     public function resetData()
     {
         try {
-            $this->alatKedokteranKesehatanModel->builder()->truncate();
+            $this->alatLaboratoriumModel->builder()->truncate();
             
             session()->setFlashdata('success', 'Semua data berhasil dihapus!');
-            return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
+            return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
             
         } catch (\Exception $e) {
             session()->setFlashdata('error', 'Gagal menghapus data: ' . $e->getMessage());
-            return redirect()->to('user/barang/peralatandanmesin/alatkedokterankesehatan/kelompokalatkedokterankesehatan');
+            return redirect()->to('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium');
         }
     }
 
     // Method untuk export data berdasarkan kelompok
-    public function exportAlatKedokteranKesehatanList($kelompokSlug)
+    public function exportAlatLaboratoriumList($kelompokSlug)
     {
         // Mapping slug ke kelompok yang sebenarnya
         $kelompokMapping = [
-            'alatkedokteran' => 'ALAT KEDOKTERAN',
-            'alatkesehatanumum' => 'ALAT KESEHATAN UMUM'
+            'unitalatlaboratorium' => 'UNIT ALAT LABORATORIUM',
+            'unitalatlabkimiapelajar' => 'UNIT ALAT LABORATORIUM KIMIA PELAJAR',
+            'alatlabfisikanuklir' => 'ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA',
+            'alatproteksiradiasi' => 'ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN',
+            'radiationapplication' => 'RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY',
+            'alatlablingkunganhidup' => 'ALAT LABORATORIUM LINGKUNGAN HIDUP',
+            'peralatanlabhydrodinamica' => 'PERALATAN LABORATORIUM HYDRODINAMICA',
+            'alatlabstandarisasikalibrasi' => 'ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI'
         ];
         
         $kelompok = $kelompokMapping[$kelompokSlug] ?? '';
@@ -424,14 +445,14 @@ class AlatKedokteranKesehatan extends BaseController
         }
         
         try {
-            $data = $this->alatKedokteranKesehatanModel->getByKelompok($kelompok);
+            $data = $this->alatLaboratoriumModel->getByKelompok($kelompok);
             
             if (empty($data)) {
                 session()->setFlashdata('error', 'Tidak ada data untuk diekspor pada kelompok ' . $kelompok);
                 return redirect()->back();
             }
             
-            $filename = 'alat_kedokteran_kesehatan_' . strtolower(str_replace([' ', '/'], '_', $kelompok)) . '_' . date('Y-m-d_H-i-s') . '.csv';
+            $filename = 'alat_laboratorium_' . strtolower(str_replace([' ', '/', '&'], '_', $kelompok)) . '_' . date('Y-m-d_H-i-s') . '.csv';
             
             header('Content-Type: text/csv');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -494,7 +515,7 @@ class AlatKedokteranKesehatan extends BaseController
     public function stats()
     {
         try {
-            $stats = $this->alatKedokteranKesehatanModel->getDashboardData();
+            $stats = $this->alatLaboratoriumModel->getDashboardData();
             return $this->response->setJSON($stats);
         } catch (\Exception $e) {
             return $this->response->setJSON(['error' => $e->getMessage()])->setStatusCode(500);
@@ -507,7 +528,7 @@ class AlatKedokteranKesehatan extends BaseController
         try {
             $apiData = $this->getApiData();
             
-            echo "<h3>Test API Alat Kedokteran dan Kesehatan</h3>";
+            echo "<h3>Test API Alat Laboratorium</h3>";
             echo "<p>Total data dari API: " . count($apiData) . "</p>";
             
             if (!empty($apiData)) {
@@ -524,21 +545,27 @@ class AlatKedokteranKesehatan extends BaseController
                 echo "<h4>Statistik Kelompok:</h4>";
                 echo "<pre>" . json_encode($kelompokStats, JSON_PRETTY_PRINT) . "</pre>";
                 
-                // Filter untuk kategori 3.07
+                // Filter untuk kategori 3.08
                 $validKelompok = [
-                    'ALAT KEDOKTERAN',
-                    'ALAT KESEHATAN UMUM'
+                    'UNIT ALAT LABORATORIUM',
+                    'UNIT ALAT LABORATORIUM KIMIA PELAJAR',
+                    'ALAT LABORATORIUM FISIKA NUKLIR/ELEKTRONIKA',
+                    'ALAT PROTEKSI RADIASI/PROTEKSI LINGKUNGAN',
+                    'RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY',
+                    'ALAT LABORATORIUM LINGKUNGAN HIDUP',
+                    'PERALATAN LABORATORIUM HYDRODINAMICA',
+                    'ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI'
                 ];
                 
                 $filteredData = array_filter($apiData, function($item) use ($validKelompok) {
                     return in_array(strtoupper($item['kelompok'] ?? ''), $validKelompok);
                 });
                 
-                echo "<h4>Data yang akan diimport (kategori 3.07):</h4>";
+                echo "<h4>Data yang akan diimport (kategori 3.08):</h4>";
                 echo "<p>Total: " . count($filteredData) . " dari " . count($apiData) . " data</p>";
                 
                 if (!empty($filteredData)) {
-                    echo "<h5>Sample data kategori 3.07:</h5>";
+                    echo "<h5>Sample data kategori 3.08:</h5>";
                     echo "<pre>" . json_encode(array_slice($filteredData, 0, 3), JSON_PRETTY_PRINT) . "</pre>";
                 }
                 
@@ -571,10 +598,23 @@ class AlatKedokteranKesehatan extends BaseController
         }
         
         try {
-            $results = $this->alatKedokteranKesehatanModel->searchAlatKedokteranKesehatan($searchTerm, $kelompok, 10);
+            $results = $this->alatLaboratoriumModel->searchAlatLaboratorium($searchTerm, $kelompok, 10);
             return $this->response->setJSON(['results' => $results]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['error' => $e->getMessage()])->setStatusCode(500);
         }
     }
+    // Tambahkan method helper untuk mapping URL-safe ke kelompok asli
+private function mapUrlToKelompok($urlParam)
+{
+    $mapping = [
+        'RADIATION_APPLICATION_NON_DESTRUCTIVE_TESTING_LABORATORY' => 'RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY'
+    ];
+    
+    return $mapping[strtoupper($urlParam)] ?? urldecode($urlParam);
+}
+public function radiationApplicationLab()
+{
+    return $this->kelompokDetail('RADIATION APPLICATION & NON DESTRUCTIVE TESTING LABORATORY');
+}
 }
