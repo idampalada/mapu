@@ -576,29 +576,61 @@ $routes->get('user/barang/peralatandanmesin/alatbengkelukur/bengkeltakbermesin',
 $routes->get('user/barang/peralatandanmesin/alatbengkelukur/alatukur', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::kelompokDetail/ALAT UKUR');
 
 
-// Debug routes (hanya untuk development)
-if (ENVIRONMENT === 'development') {
-    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-api', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugApi');
-    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-import', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugImport');
-    $routes->get('user/barang/peralatandanmesin/alatbengkelukur/debug-database', 'User\Barang\PeralatanDanMesin\AlatBengkelAlatUkur::debugDatabase');
-}
+
 
 // 3.04 Alat Pertanian
 $routes->get('user/barang/peralatandanmesin/alatpertanian', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpertanian');
 $routes->get('user/barang/peralatandanmesin/alatpertanian/alatpengolahan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpengolahan');
 
-// 3.05 Alat Kantor & Rumah Tangga
+// ================== 3.05 ALAT KANTOR DAN RUMAH TANGGA ==================
+// Route utama alat kantor rumah tangga (redirect ke kelompokalatkantorrt)
 $routes->get('user/barang/peralatandanmesin/alatkantorrt', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkantorrt');
-$routes->get('user/barang/peralatandanmesin/alatkantorrt/alatkantor', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkantor');
-$routes->get('user/barang/peralatandanmesin/alatkantorrt/alatrumahTangga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatrumahTangga');
 
-// 3.06 Alat Studio, Komunikasi dan Pemancar
+// ========== ROUTES UNTUK ALAT KANTOR DAN RUMAH TANGGA (TERPUSAT) ==========
+// Routes langsung ke AlatKantorRumahTangga controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/dashboard', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/kelompokalatkantorrt', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::kelompokAlatKantorRumahTangga');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/kelompokalatkantorrt/(:any)', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatkantorrt/tambah', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::tambah');
+$routes->post('user/barang/peralatandanmesin/alatkantorrt/importFromApi', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatkantorrt/resetData', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::resetData');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/exportAlatKantorRumahTanggaList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::exportAlatKantorRumahTanggaList/$1');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/stats', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::stats');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/test-api', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::testApi');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/search', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/alatkantor', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::kelompokDetail/ALAT KANTOR');
+$routes->get('user/barang/peralatandanmesin/alatkantorrt/alatrumahTangga', 'User\Barang\PeralatanDanMesin\AlatKantorRumahTangga::kelompokDetail/ALAT RUMAH TANGGA');
+// ================== 3.06 ALAT STUDIO, KOMUNIKASI DAN PEMANCAR ==================
+// Route utama alat studio komunikasi pemancar (redirect ke kelompok utama)
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatstudiokomunikasipemancar');
+
+// ========== ROUTES UNTUK ALAT STUDIO, KOMUNIKASI DAN PEMANCAR (TERPUSAT) ==========
+// Routes langsung ke AlatStudioKomunikasiPemancar controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/dashboard', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokAlatStudioKomunikasiPemancar');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/(:any)', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/tambah', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::tambah');
+$routes->post('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/importFromApi', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/resetData', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::resetData');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/exportAlatStudioKomunikasiPemancarList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::exportAlatStudioKomunikasiPemancarList/$1');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/stats', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::stats');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/test-api', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::testApi');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/search', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
 $routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatstudiokomunikasi');
-$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatstudio', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatstudio');
-$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatkomunikasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkomunikasi');
-$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatanpemancar', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanpemancar');
-$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatankomunikasiNavigasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatankomunikasiNavigasi');
-
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatstudio', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/ALAT STUDIO');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/alatkomunikasi', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/ALAT KOMUNIKASI');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatanpemancar', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/PERALATAN PEMANCAR');
+$routes->get('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatankomunikasiNavigasi', 'User\Barang\PeralatanDanMesin\AlatStudioKomunikasiPemancar::kelompokDetail/PERALATAN KOMUNIKASI NAVIGASI');
 // 3.07 Alat Kedokteran dan Kesehatan
 $routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkedokterankesehatan');
 $routes->get('user/barang/peralatandanmesin/alatkedokterankesehatan/alatkedokteran', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkedokteran');

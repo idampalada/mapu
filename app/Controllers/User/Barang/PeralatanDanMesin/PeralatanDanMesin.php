@@ -82,46 +82,50 @@ public function alatukur()
     }
 
     // ================== 3.05 ALAT KANTOR & RUMAH TANGGA ==================
-    public function alatkantorrt()
-    {
-        return view('user/barang/peralatandanmesin/alatkantorrt');
-    }
+public function alatkantorrt()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkantorrt/kelompokalatkantorrt');
+}
 
-    public function alatkantor()
-    {
-        return view('user/barang/peralatandanmesin/alatkantorrt/alatkantor');
-    }
+public function alatkantor()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkantorrt/kelompokalatkantorrt/ALAT KANTOR');
+}
 
-    public function alatrumahTangga()
-    {
-        return view('user/barang/peralatandanmesin/alatkantorrt/alatrumahTangga');
-    }
+public function alatrumahTangga()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkantorrt/kelompokalatkantorrt/ALAT RUMAH TANGGA');
+}
 
     // ================== 3.06 ALAT STUDIO, KOMUNIKASI DAN PEMANCAR ==================
     public function alatstudiokomunikasi()
-    {
-        return view('user/barang/peralatandanmesin/alatstudiokomunikasi');
-    }
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar');
+}
+public function alatstudiokomunikasipemancar()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar');
+}
 
-    public function alatstudio()
-    {
-        return view('user/barang/peralatandanmesin/alatstudiokomunikasi/alatstudio');
-    }
+public function alatstudio()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/ALAT STUDIO');
+}
 
-    public function alatkomunikasi()
-    {
-        return view('user/barang/peralatandanmesin/alatstudiokomunikasi/alatkomunikasi');
-    }
+public function alatkomunikasi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/ALAT KOMUNIKASI');
+}
 
-    public function peralatanpemancar()
-    {
-        return view('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatanpemancar');
-    }
+public function peralatanpemancar()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/PERALATAN PEMANCAR');
+}
 
-    public function peralatankomunikasiNavigasi()
-    {
-        return view('user/barang/peralatandanmesin/alatstudiokomunikasi/peralatankomunikasiNavigasi');
-    }
+public function peralatankomunikasiNavigasi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatstudiokomunikasipemancar/kelompokalatstudiokomunikasipemancar/PERALATAN KOMUNIKASI NAVIGASI');
+}
 
     // ================== 3.07 ALAT KEDOKTERAN DAN KESEHATAN ==================
     public function alatkedokterankesehatan()
