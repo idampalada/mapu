@@ -687,13 +687,31 @@ $routes->get('user/barang/peralatandanmesin/alatlaboratorium/peralatanlabhydrodi
 $routes->get('user/barang/peralatandanmesin/alatlaboratorium/alatlabstandarisasikalibrasi', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::kelompokDetail/ALAT LABORATORIUM STANDARISASI KALIBRASI & INSTRUMENTASI');
 // Tambahkan route khusus untuk yang bermasalah SEBELUM route umum
 $routes->get('user/barang/peralatandanmesin/alatlaboratorium/kelompokalatlaboratorium/RADIATION_APPLICATION_NON_DESTRUCTIVE_TESTING_LABORATORY', 'User\Barang\PeralatanDanMesin\AlatLaboratorium::radiationApplicationLab');
-// 3.09 Alat Persenjataan
+// ================== 3.09 ALAT PERSENJATAAN ==================
+// Route utama alat persenjataan (redirect ke kelompokalatpersenjataan)
 $routes->get('user/barang/peralatandanmesin/alatpersenjataan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpersenjataan');
-$routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjataapi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::senjataapi');
-$routes->get('user/barang/peralatandanmesin/alatpersenjataan/persenjataannonsenjataapi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::persenjataannonsenjataapi');
-$routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjatasinar', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::senjatasinar');
-$routes->get('user/barang/peralatandanmesin/alatpersenjataan/alatkhususkepolisian', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkhususkepolisian');
 
+// ========== ROUTES UNTUK ALAT PERSENJATAAN (TERPUSAT) ==========
+// Routes langsung ke AlatPersenjataan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/dashboard', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokAlatPersenjataan');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan/(:any)', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatpersenjataan/tambah', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::tambah');
+$routes->post('user/barang/peralatandanmesin/alatpersenjataan/importFromApi', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatpersenjataan/resetData', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::resetData');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/exportAlatPersenjataanList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::exportAlatPersenjataanList/$1');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/stats', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::stats');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/test-api', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::testApi');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/search', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjataapi', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokDetail/SENJATA API');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/persenjataannonsenjataapi', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokDetail/PERSENJATAAN NON SENJATA API');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/senjatasinar', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokDetail/SENJATA SINAR');
+$routes->get('user/barang/peralatandanmesin/alatpersenjataan/alatkhususkepolisian', 'User\Barang\PeralatanDanMesin\AlatPersenjataan::kelompokDetail/ALAT KHUSUS KEPOLISIAN');
 // 3.10 Komputer
 // 3.10 Komputer - ROUTES LENGKAP
 $routes->get('user/barang/peralatandanmesin/komputer', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::komputer');
@@ -801,27 +819,81 @@ $routes->get('user/peralatankomputer/kelompokperalatankomputer/(:segment)', 'Use
 
 // TEST API ROUTE (opsional)
 $routes->get('user/barang/peralatandanmesin/komputer/peralatankomputer/test-api', 'User\Barang\PeralatanDanMesin\Komputer\PeralatanKomputer::testApi');
-// 3.11 Alat Eksplorasi
+// ================== 3.11 ALAT EKSPLORASI ==================
+// Route utama alat eksplorasi (redirect ke kelompokalateksplorasi)
 $routes->get('user/barang/peralatandanmesin/alateksplorasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alateksplorasi');
-$routes->get('user/barang/peralatandanmesin/alateksplorasi/alateksplorasitopografi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alateksplorasitopografi');
-$routes->get('user/barang/peralatandanmesin/alateksplorasi/alateksplorasigeofisika', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alateksplorasigeofisika');
 
+// ========== ROUTES UNTUK ALAT EKSPLORASI (TERPUSAT) ==========
+// Routes langsung ke AlatEksplorasi controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/dashboard', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::dashboard');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::kelompokAlatEksplorasi');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi/(:any)', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alateksplorasi/tambah', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::tambah');
+$routes->post('user/barang/peralatandanmesin/alateksplorasi/importFromApi', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alateksplorasi/resetData', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::resetData');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/exportAlatEksplorasiList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::exportAlatEksplorasiList/$1');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/stats', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::stats');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/test-api', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::testApi');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/search', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/alateksplorasitopografi', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::kelompokDetail/ALAT EKSPLORASI TOPOGRAFI');
+$routes->get('user/barang/peralatandanmesin/alateksplorasi/alateksplorasigeofisika', 'User\Barang\PeralatanDanMesin\AlatEksplorasi::kelompokDetail/ALAT EKSPLORASI GEOFISIKA');
 // 3.12 Alat Pengeboran
 $routes->get('user/barang/peralatandanmesin/alatpengeboran', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpengeboran');
 $routes->get('user/barang/peralatandanmesin/alatpengeboran/alatpengeboran_mesin', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpengeboran_mesin');
 $routes->get('user/barang/peralatandanmesin/alatpengeboran/alatpengeboran_nonmesin', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatpengeboran_nonmesin');
 
-// 3.13 Alat Produksi, Pengolahan dan Pemurnian
+// ================== 3.13 ALAT PRODUKSI, PENGOLAHAN DAN PEMURNIAN ==================
+// Route utama alat produksi pengolahan (redirect ke kelompokalatproduksipengolahan)
 $routes->get('user/barang/peralatandanmesin/alatproduksipengolahan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatproduksipengolahan');
-$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/sumur', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::sumur');
-$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/produksi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::produksi');
-$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/pengolahanpemurnian', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::pengolahanpemurnian');
 
-// 3.14 Alat Bantu Eksplorasi
+// ========== ROUTES UNTUK ALAT PRODUKSI PENGOLAHAN (TERPUSAT) ==========
+// Routes langsung ke AlatProduksiPengolahan controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/dashboard', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::kelompokAlatProduksiPengolahan');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan/(:any)', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatproduksipengolahan/tambah', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::tambah');
+$routes->post('user/barang/peralatandanmesin/alatproduksipengolahan/importFromApi', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatproduksipengolahan/resetData', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::resetData');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/exportAlatProduksiPengolahanList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::exportAlatProduksiPengolahanList/$1');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/stats', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::stats');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/test-api', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::testApi');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/search', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/sumur', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::kelompokDetail/SUMUR');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/produksi', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::kelompokDetail/PRODUKSI');
+$routes->get('user/barang/peralatandanmesin/alatproduksipengolahan/pengolahandanpemurnian', 'User\Barang\PeralatanDanMesin\AlatProduksiPengolahan::kelompokDetail/PENGOLAHAN DAN PEMURNIAN');
+// ================== 3.14 ALAT BANTU EKSPLORASI ==================
+// Route utama alat bantu eksplorasi (redirect ke kelompokalatbantueksplorasi)
 $routes->get('user/barang/peralatandanmesin/alatbantueksplorasi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbantueksplorasi');
-$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantueksplorasi_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbantueksplorasi_detail');
-$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantuproduksi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatbantuproduksi');
 
+// ========== ROUTES UNTUK ALAT BANTU EKSPLORASI (TERPUSAT) ==========
+// Routes langsung ke AlatBantuEksplorasi controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/dashboard', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/kelompokalatbantueksplorasi', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::kelompokAlatBantuEksplorasi');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/kelompokalatbantueksplorasi/(:any)', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatbantueksplorasi/tambah', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::tambah');
+$routes->post('user/barang/peralatandanmesin/alatbantueksplorasi/importFromApi', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatbantueksplorasi/resetData', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::resetData');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/exportAlatBantuEksplorasiList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::exportAlatBantuEksplorasiList/$1');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/stats', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::stats');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/test-api', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::testApi');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/search', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantueksplorasi', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::kelompokDetail/ALAT BANTU EKSPLORASI');
+$routes->get('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantuproduksi', 'User\Barang\PeralatanDanMesin\AlatBantuEksplorasi::kelompokDetail/ALAT BANTU PRODUKSI');
 // 3.15 Alat Keselamatan Kerja
 $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatkeselamatankerja');
 $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja/alatdeteksi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatdeteksi');

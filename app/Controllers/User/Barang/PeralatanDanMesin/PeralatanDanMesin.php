@@ -191,27 +191,27 @@ public function peralatankomunikasiNavigasi()
     // ================== 3.09 ALAT PERSENJATAAN ==================
     public function alatpersenjataan()
     {
-        return view('user/barang/peralatandanmesin/alatpersenjataan');
+        return redirect()->to('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan');
     }
 
     public function senjataapi()
     {
-        return view('user/barang/peralatandanmesin/alatpersenjataan/senjataapi');
+        return redirect()->to('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan/SENJATA API');
     }
 
     public function persenjataannonsenjataapi()
     {
-        return view('user/barang/peralatandanmesin/alatpersenjataan/persenjataannonsenjataapi');
+        return redirect()->to('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan/PERSENJATAAN NON SENJATA API');
     }
 
     public function senjatasinar()
     {
-        return view('user/barang/peralatandanmesin/alatpersenjataan/senjatasinar');
+        return redirect()->to('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan/SENJATA SINAR');
     }
 
     public function alatkhususkepolisian()
     {
-        return view('user/barang/peralatandanmesin/alatpersenjataan/alatkhususkepolisian');
+        return redirect()->to('user/barang/peralatandanmesin/alatpersenjataan/kelompokalatpersenjataan/ALAT KHUSUS KEPOLISIAN');
     }
 
     // ================== 3.10 KOMPUTER ==================
@@ -231,20 +231,20 @@ public function peralatankomputer()
 }
 
     // ================== 3.11 ALAT EKSPLORASI ==================
-    public function alateksplorasi()
-    {
-        return view('user/barang/peralatandanmesin/alateksplorasi');
-    }
+public function alateksplorasi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi');
+}
 
-    public function alateksplorasitopografi()
-    {
-        return view('user/barang/peralatandanmesin/alateksplorasi/alateksplorasitopografi');
-    }
+public function alateksplorasitopografi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi/ALAT EKSPLORASI TOPOGRAFI');
+}
 
-    public function alateksplorasigeofisika()
-    {
-        return view('user/barang/peralatandanmesin/alateksplorasi/alateksplorasigeofisika');
-    }
+public function alateksplorasigeofisika()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi/ALAT EKSPLORASI GEOFISIKA');
+}
 
     // ================== 3.12 ALAT PENGEBORAN ==================
     public function alatpengeboran()
@@ -263,41 +263,41 @@ public function peralatankomputer()
     }
 
     // ================== 3.13 ALAT PRODUKSI, PENGOLAHAN DAN PEMURNIAN ==================
-    public function alatproduksipengolahan()
-    {
-        return view('user/barang/peralatandanmesin/alatproduksipengolahan');
-    }
+public function alatproduksipengolahan()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan');
+}
 
-    public function sumur()
-    {
-        return view('user/barang/peralatandanmesin/alatproduksipengolahan/sumur');
-    }
+public function sumur()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan/SUMUR');
+}
 
-    public function produksi()
-    {
-        return view('user/barang/peralatandanmesin/alatproduksipengolahan/produksi');
-    }
+public function produksi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan/PRODUKSI');
+}
 
-    public function pengolahanpemurnian()
-    {
-        return view('user/barang/peralatandanmesin/alatproduksipengolahan/pengolahanpemurnian');
-    }
+public function pengolahandanpemurnian()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatproduksipengolahan/kelompokalatproduksipengolahan/PENGOLAHAN DAN PEMURNIAN');
+}
 
     // ================== 3.14 ALAT BANTU EKSPLORASI ==================
-    public function alatbantueksplorasi()
-    {
-        return view('user/barang/peralatandanmesin/alatbantueksplorasi');
-    }
+public function alatbantueksplorasi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbantueksplorasi/kelompokalatbantueksplorasi');
+}
 
-    public function alatbantueksplorasi_detail()
-    {
-        return view('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantueksplorasi_detail');
-    }
+public function alatbantueksplorasi_detail()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbantueksplorasi/kelompokalatbantueksplorasi/ALAT BANTU EKSPLORASI');
+}
 
-    public function alatbantuproduksi()
-    {
-        return view('user/barang/peralatandanmesin/alatbantueksplorasi/alatbantuproduksi');
-    }
+public function alatbantuproduksi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatbantueksplorasi/kelompokalatbantueksplorasi/ALAT BANTU PRODUKSI');
+}
 
     // ================== 3.15 ALAT KESELAMATAN KERJA ==================
     public function alatkeselamatankerja()
