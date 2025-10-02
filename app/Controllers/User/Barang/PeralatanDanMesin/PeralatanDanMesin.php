@@ -71,15 +71,15 @@ public function alatukur()
     return redirect()->to('user/barang/peralatandanmesin/alatbengkelukur/kelompokalatbengkelukur/ALAT UKUR');
 }
     // ================== 3.04 ALAT PERTANIAN ==================
-    public function alatpertanian()
-    {
-        return view('user/barang/peralatandanmesin/alatpertanian');
-    }
+public function alatpertanian()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatpertanian/kelompokalatpertanian');
+}
 
-    public function alatpengolahan()
-    {
-        return view('user/barang/peralatandanmesin/alatpertanian/alatpengolahan');
-    }
+public function alatpengolahan()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatpertanian/kelompokalatpertanian/ALAT PENGOLAHAN');
+}
 
     // ================== 3.05 ALAT KANTOR & RUMAH TANGGA ==================
 public function alatkantorrt()
@@ -246,22 +246,21 @@ public function alateksplorasigeofisika()
     return redirect()->to('user/barang/peralatandanmesin/alateksplorasi/kelompokalateksplorasi/ALAT EKSPLORASI GEOFISIKA');
 }
 
-    // ================== 3.12 ALAT PENGEBORAN ==================
-    public function alatpengeboran()
-    {
-        return view('user/barang/peralatandanmesin/alatpengeboran');
-    }
+// ================== 3.12 ALAT PENGEBORAN ==================
+public function alatpengeboran()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatpengeboran/kelompokalatpengeboran');
+}
 
-    public function alatpengeboran_mesin()
-    {
-        return view('user/barang/peralatandanmesin/alatpengeboran/alatpengeboran_mesin');
-    }
+public function alatpengeboranmesin()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatpengeboran/kelompokalatpengeboran/ALAT PENGEBORAN MESIN');
+}
 
-    public function alatpengeboran_nonmesin()
-    {
-        return view('user/barang/peralatandanmesin/alatpengeboran/alatpengeboran_nonmesin');
-    }
-
+public function alatpengeborannonmesin()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatpengeboran/kelompokalatpengeboran/ALAT PENGEBORAN NON MESIN');
+}
     // ================== 3.13 ALAT PRODUKSI, PENGOLAHAN DAN PEMURNIAN ==================
 public function alatproduksipengolahan()
 {
@@ -300,30 +299,30 @@ public function alatbantuproduksi()
 }
 
     // ================== 3.15 ALAT KESELAMATAN KERJA ==================
-    public function alatkeselamatankerja()
-    {
-        return view('user/barang/peralatandanmesin/alatkeselamatankerja');
-    }
+public function alatkeselamatankerja()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkeselamatankerja/kelompokalatkeselamatankerja');
+}
 
-    public function alatdeteksi()
-    {
-        return view('user/barang/peralatandanmesin/alatkeselamatankerja/alatdeteksi');
-    }
+public function alatdeteksi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkeselamatankerja/kelompokalatkeselamatankerja/ALAT DETEKSI');
+}
 
-    public function alatpelindung()
-    {
-        return view('user/barang/peralatandanmesin/alatkeselamatankerja/alatpelindung');
-    }
+public function alatpelindung()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkeselamatankerja/kelompokalatkeselamatankerja/ALAT PELINDUNG');
+}
 
-    public function alatsar()
-    {
-        return view('user/barang/peralatandanmesin/alatkeselamatankerja/alatsar');
-    }
+public function alatsar()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkeselamatankerja/kelompokalatkeselamatankerja/ALAT SAR');
+}
 
-    public function alatkerjaPenerbangan()
-    {
-        return view('user/barang/peralatandanmesin/alatkeselamatankerja/alatkerjaPenerbangan');
-    }
+public function alatkerjapenerbangan()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatkeselamatankerja/kelompokalatkeselamatankerja/ALAT KERJA PENERBANGAN');
+}
 
     // ================== 3.16 ALAT PERAGA ==================
     public function alatperaga()
@@ -347,22 +346,21 @@ public function alatbantuproduksi()
         return view('user/barang/peralatandanmesin/peralatanprofesiproduksi/unitperalatanprosesproduksi');
     }
 
-    // ================== 3.18 RAMBU-RAMBU ==================
-    public function ramburambu()
-    {
-        return view('user/barang/peralatandanmesin/ramburambu');
-    }
+// ================== 3.18 RAMBU-RAMBU ==================
+public function ramburambu()
+{
+    return redirect()->to('user/barang/peralatandanmesin/ramburambu/kelompokramburambu');
+}
 
-    public function rambulalulintas_darat()
-    {
-        return view('user/barang/peralatandanmesin/ramburambu/rambulalulintas_darat');
-    }
+public function rambulalulintasdarat()
+{
+    return redirect()->to('user/barang/peralatandanmesin/ramburambu/kelompokramburambu/RAMBU-RAMBU LALU LINTAS DARAT');
+}
 
-    public function rambulalulintas_udara()
-    {
-        return view('user/barang/peralatandanmesin/ramburambu/rambulalulintas_udara');
-    }
-
+public function rambulalulintasudara()
+{
+    return redirect()->to('user/barang/peralatandanmesin/ramburambu/kelompokramburambu/RAMBU-RAMBU LALU LINTAS UDARA');
+}
     // ================== 3.19 PERALATAN OLAHRAGA ==================
     public function peralatanolahraga()
     {
