@@ -1061,14 +1061,15 @@
                                 <div class="form-group">
                                     <label for="kategori_id">Kategori</label>
                                     <select class="form-control" id="kategori_id" name="kategori_id" required>
-                                        <option value="" class="text-muted" disabled selected> Pilih Kategori Aset</option>
-                                        <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
-                                        <option class="text-muted" disabled selected>Sedan, Hatchback, dan SUV</option>
-                                        <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
-                                        <option class="text-muted" disabled selected>Bus, Truk, dan Kendaraan Box</option>
-                                        <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
-                                        <option class="text-muted" disabled selected>Ambulance, Mobil Derek, dan Mobil Crane</option>
-                                    </select>
+  <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
+  <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
+  <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
+  <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
+  <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
+  <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
+  <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
+</select>
+
                                 </div>
                                 <div class="form-group">
                                     <label for="no_sk_psp">No SK PSP</label>
