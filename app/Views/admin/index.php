@@ -815,7 +815,12 @@
                                                             <?php endif; ?>
                                                         </td>
                                                         <td><?= $kembali['tanggal_pinjam'] ?></td>
-                                                        <td><?= $kembali['tanggal_kembali'] ?></td>
+                                                        <td>
+       <?= !empty($kembali['tanggal_kembali']) ? date('d/m/Y', strtotime($kembali['tanggal_kembali'])) : '-' ?>
+       <div class="small text-muted">
+           <?= date('H:i:s', strtotime($kembali['created_at'])) ?>
+       </div>
+   </td>
                                                         <td>
                                                             <button class="btn btn-sm btn-success"
                                                                 onclick="verifikasiPengembalian(<?= $kembali['id'] ?>, 'disetujui')">

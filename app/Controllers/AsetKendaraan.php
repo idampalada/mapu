@@ -910,7 +910,8 @@ class AsetKendaraan extends BaseController
             'tanggal_pinjam' => $tanggal_pinjam ?? '',
             'tanggal_kembali' => $tanggal_kembali ?? '',
             'surat_pengembalian' => $suratPengembalianName ?? '',
-            'berita_acara_pengembalian' => $beritaAcaraName ?? ''
+            'berita_acara_pengembalian' => $beritaAcaraName ?? '',
+            'created_at' => date('Y-m-d H:i:s')
         ];
         sendPengembalianNotification($notifData, 'new');
         log_message('debug', '✅ Notifikasi berhasil dikirim');

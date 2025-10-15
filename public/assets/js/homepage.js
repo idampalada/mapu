@@ -754,30 +754,76 @@ function submitPenolakan() {
   }
 
   const formData = new FormData();
+  const baseUrl = window.location.origin;
+  let endpoint = "";
+  let paramName = "";
 
-  // PERBAIKAN: Parameter yang benar untuk setiap tipe
-  if (tipe === "ruangan") {
-    formData.append("pinjam_id", id);
-  } else if (tipe === "kendaraan") {
+  // PERBAIKAN: Menentukan endpoint berdasarkan tipe kendaraan atau pengembalian
+  if (tipe === "kendaraan" || tipe === "pengembalian") {
     if (jenis === "peminjaman") {
-      formData.append("pinjam_id", id);
+      // Jika tipe pengembalian tapi jenis peminjaman, ini untuk pengembalian kendaraan
+      if (tipe === "pengembalian") {
+        endpoint = baseUrl + "/admin/AsetKendaraan/verifikasiPengembalian";
+        paramName = "kembali_id";
+      } else {
+        endpoint = baseUrl + "/AsetKendaraan/verifikasiPeminjaman";
+        paramName = "pinjam_id";
+      }
     } else {
-      formData.append("kembali_id", id);
+      endpoint = baseUrl + "/admin/AsetKendaraan/verifikasiPengembalian";
+      paramName = "kembali_id";
     }
+  } else if (tipe === "ruangan") {
+    endpoint = baseUrl + "/admin/verifikasi-ruangan/verifikasiPeminjaman";
+    paramName = "pinjam_id";
   } else if (tipe === "barang") {
     if (jenis === "peminjaman") {
-      formData.append("pinjam_id", id);
+      endpoint = baseUrl + "/admin/User/Barang/verifikasiPeminjaman";
+      paramName = "pinjam_id";
     } else {
-      formData.append("id", id);
+      endpoint = baseUrl + "/admin/User/Barang/verifikasiPengembalian";
+      paramName = "id";
     }
   }
 
+  // Tambahkan prefix /admin/ jika belum ada
+  if (
+    endpoint &&
+    !endpoint.includes("/admin/") &&
+    (tipe === "pengembalian" || jenis === "pengembalian")
+  ) {
+    // Jika endpoint tidak memiliki /admin/ dan terkait pengembalian
+    endpoint = endpoint.replace(baseUrl, baseUrl + "/admin");
+  }
+
+  // Jika masih tidak ada endpoint
+  if (!endpoint) {
+    console.error(
+      "Endpoint tidak ditemukan untuk tipe:",
+      tipe,
+      "dan jenis:",
+      jenis
+    );
+    Swal.fire({
+      icon: "error",
+      title: "Error Konfigurasi",
+      text: "Tidak dapat menentukan endpoint. Silakan hubungi administrator.",
+      confirmButtonColor: "#dc3545",
+    });
+    return;
+  }
+
+  // Parameter
+  formData.append(paramName, id);
   formData.append("status", "ditolak");
   formData.append("keterangan", alasan);
 
   if (dokumenInput && dokumenInput.files.length > 0) {
     formData.append("dokumen_tambahan", dokumenInput.files[0]);
   }
+
+  console.log("Final endpoint:", endpoint);
+  console.log("Form data:", Array.from(formData.entries()));
 
   Swal.fire({
     title: "Memproses...",
@@ -787,29 +833,6 @@ function submitPenolakan() {
       Swal.showLoading();
     },
   });
-
-  // PERBAIKAN: Endpoint yang BENAR untuk setiap tipe
-  let endpoint = "";
-
-  if (tipe === "ruangan") {
-    // RUANGAN SELALU KE PEMINJAMAN (tidak ada pengembalian ruangan)
-    endpoint = "/admin/User/Ruangan/verifikasiPeminjaman";
-  } else if (tipe === "kendaraan") {
-    if (jenis === "peminjaman") {
-      endpoint = "/AsetKendaraan/verifikasiPeminjaman";
-    } else {
-      endpoint = "/AsetKendaraan/verifikasiPengembalianKendaraan";
-    }
-  } else if (tipe === "barang") {
-    if (jenis === "peminjaman") {
-      endpoint = "/admin/User/Barang/verifikasiPeminjaman";
-    } else {
-      endpoint = "/admin/User/Barang/verifikasiPengembalian";
-    }
-  }
-
-  console.log("Final endpoint:", endpoint);
-  console.log("Form data:", Array.from(formData.entries()));
 
   fetch(endpoint, {
     method: "POST",
@@ -829,6 +852,10 @@ function submitPenolakan() {
     })
     .then((data) => {
       console.log("Response data:", data);
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
 
       Swal.fire({
         icon: data.success ? "success" : "error",
@@ -856,6 +883,35 @@ function submitPenolakan() {
         confirmButtonColor: "#dc3545",
       });
     });
+}
+
+// Fungsi tambahan untuk debugging HTML modal
+function debugModal() {
+  console.log("==== MODAL DEBUG ====");
+  console.log("Modal element:", document.getElementById("modalTolak"));
+  const formElements = document
+    .getElementById("modalTolak")
+    ?.querySelectorAll("input, select, textarea");
+  if (formElements) {
+    formElements.forEach((el) => {
+      console.log(
+        `Element ${el.id || el.name}: type=${el.type}, value="${el.value}"`
+      );
+    });
+  }
+  console.log("====================");
+}
+
+// Panggil debugging modal ketika modal dibuka
+if (typeof bootstrap !== "undefined") {
+  document.addEventListener("DOMContentLoaded", function () {
+    const modalElement = document.getElementById("modalTolak");
+    if (modalElement) {
+      modalElement.addEventListener("shown.bs.modal", function () {
+        debugModal();
+      });
+    }
+  });
 }
 
 function verifikasiPeminjaman(id, status, keterangan = "") {

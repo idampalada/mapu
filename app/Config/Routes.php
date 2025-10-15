@@ -212,7 +212,7 @@ $routes->group('admin', ['filter' => 'role:admin,admin_gedungutama,admin_pusdati
         $routes->post('tambah', 'AsetKendaraan::tambah');
         $routes->delete('delete/(:num)', 'AsetKendaraan::delete/$1');
         $routes->post('verifikasiPeminjaman', 'AsetKendaraan::verifikasiPeminjaman');
-        $routes->post('verifikasiPengembalianKendaraan', 'AsetKendaraan::verifikasiPengembalian');
+        $routes->post('verifikasiPengembalian', 'AsetKendaraan::verifikasiPengembalian');
         $routes->get('getAsetById/(:num)', 'AsetKendaraan::getAsetById/$1');
         $routes->post('edit/(:num)', 'AsetKendaraan::edit/$1');
     });
@@ -955,14 +955,50 @@ $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja/alatdeteksi', '
 $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja/alatpelindung', 'User\Barang\PeralatanDanMesin\AlatKeselamatanKerja::kelompokDetail/ALAT PELINDUNG');
 $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja/alatsar', 'User\Barang\PeralatanDanMesin\AlatKeselamatanKerja::kelompokDetail/ALAT SAR');
 $routes->get('user/barang/peralatandanmesin/alatkeselamatankerja/alatkerjapenerbangan', 'User\Barang\PeralatanDanMesin\AlatKeselamatanKerja::kelompokDetail/ALAT KERJA PENERBANGAN');
-// 3.16 Alat Peraga
+// ================== 3.16 ALAT PERAGA ==================
+// Route utama alat peraga (redirect ke kelompokalatperaga)
 $routes->get('user/barang/peralatandanmesin/alatperaga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatperaga');
-$routes->get('user/barang/peralatandanmesin/alatperaga/alatperagapelatihanpercontohan', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::alatperagapelatihanpercontohan');
 
-// 3.17 Peralatan Profesi/Produksi
+// ========== ROUTES UNTUK ALAT PERAGA (TERPUSAT) ==========
+// Routes langsung ke AlatPeraga controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/alatperaga/dashboard', 'User\Barang\PeralatanDanMesin\AlatPeraga::dashboard');
+$routes->get('user/barang/peralatandanmesin/alatperaga/kelompokalatperaga', 'User\Barang\PeralatanDanMesin\AlatPeraga::kelompokAlatPeraga');
+$routes->get('user/barang/peralatandanmesin/alatperaga/kelompokalatperaga/(:any)', 'User\Barang\PeralatanDanMesin\AlatPeraga::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/alatperaga/tambah', 'User\Barang\PeralatanDanMesin\AlatPeraga::tambah');
+$routes->post('user/barang/peralatandanmesin/alatperaga/importFromApi', 'User\Barang\PeralatanDanMesin\AlatPeraga::importFromApi');
+$routes->post('user/barang/peralatandanmesin/alatperaga/resetData', 'User\Barang\PeralatanDanMesin\AlatPeraga::resetData');
+$routes->get('user/barang/peralatandanmesin/alatperaga/exportAlatPeragaList/(:segment)', 'User\Barang\PeralatanDanMesin\AlatPeraga::exportAlatPeragaList/$1');
+$routes->get('user/barang/peralatandanmesin/alatperaga/stats', 'User\Barang\PeralatanDanMesin\AlatPeraga::stats');
+$routes->get('user/barang/peralatandanmesin/alatperaga/test-api', 'User\Barang\PeralatanDanMesin\AlatPeraga::testApi');
+$routes->get('user/barang/peralatandanmesin/alatperaga/search', 'User\Barang\PeralatanDanMesin\AlatPeraga::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/alatperaga/alatperagapelatihanpercontohan', 'User\Barang\PeralatanDanMesin\AlatPeraga::kelompokDetail/ALAT PERAGA PELATIHAN DAN PERCONTOHAN');
+// ================== 3.17 PERALATAN PROFESI/PRODUKSI ==================
+// Route utama peralatan profesi/produksi (redirect ke kelompokperalatanprofesi)
 $routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanprofesiproduksi');
-$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/unitperalatanprosesproduksi', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::unitperalatanprosesproduksi');
 
+// ========== ROUTES UNTUK PERALATAN PROFESI/PRODUKSI (TERPUSAT) ==========
+// Routes langsung ke PeralatanProfesi controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/dashboard', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::dashboard');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/kelompokperalatanprofesi', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::kelompokPeralatanProfesi');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/kelompokperalatanprofesi/(:any)', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/peralatanprofesiproduksi/tambah', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::tambah');
+$routes->post('user/barang/peralatandanmesin/peralatanprofesiproduksi/importFromApi', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::importFromApi');
+$routes->post('user/barang/peralatandanmesin/peralatanprofesiproduksi/resetData', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::resetData');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/exportPeralatanProfesiList/(:segment)', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::exportPeralatanProfesiList/$1');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/stats', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::stats');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/test-api', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::testApi');
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/search', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/peralatanprofesiproduksi/unitperalatanprosesproduksi', 'User\Barang\PeralatanDanMesin\PeralatanProfesi::kelompokDetail/UNIT PERALATAN PROSES/PRODUKSI');
 // ================== 3.18 RAMBU-RAMBU ==================
 // Route utama rambu-rambu (redirect ke kelompokramburambu)
 $routes->get('user/barang/peralatandanmesin/ramburambu', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::ramburambu');
@@ -986,10 +1022,28 @@ $routes->get('user/barang/peralatandanmesin/ramburambu/search', 'User\Barang\Per
 // Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
 $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintasdarat', 'User\Barang\PeralatanDanMesin\RambuRambu::kelompokDetail/RAMBU-RAMBU LALU LINTAS DARAT');
 $routes->get('user/barang/peralatandanmesin/ramburambu/rambulalulintasudara', 'User\Barang\PeralatanDanMesin\RambuRambu::kelompokDetail/RAMBU-RAMBU LALU LINTAS UDARA');
-// 3.19 Peralatan Olahraga
+// ================== 3.19 PERALATAN OLAHRAGA ==================
+// Route utama peralatan olahraga (redirect ke kelompokperalatanolahraga)
 $routes->get('user/barang/peralatandanmesin/peralatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga');
-$routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanDanMesin::peralatanolahraga_detail');
 
+// ========== ROUTES UNTUK PERALATAN OLAHRAGA (TERPUSAT) ==========
+// Routes langsung ke PeralatanOlahraga controller (yang sebenarnya memproses data)
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/dashboard', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::dashboard');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/kelompokperalatanolahraga', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::kelompokPeralatanOlahraga');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/kelompokperalatanolahraga/(:any)', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::kelompokDetail/$1');
+
+// CRUD Operations
+$routes->post('user/barang/peralatandanmesin/peralatanolahraga/tambah', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::tambah');
+$routes->post('user/barang/peralatandanmesin/peralatanolahraga/importFromApi', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::importFromApi');
+$routes->post('user/barang/peralatandanmesin/peralatanolahraga/resetData', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::resetData');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/exportPeralatanOlahragaList/(:segment)', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::exportPeralatanOlahragaList/$1');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/stats', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::stats');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/test-api', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::testApi');
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/search', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::search');
+
+// ========== ROUTES ALTERNATIF (BACKWARD COMPATIBILITY) ==========
+// Redirect dari route lama ke yang baru - LETAKKAN DI AKHIR
+$routes->get('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail', 'User\Barang\PeralatanDanMesin\PeralatanOlahraga::kelompokDetail/PERALATAN OLAHRAGA');
 // ========== ROUTES UNTUK GEDUNG DAN BANGUNAN ==========
 // Halaman utama Gedung dan Bangunan
 $routes->get('user/barang/gedungdanbangunan', 'User\Barang\GedungDanBangunan\GedungDanBangunan::index');
@@ -1193,6 +1247,10 @@ $routes->get('user/barang/jalanirigasijaringan/jaringan/listrik', 'User\Barang\J
 $routes->get('user/barang/jalanirigasijaringan/jaringan/telepon', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN TELEPON');
 $routes->get('user/barang/jalanirigasijaringan/jaringan/gas', 'User\Barang\JalanIrigasiJaringan\Jaringan::kelompokDetail/JARINGAN GAS');
 
+
+// ========== ROUTES UNTUK Aset Tetap Lainnya ==========
+// Halaman utama Aset Tetap Lainnya
+$routes->get('user/barang/asettetaplainnya', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::index');
 // ========== ROUTES UNTUK BAHAN PERPUSTAKAAN (TERPUSAT) ==========
 // Routes melalui AsetTetapLainnya (untuk redirect)
 $routes->get('user/barang/asettetaplainnya/kelompokbahanperpustakaan', 'User\Barang\AsetTetapLainnya\AsetTetapLainnya::kelompokbahanperpustakaan');

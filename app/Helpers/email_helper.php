@@ -239,7 +239,7 @@ function sendPengembalianNotification($data, $type = 'new')
                     <li>Penanggung Jawab: {$data['nama_penanggung_jawab']}</li>
                     <li>NIP/NRP: {$data['nip_nrp']}</li>
                     <li>Tanggal Pinjam: " . date('d/m/Y', strtotime($data['tanggal_pinjam'])) . "</li>
-                    <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
+                    <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . " <span class='text-muted'>(Pukul: " . date('H:i:s', strtotime($data['created_at'])) . ")</span></li>
                     <li>Durasi Penggunaan: " . countDays($data['tanggal_pinjam'], $data['tanggal_kembali']) . " hari</li>
                 </ul>
             </div>

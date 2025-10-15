@@ -2,7 +2,7 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class AlatParagaModel extends Model
+class AlatPeragaModel extends Model
 {
     protected $table = 'alat_peraga';
     protected $primaryKey = 'id';

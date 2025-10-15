@@ -325,27 +325,25 @@ public function alatkerjapenerbangan()
 }
 
     // ================== 3.16 ALAT PERAGA ==================
-    public function alatperaga()
-    {
-        return view('user/barang/peralatandanmesin/alatperaga');
-    }
+public function alatperaga()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatperaga/kelompokalatperaga');
+}
 
-    public function alatperagapelatihanpercontohan()
-    {
-        return view('user/barang/peralatandanmesin/alatperaga/alatperagapelatihanpercontohan');
-    }
+public function alatperagapelatihanpercontohan()
+{
+    return redirect()->to('user/barang/peralatandanmesin/alatperaga/kelompokalatperaga/ALAT PERAGA PELATIHAN DAN PERCONTOHAN');
+}
+// ================== 3.17 PERALATAN PROFESI/PRODUKSI ==================
+public function peralatanprofesiproduksi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/peralatanprofesiproduksi/kelompokperalatanprofesi');
+}
 
-    // ================== 3.17 PERALATAN PROFESI/PRODUKSI ==================
-    public function peralatanprofesiproduksi()
-    {
-        return view('user/barang/peralatandanmesin/peralatanprofesiproduksi');
-    }
-
-    public function unitperalatanprosesproduksi()
-    {
-        return view('user/barang/peralatandanmesin/peralatanprofesiproduksi/unitperalatanprosesproduksi');
-    }
-
+public function unitperalatanprosesproduksi()
+{
+    return redirect()->to('user/barang/peralatandanmesin/peralatanprofesiproduksi/kelompokperalatanprofesi/UNIT PERALATAN PROSES/PRODUKSI');
+}
 // ================== 3.18 RAMBU-RAMBU ==================
 public function ramburambu()
 {
@@ -362,13 +360,13 @@ public function rambulalulintasudara()
     return redirect()->to('user/barang/peralatandanmesin/ramburambu/kelompokramburambu/RAMBU-RAMBU LALU LINTAS UDARA');
 }
     // ================== 3.19 PERALATAN OLAHRAGA ==================
-    public function peralatanolahraga()
-    {
-        return view('user/barang/peralatandanmesin/peralatanolahraga');
-    }
+public function peralatanolahraga()
+{
+    return redirect()->to('user/barang/peralatandanmesin/peralatanolahraga/kelompokperalatanolahraga');
+}
 
-    public function peralatanolahraga_detail()
-    {
-        return view('user/barang/peralatandanmesin/peralatanolahraga/peralatanolahraga_detail');
-    }
+public function peralatanolahraga_detail()
+{
+    return redirect()->to('user/barang/peralatandanmesin/peralatanolahraga/kelompokperalatanolahraga/PERALATAN OLAH RAGA');  // Perbaiki spasi
+}
 }
