@@ -8,7 +8,13 @@ use App\Models\KomputerModel;
 class Komputer extends BaseController
 {
     protected $komputerModel;
-    
+        public function index()
+    {
+        $komputerModel = new \App\Models\KomputerModel();
+        $data['komputer'] = $komputerModel->getKomputerForDisplay();
+        
+        return view('komputer/index', $data);
+    }
     public function __construct()
     {
         $this->komputerModel = new KomputerModel();
@@ -81,62 +87,46 @@ class Komputer extends BaseController
     }
 
     public function kelompokDetail($kelompok)
-    {
-        $searchTerm = $this->request->getGet('search') ?? '';
-        $sort = $this->request->getGet('sort') ?? 'kode_barang';
-        $order = $this->request->getGet('order') ?? 'asc';
-        $perPage = 100;
-        $page = $this->request->getGet('page') ?? 1;
+{
+    $searchTerm = $this->request->getGet('search') ?? '';
+    $sort  = $this->request->getGet('sort') ?? 'nama_barang';
+    $order = strtolower($this->request->getGet('order') ?? 'asc');
+    $order = in_array($order, ['asc','desc']) ? $order : 'asc';
 
-        // Gunakan database sebagai sumber data
-        $builder = $this->komputerModel->builder();
-        
-        // Filter berdasarkan kelompok
-        $builder->where('UPPER(kelompok)', strtoupper($kelompok));
-        
-        // Filter berdasarkan pencarian
-        if (!empty($searchTerm)) {
-            $builder->groupStart()
-                ->like('nama_barang', $searchTerm)
-                ->orLike('kode_barang', $searchTerm) 
-                ->orLike('merk', $searchTerm)
-                ->orLike('processor', $searchTerm)
-                ->orLike('memori', $searchTerm)
-                ->orLike('hardisk', $searchTerm)
-                ->orLike('monitor', $searchTerm)
-                ->groupEnd();
-        }
-        
-        // Hitung total data
-        $totalItems = $builder->countAllResults(false);
-        
-        // Sorting
-        if (!empty($sort)) {
-            $builder->orderBy($sort, $order);
-        }
-        
-        // Pagination
-        $offset = ($page - 1) * $perPage;
-        $komputerList = $builder->limit($perPage, $offset)->get()->getResultArray();
+    $perPage = 100;
+    $page    = max(1, (int) ($this->request->getGet('page') ?? 1));
+    $offset  = ($page - 1) * $perPage;
 
-        // Setup pagination
-        $pager = service('pager');
-        $pager->setPath('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($kelompok));
-        $totalPages = ceil($totalItems / $perPage);
+    // Ambil data + total via Model (search ke semua kolom)
+    $komputerList = $this->komputerModel->getSearchResults(
+        $searchTerm,
+        $kelompok,
+        $sort,
+        $order,
+        $perPage,
+        $offset
+    );
+    $totalItems = $this->komputerModel->countSearchResults($searchTerm, $kelompok);
+    $totalPages = (int) ceil($totalItems / $perPage);
 
-        return view('user/barang/peralatandanmesin/komputer/kelompokkomputer', [
-            'komputerList' => $komputerList,
-            'kelompok' => strtoupper($kelompok),
-            'activeKelompok' => strtoupper($kelompok),
-            'pager' => $pager,
-            'searchTerm' => $searchTerm,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'totalItems' => $totalItems, 
-            'sort' => $sort, 
-            'order' => $order  
-        ]);
-    }
+    // Setup pagination
+    $pager = service('pager');
+    $pager->setPath('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($kelompok));
+
+    return view('user/barang/peralatandanmesin/komputer/kelompokkomputer', [
+        'komputerList'    => $komputerList,
+        'kelompok'        => strtoupper($kelompok),
+        'activeKelompok'  => strtoupper($kelompok),
+        'pager'           => $pager,
+        'searchTerm'      => $searchTerm,
+        'currentPage'     => $page,
+        'totalPages'      => $totalPages,
+        'totalItems'      => $totalItems,
+        'sort'            => $sort,
+        'order'           => $order
+    ]);
+}
+
 
     // Method untuk menambah komputer manual
     public function tambah()
@@ -533,6 +523,30 @@ class Komputer extends BaseController
         
         return floatval($value);
     }
+
+    /**
+ * Konversi input tanggal user menjadi 'Y-m-d' bila memungkinkan.
+ */
+private function normalizeDateToYmd(string $raw): ?string
+{
+    $raw = trim($raw);
+    if ($raw === '') return null;
+
+    $formats = ['Y-m-d','d-m-Y','d/m/Y','d.m.Y','d m Y','m/d/Y'];
+    foreach ($formats as $fmt) {
+        $dt = \DateTime::createFromFormat($fmt, $raw);
+        if ($dt && $dt->format($fmt) === $raw) {
+            return $dt->format('Y-m-d');
+        }
+    }
+    try {
+        $dt = new \DateTime($raw);
+        return $dt->format('Y-m-d');
+    } catch (\Exception $e) {
+        return null;
+    }
+}
+
 
     // Method untuk cek statistik database
     public function stats()

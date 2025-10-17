@@ -44,6 +44,21 @@ class KomputerModel extends Model
     'status_barang',
     'keterangan'
 ];
+
+// Kolom untuk pencarian LIKE (key search ke banyak kolom)
+protected array $searchableColumns = [
+    'kode_barang','nama_barang','merk','nup','bidang','kelompok','sub_kelompok',
+    'kondisi','status_penggunaan','status_barang','keterangan','spek_lain',
+    'jns_processor','processor','memori','hardisk','monitor',
+    'pengguna_sebelumnya','pengguna_sekarang'
+];
+
+// Kolom yang diizinkan untuk sorting (whitelist)
+protected array $sortableColumns = [
+    'kode_barang','nama_barang','nilai_perolehan','tanggal_perolehan',
+    'merk','bidang','kelompok','kondisi'
+];
+
     
     // Dates
     protected $useTimestamps = true;
@@ -185,37 +200,95 @@ class KomputerModel extends Model
     }
     
     // 8. BUSINESS LOGIC - Search functionality dengan filter kelompok
-    public function searchKomputer($searchTerm = '', $kelompok = '', $limit = 100, $offset = 0)
-    {
-        $builder = $this->builder();
-        
-        // Filter berdasarkan kelompok jika ada
-        if (!empty($kelompok)) {
-            $builder->where('UPPER(kelompok)', strtoupper($kelompok));
-        }
-        
-        // Filter pencarian jika ada
-        if (!empty($searchTerm)) {
-            $searchTerm = $this->db->escapeLikeString($searchTerm);
-            
-            $builder->groupStart()
-                ->like('kode_barang', $searchTerm)
-                ->orLike('nama_barang', $searchTerm)
-                ->orLike('merk', $searchTerm)
-                ->orLike('processor', $searchTerm)
-                ->orLike('memori', $searchTerm)
-                ->orLike('hardisk', $searchTerm)
-                ->orLike('monitor', $searchTerm)
-                ->orLike('nup', $searchTerm)
-                ->orLike('spek_lain', $searchTerm)
-                ->groupEnd();
-        }
-        
-        return $builder->orderBy('kode_barang', 'ASC')
-                      ->limit($limit, $offset)
-                      ->get()
-                      ->getResultArray();
+public function searchKomputer(
+    string $searchTerm = '',
+    string $kelompok = '',
+    int $limit = 100,
+    int $offset = 0,
+    string $sort = 'nama_barang',
+    string $order = 'asc'
+) {
+    return $this->getSearchResults($searchTerm, $kelompok, $sort, $order, $limit, $offset);
+}
+
+    /**
+ * Terapkan pencarian ke banyak kolom (OR LIKE terkelompok, chainable).
+ */
+public function scopeSearchAll(\CodeIgniter\Database\BaseBuilder $builder, ?string $term): \CodeIgniter\Database\BaseBuilder
+{
+    if (empty($term)) return $builder;
+
+    $escaped = $this->db->escapeLikeString($term);
+    $builder->groupStart();
+
+    // LIKE untuk semua kolom teks
+    foreach ($this->searchableColumns as $i => $col) {
+        $i === 0 ? $builder->like($col, $escaped) : $builder->orLike($col, $escaped);
     }
+
+    // Jika term mengandung angka, ikutkan ke nilai_perolehan
+    $numeric = preg_replace('/\D+/', '', (string) $term);
+if ($numeric !== '') {
+    $likeNum = $this->db->escapeLikeString($numeric);
+    // CAST ke text dan pakai ILIKE biar case-insensitive (Postgres)
+    $builder->orWhere("CAST(nilai_perolehan AS TEXT) ILIKE '%{$likeNum}%'", null, false);
+}
+
+// Coba cocokkan tanggal (bandingkan exact ke kolom tipe date)
+$dateGuess = $this->normalizeDateToYmd($term);
+if ($dateGuess) {
+    $builder->orWhere('tanggal_perolehan =', $dateGuess);
+    }
+
+    $builder->groupEnd();
+    return $builder;
+}
+/**
+ * Ambil hasil pencarian + filter kelompok + sort + paginate.
+ */
+public function getSearchResults(
+    ?string $term = null,
+    ?string $kelompok = null,
+    string $sort = 'nama_barang',
+    string $order = 'asc',
+    int $limit = 20,
+    int $offset = 0
+): array {
+    $builder = $this->builder();
+
+    if (!empty($kelompok)) {
+        $builder->where('UPPER(kelompok)', strtoupper($kelompok));
+    }
+
+    $this->scopeSearchAll($builder, $term);
+
+    // Sanitasi sorting
+    $sort  = in_array($sort, $this->sortableColumns, true) ? $sort : 'nama_barang';
+    $order = in_array(strtolower($order), ['asc','desc'], true) ? $order : 'asc';
+
+    return $builder
+        ->orderBy($sort, $order)
+        ->limit($limit, $offset)
+        ->get()
+        ->getResultArray();
+}
+
+/**
+ * Hitung total baris untuk hasil pencarian.
+ */
+public function countSearchResults(?string $term = null, ?string $kelompok = null): int
+{
+    $builder = $this->builder();
+
+    if (!empty($kelompok)) {
+        $builder->where('UPPER(kelompok)', strtoupper($kelompok));
+    }
+
+    $this->scopeSearchAll($builder, $term);
+
+    return (int) $builder->countAllResults(false);
+}
+
     
     // 9. BUSINESS LOGIC - Get data by kelompok (untuk filter kategori)
     public function getByKelompok($kelompok, $limit = null, $offset = 0)
@@ -409,56 +482,102 @@ class KomputerModel extends Model
     }
     
     // 19. Helper method - Clean data untuk import
-public function cleanImportData($data)
+/**
+ * Bersihkan data sebelum disimpan ke database
+ */
+private function cleanImportData($data)
 {
     $cleaned = [];
     
-    // Clean dan assign nilai default
-    $cleaned['kode_barang'] = $this->truncateString(trim($data['kode_barang'] ?? ''), 100);
-    $cleaned['nama_barang'] = $this->truncateString(trim($data['nama_barang'] ?? '') ?: 'Unknown', 255);
-    $cleaned['kelompok'] = $this->truncateString(strtoupper(trim($data['kelompok'] ?? '')), 100);
-    $cleaned['nup'] = $this->truncateString(trim($data['nup'] ?? ''), 100);
-    $cleaned['merk'] = $this->truncateString(trim($data['merk'] ?? ''), 100);
-    $cleaned['kondisi'] = $this->truncateString(strtoupper(trim($data['kondisi'] ?? '')), 50);
-    $cleaned['kuantitas'] = intval($data['kuantitas'] ?? 1);
-    $cleaned['status_penggunaan'] = $this->truncateString(trim($data['status_penggunaan'] ?? ''), 100);
-    $cleaned['processor'] = $this->truncateString(trim($data['processor'] ?? ''), 100);
-    $cleaned['memori'] = $this->truncateString(trim($data['memori'] ?? ''), 100);
-    $cleaned['hardisk'] = $this->truncateString(trim($data['hardisk'] ?? ''), 100);
-    $cleaned['monitor'] = $this->truncateString(trim($data['monitor'] ?? ''), 100);
-    $cleaned['spek_lain'] = $this->truncateString(trim($data['spek_lain'] ?? ''), 500);
+    // Bersihkan data dari rumus Excel
+    foreach ($data as $key => $value) {
+        // Cek apakah nilai dimulai dengan "=" yang menandakan rumus Excel
+        if (is_string($value) && strpos($value, '=') === 0) {
+            // Jika iya, kosongkan saja nilainya
+            $cleaned[$key] = '';
+        } 
+        // Cek jika ada text seperti "Master Aset 'IK4'" atau variasinya
+        else if (is_string($value) && 
+                (strpos($value, 'Master Aset') !== false || 
+                 strpos($value, '\'IK') !== false)) {
+            $cleaned[$key] = '';
+        } else {
+            $cleaned[$key] = $value;
+        }
+    }
     
-    // Field baru
-    $cleaned['bidang'] = $this->truncateString(trim($data['bidang'] ?? ''), 100);
-    $cleaned['pengguna_sebelumnya'] = $this->truncateString(trim($data['pengguna_sebelumnya'] ?? ''), 255);
-    $cleaned['pengguna_sekarang'] = $this->truncateString(trim($data['pengguna_sekarang'] ?? ''), 255);
-    $cleaned['status_barang'] = $this->truncateString(trim($data['status_barang'] ?? ''), 100);
-    $cleaned['keterangan'] = $this->truncateString(trim($data['keterangan'] ?? ''), 255);
+    // Set nilai default untuk field wajib
+    $cleaned['nama_barang'] = $this->truncateString(trim($cleaned['nama_barang'] ?? '') ?: 'Unknown', 255);
+    $cleaned['kelompok'] = $this->truncateString(strtoupper(trim($cleaned['kelompok'] ?? '')), 100);
+    $cleaned['bidang'] = $this->truncateString(trim($cleaned['bidang'] ?? ''), 100);
+    $cleaned['merk'] = $this->truncateString(trim($cleaned['merk'] ?? ''), 100);
+    $cleaned['nup'] = $this->truncateString(trim($cleaned['nup'] ?? ''), 100);
+    $cleaned['kondisi'] = $this->truncateString(strtoupper(trim($cleaned['kondisi'] ?? '')), 50);
+    $cleaned['kuantitas'] = intval($cleaned['kuantitas'] ?? 1);
+    $cleaned['nilai_perolehan'] = $this->safeFloat($cleaned['nilai_perolehan'] ?? 0);
+    $cleaned['nilai_penyusutan'] = $this->safeFloat($cleaned['nilai_penyusutan'] ?? 0);
+    $cleaned['nilai_buku'] = $this->safeFloat($cleaned['nilai_buku'] ?? 0);
     
-    // Handle numeric fields
-    $cleaned['nilai_perolehan'] = $this->safeFloat($data['nilai_perolehan'] ?? 0);
-    $cleaned['nilai_penyusutan'] = $this->safeFloat($data['nilai_penyusutan'] ?? 0);
-    $cleaned['nilai_buku'] = $this->safeFloat($data['nilai_buku'] ?? 0);
+    // Batasi panjang string untuk field lain
+    $cleaned['kode_barang'] = $this->truncateString(trim($cleaned['kode_barang'] ?? ''), 100);
+    $cleaned['status_penggunaan'] = $this->truncateString(trim($cleaned['status_penggunaan'] ?? ''), 100);
+    $cleaned['processor'] = $this->truncateString(trim($cleaned['processor'] ?? ''), 100);
+    $cleaned['memori'] = $this->truncateString(trim($cleaned['memori'] ?? ''), 100);
+    $cleaned['hardisk'] = $this->truncateString(trim($cleaned['hardisk'] ?? ''), 100);
+    $cleaned['monitor'] = $this->truncateString(trim($cleaned['monitor'] ?? ''), 100);
+    $cleaned['spek_lain'] = $this->truncateString(trim($cleaned['spek_lain'] ?? ''), 500);
+    $cleaned['pengguna_sebelumnya'] = $this->truncateString(trim($cleaned['pengguna_sebelumnya'] ?? ''), 255);
+    $cleaned['pengguna_sekarang'] = $this->truncateString(trim($cleaned['pengguna_sekarang'] ?? ''), 255);
+    $cleaned['status_barang'] = $this->truncateString(trim($cleaned['status_barang'] ?? ''), 100);
+    $cleaned['keterangan'] = $this->truncateString(trim($cleaned['keterangan'] ?? ''), 255);
     
     // Handle date
-    $cleaned['tanggal_perolehan'] = !empty($data['tanggal_perolehan']) ? $data['tanggal_perolehan'] : null;
+    $cleaned['tanggal_perolehan'] = !empty($cleaned['tanggal_perolehan']) ? $cleaned['tanggal_perolehan'] : null;
     
     return $cleaned;
 }
     
     // 20. Helper method - Safe float conversion
-    private function safeFloat($value)
-    {
-        if (is_null($value) || $value === '') {
-            return 0.0;
-        }
-        
-        if (is_string($value)) {
-            $value = str_replace(',', '.', $value);
-        }
-        
-        return floatval($value);
+private function safeFloat($value)
+{
+    if (is_null($value) || $value === '') {
+        return 0.0;
     }
+    
+    if (is_string($value)) {
+        $value = str_replace(',', '.', $value);
+    }
+    
+    return floatval($value);
+}
+
+/**
+ * Konversi input tanggal user menjadi 'Y-m-d' bila memungkinkan.
+ * Dipakai oleh scopeSearchAll() untuk memungkinkan pencarian tanggal.
+ */
+private function normalizeDateToYmd(string $raw): ?string
+{
+    $raw = trim($raw);
+    if ($raw === '') return null;
+
+    $formats = ['Y-m-d','d-m-Y','d/m/Y','d.m.Y','d m Y','m/d/Y'];
+    foreach ($formats as $fmt) {
+        $dt = \DateTime::createFromFormat($fmt, $raw);
+        if ($dt && $dt->format($fmt) === $raw) {
+            return $dt->format('Y-m-d');
+        }
+    }
+
+    // fallback parser umum
+    try {
+        $dt = new \DateTime($raw);
+        return $dt->format('Y-m-d');
+    } catch (\Exception $e) {
+        return null;
+    }
+}
+
+
 public function importFromExcel($filePath)
 {
     // Pastikan library PhpSpreadsheet tersedia
@@ -629,11 +748,47 @@ private function extractConditionData($spreadsheet)
     return $conditionData;
 }
 
+private function readCellValue($worksheet, $cell, $isConditionColumn = false)
+{
+    try {
+        // Coba ambil nilai terhitung (calculated value) terlebih dahulu
+        $cellValue = $worksheet->getCell($cell)->getCalculatedValue();
+        
+        // Jika masih berupa rumus (dimulai dengan "="), coba ambil nilai mentah saja
+        if (is_string($cellValue) && strpos($cellValue, '=') === 0) {
+            $cellValue = $worksheet->getCell($cell)->getValue();
+            // Jika masih berupa rumus, kosongkan saja
+            if (is_string($cellValue) && strpos($cellValue, '=') === 0) {
+                $cellValue = '';
+            }
+        }
+        
+        // Jika berisi "Master Aset" atau pola serupa, bersihkan
+        if (is_string($cellValue) && 
+            (stripos($cellValue, 'Master Aset') !== false || 
+             preg_match("/[\'\"]\s*IK\d+\s*[\'\"]/i", $cellValue))) {
+            $cellValue = '';
+        }
+        
+        // Jika ini kolom kondisi dan nilainya adalah 1 atau angka, konversi ke BAIK
+        if ($isConditionColumn && ($cellValue === '1' || $cellValue === 1)) {
+            $cellValue = 'BAIK';
+        }
+        
+        return $cellValue;
+    } catch (\Exception $e) {
+        return '';
+    }
+}
+
 /**
  * Baca dan standarisasi data dari sebuah sheet
  */
 /**
  * Baca dan standarisasi data dari sebuah sheet dengan penanganan error formula
+ */
+/**
+ * Baca dan standarisasi data dari sebuah sheet
  */
 private function readSheetData($spreadsheet, $sheetName)
 {
@@ -669,6 +824,10 @@ private function readSheetData($spreadsheet, $sheetName)
             
             // Mapping header ke nama kolom yang diharapkan
             $headerMap = [];
+            
+            // Identifikasi kolom kondisi BAIK/RUSAK
+            $baikColumn = null;
+            $rusakColumn = null;
             
             foreach ($headers as $col => $header) {
                 $header = trim($header);
@@ -710,6 +869,10 @@ private function readSheetData($spreadsheet, $sheetName)
                     $headerMap['memori'] = $col;
                 } else if (stripos($header, 'Hardisk') !== false || stripos($header, 'Storage') !== false || stripos($header, 'SSD') !== false) {
                     $headerMap['hardisk'] = $col;
+                } else if (stripos($header, 'Baik') !== false) {
+                    $baikColumn = $col;
+                } else if (stripos($header, 'Rusak') !== false) {
+                    $rusakColumn = $col;
                 }
             }
             
@@ -735,7 +898,7 @@ private function readSheetData($spreadsheet, $sheetName)
                     // Baca nilai dari kolom-kolom penting - minimal harus ada nama_barang
                     $nama_barang = '';
                     if (isset($headerMap['nama_barang'])) {
-                        $nama_barang = trim($worksheet->getCell($headerMap['nama_barang'] . $row)->getValue() ?? '');
+                        $nama_barang = trim($this->readCellValue($worksheet, $headerMap['nama_barang'] . $row) ?? '');
                     }
                     
                     // Skip jika tidak ada nama barang
@@ -743,12 +906,12 @@ private function readSheetData($spreadsheet, $sheetName)
                     
                     $merk = '';
                     if (isset($headerMap['merk'])) {
-                        $merk = trim($worksheet->getCell($headerMap['merk'] . $row)->getValue() ?? '');
+                        $merk = trim($this->readCellValue($worksheet, $headerMap['merk'] . $row) ?? '');
                     }
                     
                     $nup = '';
                     if (isset($headerMap['nup'])) {
-                        $nup = trim($worksheet->getCell($headerMap['nup'] . $row)->getValue() ?? '');
+                        $nup = trim($this->readCellValue($worksheet, $headerMap['nup'] . $row) ?? '');
                     }
                     
                     // Buat kunci unik untuk identifikasi
@@ -757,7 +920,7 @@ private function readSheetData($spreadsheet, $sheetName)
                     // Baca bidang
                     $bidang = $defaultBidang;
                     if (isset($headerMap['bidang'])) {
-                        $tmpBidang = trim($worksheet->getCell($headerMap['bidang'] . $row)->getValue() ?? '');
+                        $tmpBidang = trim($this->readCellValue($worksheet, $headerMap['bidang'] . $row) ?? '');
                         if (!empty($tmpBidang)) {
                             $bidang = $tmpBidang;
                         }
@@ -766,13 +929,13 @@ private function readSheetData($spreadsheet, $sheetName)
                     // Baca kode barang
                     $kode_barang = '';
                     if (isset($headerMap['kode_barang'])) {
-                        $kode_barang = trim($worksheet->getCell($headerMap['kode_barang'] . $row)->getValue() ?? '');
+                        $kode_barang = trim($this->readCellValue($worksheet, $headerMap['kode_barang'] . $row) ?? '');
                     }
                     
                     // Baca tanggal perolehan
                     $tanggal_perolehan = null;
                     if (isset($headerMap['tanggal_perolehan'])) {
-                        $tmp = $worksheet->getCell($headerMap['tanggal_perolehan'] . $row)->getValue();
+                        $tmp = $this->readCellValue($worksheet, $headerMap['tanggal_perolehan'] . $row);
                         if (!empty($tmp)) {
                             try {
                                 if (is_numeric($tmp)) {
@@ -798,7 +961,7 @@ private function readSheetData($spreadsheet, $sheetName)
                     // Baca nilai perolehan
                     $nilai_perolehan = 0;
                     if (isset($headerMap['nilai_perolehan'])) {
-                        $tmp = $worksheet->getCell($headerMap['nilai_perolehan'] . $row)->getValue();
+                        $tmp = $this->readCellValue($worksheet, $headerMap['nilai_perolehan'] . $row);
                         if (!empty($tmp)) {
                             $nilai_perolehan = str_replace([' ', ',', '.'], '', $tmp);
                             if (!is_numeric($nilai_perolehan)) {
@@ -811,50 +974,72 @@ private function readSheetData($spreadsheet, $sheetName)
                     // Baca pengguna
                     $pengguna_sebelumnya = '';
                     if (isset($headerMap['pengguna_sebelumnya'])) {
-                        $pengguna_sebelumnya = trim($worksheet->getCell($headerMap['pengguna_sebelumnya'] . $row)->getValue() ?? '');
+                        $pengguna_sebelumnya = trim($this->readCellValue($worksheet, $headerMap['pengguna_sebelumnya'] . $row) ?? '');
                     }
                     
                     $pengguna_sekarang = '';
                     if (isset($headerMap['pengguna_sekarang'])) {
-                        $pengguna_sekarang = trim($worksheet->getCell($headerMap['pengguna_sekarang'] . $row)->getValue() ?? '');
+                        $pengguna_sekarang = trim($this->readCellValue($worksheet, $headerMap['pengguna_sekarang'] . $row) ?? '');
                     }
                     
                     // Baca kondisi
                     $kondisi = '';
                     if (isset($headerMap['kondisi'])) {
-                        $kondisi = trim($worksheet->getCell($headerMap['kondisi'] . $row)->getValue() ?? '');
+                        $kondisi = trim($this->readCellValue($worksheet, $headerMap['kondisi'] . $row) ?? '');
+                    }
+                    
+                    // Cek apakah ada nilai di kolom Baik/Rusak
+                    if (empty($kondisi) && $baikColumn) {
+                        $baikValue = trim($this->readCellValue($worksheet, $baikColumn . $row) ?? '');
+                        if ($baikValue === '1' || $baikValue === 1 || strtoupper($baikValue) === 'YA') {
+                            $kondisi = 'BAIK';
+                        }
+                    }
+                    
+                    if (empty($kondisi) && $rusakColumn) {
+                        $rusakValue = trim($this->readCellValue($worksheet, $rusakColumn . $row) ?? '');
+                        if ($rusakValue === '1' || $rusakValue === 1 || strtoupper($rusakValue) === 'YA') {
+                            $kondisi = 'RUSAK';
+                        }
                     }
                     
                     // Baca status
                     $status_penggunaan = '';
                     if (isset($headerMap['status_penggunaan'])) {
-                        $status_penggunaan = trim($worksheet->getCell($headerMap['status_penggunaan'] . $row)->getValue() ?? '');
+                        $status_penggunaan = trim($this->readCellValue($worksheet, $headerMap['status_penggunaan'] . $row) ?? '');
                     }
                     
                     $status_barang = '';
                     if (isset($headerMap['status_barang'])) {
-                        $status_barang = trim($worksheet->getCell($headerMap['status_barang'] . $row)->getValue() ?? '');
+                        $status_barang = trim($this->readCellValue($worksheet, $headerMap['status_barang'] . $row) ?? '');
+                        
+                        // Jika status_barang berisi nilai 1, konversi ke BAIK
+                        if ($status_barang === '1' || $status_barang === 1) {
+                            $status_barang = 'BAIK';
+                        } else if ($status_barang === '0' || $status_barang === 0) {
+                            $status_barang = 'RUSAK';
+                        }
                     }
                     
                     $keterangan = '';
                     if (isset($headerMap['keterangan'])) {
-                        $keterangan = trim($worksheet->getCell($headerMap['keterangan'] . $row)->getValue() ?? '');
+                        $keterangan = trim($this->readCellValue($worksheet, $headerMap['keterangan'] . $row) ?? '');
                     }
                     
                     // Baca spesifikasi
                     $processor = '';
                     if (isset($headerMap['processor'])) {
-                        $processor = trim($worksheet->getCell($headerMap['processor'] . $row)->getValue() ?? '');
+                        $processor = trim($this->readCellValue($worksheet, $headerMap['processor'] . $row) ?? '');
                     }
                     
                     $memori = '';
                     if (isset($headerMap['memori'])) {
-                        $memori = trim($worksheet->getCell($headerMap['memori'] . $row)->getValue() ?? '');
+                        $memori = trim($this->readCellValue($worksheet, $headerMap['memori'] . $row) ?? '');
                     }
                     
                     $hardisk = '';
                     if (isset($headerMap['hardisk'])) {
-                        $hardisk = trim($worksheet->getCell($headerMap['hardisk'] . $row)->getValue() ?? '');
+                        $hardisk = trim($this->readCellValue($worksheet, $headerMap['hardisk'] . $row) ?? '');
                     }
                     
                     // Simpan data terstandarisasi
@@ -890,6 +1075,33 @@ private function readSheetData($spreadsheet, $sheetName)
     return $data;
 }
 
+public function getKomputerForDisplay($filter = [])
+{
+    $data = $this->getKomputer($filter);
+    
+    // Konversi nilai numerik ke label status
+    foreach ($data as &$item) {
+        // Konversi kondisi dari angka ke label
+        if (isset($item['kondisi'])) {
+            if ($item['kondisi'] === '1' || $item['kondisi'] === 1) {
+                $item['kondisi'] = 'BAIK';
+            } else if ($item['kondisi'] === '0' || $item['kondisi'] === 0) {
+                $item['kondisi'] = 'RUSAK';
+            }
+        }
+        
+        // Konversi status barang dari angka ke label jika perlu
+        if (isset($item['status_barang'])) {
+            if ($item['status_barang'] === '1' || $item['status_barang'] === 1) {
+                $item['status_barang'] = 'BAIK';
+            } else if ($item['status_barang'] === '0' || $item['status_barang'] === 0) {
+                $item['status_barang'] = 'RUSAK';
+            }
+        }
+    }
+    
+    return $data;
+}
 /**
  * Gabungkan data dari berbagai sheet
  */
