@@ -1065,114 +1065,91 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="peminjaman-pending-tab" data-bs-toggle="tab" data-bs-target="#peminjaman-pending-tab-pane" type="button" role="tab" aria-controls="peminjaman-pending-tab-pane">Peminjaman Pending</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="buat-otomatis-tab" data-bs-toggle="tab" data-bs-target="#buat-otomatis-tab-pane" type="button" role="tab" aria-controls="buat-otomatis-tab-pane">Buat Otomatis</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="upload-file-tab" data-bs-toggle="tab" data-bs-target="#upload-file-tab-pane" type="button" role="tab" aria-controls="upload-file-tab-pane">Upload File</button>
-                </li>
-            </ul>
-            
-            <div class="tab-content">
-                <!-- Tab Peminjaman Pending -->
-                <div class="tab-pane fade show active" id="peminjaman-pending-tab-pane" role="tabpanel" aria-labelledby="peminjaman-pending-tab" tabindex="0">
-                    <!-- Tabel peminjaman pending -->
+            <!-- Hapus navigasi tab, hanya buat satu konten -->
+            <form id="formBuatOtomatis">
+                <div class="modal-body">
+                    <input type="hidden" id="pinjamId" name="pinjam_id">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
+                            <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jabatan" class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" id="jabatan" name="jabatan" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nip_nrp" class="form-label">NIP/NRP</label>
+                            <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="kode_barang" class="form-label">Kode Barang</label>
+                            <input type="text" class="form-control" id="kode_barang" name="kode_barang" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pangkat_golongan" class="form-label">Pangkat/Golongan</label>
+                            <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="no_polisi" class="form-label">Nomor Polisi</label>
+                            <input type="text" class="form-control" id="no_polisi" name="no_polisi" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                            <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                            <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="jam_mulai" class="form-label">Jam Mulai</label>
+                            <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jam_selesai" class="form-label">Jam Selesai</label>
+                            <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
+                        <textarea class="form-control" id="urusan_kedinasan" name="urusan_kedinasan" rows="3" required></textarea>
+                    </div>
                 </div>
-                
-                <!-- Tab Buat Otomatis -->
-                <div class="tab-pane fade" id="buat-otomatis-tab-pane" role="tabpanel" aria-labelledby="buat-otomatis-tab" tabindex="0">
-                    <form id="formBuatOtomatis">
-                        <div class="modal-body">
-                            <input type="hidden" id="pinjamId" name="pinjam_id">
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
-                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="jabatan" class="form-label">Jabatan</label>
-                                    <input type="text" class="form-control" id="jabatan" name="jabatan" readonly>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="nip_nrp" class="form-label">NIP/NRP</label>
-                                    <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="kode_barang" class="form-label">Kode Barang</label>
-                                    <input type="text" class="form-control" id="kode_barang" name="kode_barang" readonly>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="pangkat_golongan" class="form-label">Pangkat/Golongan</label>
-                                    <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="no_polisi" class="form-label">Nomor Polisi</label>
-                                    <input type="text" class="form-control" id="no_polisi" name="no_polisi" readonly>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
-                                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
-                                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="jam_mulai" class="form-label">Jam Mulai</label>
-                                    <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="jam_selesai" class="form-label">Jam Selesai</label>
-                                    <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" required>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
-                                <textarea class="form-control" id="urusan_kedinasan" name="urusan_kedinasan" rows="3" required></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
-                        </div>
-                    </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
                 </div>
-                
-                <!-- Tab Upload File -->
-                <div class="tab-pane fade" id="upload-file-tab-pane" role="tabpanel" aria-labelledby="upload-file-tab" tabindex="0">
-                    <form id="formUploadFile" method="post" enctype="multipart/form-data">
-                        <div class="modal-body">
-                            <input type="hidden" name="pinjam_id" id="upload_pinjam_id">
-                            <div class="mb-3">
-                                <label for="surat_jalan_admin" class="form-label">Surat Jalan (PDF)</label>
-                                <input type="file" class="form-control" id="surat_jalan_admin" name="surat_jalan_admin" accept="application/pdf" required>
-                                <small class="text-muted">Max 2MB</small>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
-                        </div>
-                    </form>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sukses -->
+<div class="modal fade" id="modalSuccess" tabindex="-1" aria-labelledby="modalSuccessLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                 </div>
+                <h3 class="mb-3">Berhasil!</h3>
+                <p class="mb-4">Verifikasi peminjaman berhasil</p>
+                <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" onclick="location.reload()">OK</button>
             </div>
         </div>
     </div>
@@ -1744,7 +1721,6 @@
 
 <!-- Baru setelah itu load JS -->
 <script src="/assets/js/dashboard.js"></script>
-<script src="<?= base_url('assets/js/surat_jalan.js') ?>"></script>
-<script src="/assets/js/surat_jalan.js"></script>
+
 
 <?= $this->endSection() ?>

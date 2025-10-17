@@ -315,49 +315,248 @@ class AsetKendaraan extends BaseController
         }
     }
 
-public function getPeminjamanData()
+public function generateSuratJalan()
 {
-    if (!in_groups(['admin', 'admin_gedungutama'])) {
-        return $this->response->setJSON(['error' => 'Unauthorized Access']);
-    }
-
     $pinjamId = $this->request->getPost('pinjam_id');
-    if (!$pinjamId) {
-        return $this->response->setJSON(['error' => 'ID Peminjaman tidak valid']);
-    }
+    $tanggalMulai = $this->request->getPost('tanggal_mulai');
+    $jamMulai = $this->request->getPost('jam_mulai');
+    $tanggalSelesai = $this->request->getPost('tanggal_selesai');
+    $jamSelesai = $this->request->getPost('jam_selesai');
+    $urusanKedinasan = $this->request->getPost('urusan_kedinasan');
     
     $model = new PinjamModel();
     $asetModel = new AsetModel();
-
-    $pinjam = $model->find($pinjamId);
-    log_message('debug', 'Data peminjaman: ' . json_encode($pinjam));
-
-    if (!$pinjam) {
-        return $this->response->setJSON(['error' => 'Data peminjaman tidak ditemukan']);
-    }
-
-    $kendaraan = $asetModel->find($pinjam['kendaraan_id']);
-    log_message('debug', 'Data kendaraan: ' . json_encode($kendaraan));
+    $userModel = new \Myth\Auth\Models\UserModel(); // Tambahkan model user
     
-    if (!$kendaraan) {
-        return $this->response->setJSON(['error' => 'Data kendaraan tidak ditemukan']);
+    // Ambil data pinjam
+    $pinjam = $model->find($pinjamId);
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
     }
-
-    // Data untuk form
-    $data = [
-        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'] ?? '',
-        'nip_nrp' => $pinjam['nip_nrp'] ?? '',
-        'pangkat_golongan' => $pinjam['pangkat_golongan'] ?? '',
-        'jabatan' => $pinjam['jabatan'] ?? '',
-        'kode_barang' => $kendaraan['kode_barang'] ?? '',
-        'no_polisi' => $kendaraan['no_polisi'] ?? '',
-        'merk' => $kendaraan['merk'] ?? '',
-        'urusan_kedinasan' => $pinjam['urusan_kedinasan'] ?? ''
+    
+    // Ambil data aset
+    $asset = $asetModel->find($pinjam['kendaraan_id']);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data kendaraan tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data user
+    $userData = $userModel->find($pinjam['user_id']);
+    
+    // Buat data untuk PDF
+    $pdfData = [
+        'nomor_surat' => 'SURAT/JALAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjamId),
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+        'nip_nrp' => $pinjam['nip_nrp'],
+        'pangkat_golongan' => $pinjam['pangkat_golongan'],
+        'jabatan' => $pinjam['jabatan'],
+        'unit_organisasi' => $pinjam['unit_organisasi'],
+        'urusan_kedinasan' => $urusanKedinasan,
+        'tanggal_mulai' => $tanggalMulai,
+        'jam_mulai' => $jamMulai,
+        'tanggal_selesai' => $tanggalSelesai,
+        'jam_selesai' => $jamSelesai,
+        'kode_barang' => $asset['kode_barang'],
+        'nup' => $asset['nup'] ?? '-',
+        'no_polisi' => $asset['no_polisi'],
+        'merk' => $asset['merk'],
+        'kategori' => $asset['kategori_id'],
+        'tanggal_terbit' => date('Y-m-d'),
+        'penanggung_jawab' => 'Pak Solihin',
+        'nip_penanggung_jawab' => '123123',
+        'pemegang_surat' => 'Pak Udin',
+        'nip_pemegang_surat' => '12345678',
+        'lokasi_terbit' => 'Jakarta'
     ];
-
+    
+    // Generate PDF surat jalan
+    $suratJalanName = $this->generateSuratJalanPdf($pdfData);
+    
+    // Update status peminjaman
+    $model->update($pinjamId, [
+        'status' => PinjamModel::STATUS_DISETUJUI,
+        'surat_jalan_admin' => $suratJalanName,
+    ]);
+    
+    // Update status kendaraan
+    $asetModel->update($pinjam['kendaraan_id'], [
+        'status_pinjam' => 'Dipinjam'
+    ]);
+    
+    // Persiapkan data untuk notifikasi
+    $notifData = [
+        'user_email' => $userData ? $userData->email : '',
+        'user_fullname' => $userData ? $userData->fullname : '',
+        'merk' => $asset['merk'],
+        'no_polisi' => $asset['no_polisi'],
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+        'nip_nrp' => $pinjam['nip_nrp'],
+        'jabatan' => $pinjam['jabatan'],
+        'unit_organisasi' => $pinjam['unit_organisasi'],
+        'tanggal_pinjam' => $pinjam['tanggal_pinjam'],
+        'tanggal_kembali' => $pinjam['tanggal_kembali'],
+        'status' => 'disetujui',
+        'surat_jalan_admin' => $suratJalanName,
+        'surat_permohonan' => $pinjam['surat_permohonan'] ?? null
+    ];
+    
+    // Kirim notifikasi persetujuan peminjaman
+    sendPeminjamanNotification($notifData, 'verified');
+    
     return $this->response->setJSON([
         'success' => true,
-        'data' => $data
+        'message' => 'Peminjaman berhasil disetujui',
+        'file_name' => $suratJalanName
+    ]);
+}
+
+// Method untuk generate PDF surat jalan
+private function generateSuratJalanPdf($data)
+{
+    // Setup DOMPDF
+    helper('dompdf');
+    
+    $options = new \Dompdf\Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isPhpEnabled', true);
+    
+    $dompdf = new \Dompdf\Dompdf($options);
+    
+    // HTML template surat jalan
+    $html = view('templates/surat_jalan', $data);
+    
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    
+    // Simpan PDF ke folder
+    $output = $dompdf->output();
+    
+    $timestamp = time();
+    $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
+    $fileName = "surat_jalan_{$timestamp}_{$cleanName}.pdf";
+    
+    $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
+    
+    // Debug log
+    log_message('debug', 'Menyimpan Surat Jalan: ' . $filePath);
+    
+    // Pastikan direktori ada
+    $dir = ROOTPATH . 'public/uploads/documents/';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+    
+    // Simpan file dan set permission
+    file_put_contents($filePath, $output);
+    @chmod($filePath, 0644);
+    
+    // Debug log konfirmasi
+    log_message('debug', 'File Surat Jalan berhasil disimpan: ' . $fileName);
+    
+    return $fileName;
+}
+
+// Method untuk upload file surat jalan
+public function uploadSuratJalan()
+{
+    $pinjamId = $this->request->getPost('pinjam_id');
+    
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data pinjam
+    $pinjam = $model->find($pinjamId);
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil file surat jalan
+    $suratJalan = $this->request->getFile('surat_jalan_admin');
+    if (!$suratJalan->isValid()) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'File surat jalan tidak valid'
+        ]);
+    }
+    
+    // Validasi file
+    if ($suratJalan->getSize() > 2 * 1024 * 1024) { // Max 2MB
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Ukuran file melebihi batas maksimal (2MB)'
+        ]);
+    }
+    
+    if ($suratJalan->getClientMimeType() != 'application/pdf') {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'File harus berformat PDF'
+        ]);
+    }
+    
+    // Simpan file
+    $timestamp = time();
+    $newName = "surat_jalan_{$timestamp}_{$pinjam['nama_penanggung_jawab']}.pdf";
+    $suratJalan->move(ROOTPATH . 'public/uploads/documents', $newName);
+    
+    // Update status peminjaman
+    $model->update($pinjamId, [
+        'status' => PinjamModel::STATUS_DISETUJUI,
+        'surat_jalan_admin' => $newName,
+    ]);
+    
+    // Update status kendaraan
+    $asetModel->update($pinjam['kendaraan_id'], [
+        'status_pinjam' => 'Dipinjam'
+    ]);
+    
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => 'Peminjaman berhasil disetujui',
+        'file_name' => $newName
+    ]);
+}
+
+// Method untuk mendapatkan data peminjaman
+public function getPeminjamanData()
+{
+    $pinjamId = $this->request->getPost('pinjam_id');
+    
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data pinjam
+    $pinjam = $model->find($pinjamId);
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data aset
+    $asset = $asetModel->find($pinjam['kendaraan_id']);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data kendaraan tidak ditemukan'
+        ]);
+    }
+    
+    return $this->response->setJSON([
+        'success' => true,
+        'pinjam' => $pinjam,
+        'asset' => $asset
     ]);
 }
 
@@ -1426,5 +1625,6 @@ public function checkFile($filename = null)
         ]);
     }
 }
+
     
 }

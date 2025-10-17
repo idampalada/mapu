@@ -216,6 +216,9 @@ $routes->group('admin', ['filter' => 'role:admin,admin_gedungutama,admin_pusdati
         $routes->get('getAsetById/(:num)', 'AsetKendaraan::getAsetById/$1');
         $routes->post('edit/(:num)', 'AsetKendaraan::edit/$1');
         $routes->post('updateSurat', 'AsetKendaraan::updateSurat');
+                $routes->post('getPeminjamanData', 'AsetKendaraan::getPeminjamanData');
+        $routes->post('generateSuratJalan', 'AsetKendaraan::generateSuratJalan');
+        $routes->post('uploadSuratJalan', 'AsetKendaraan::uploadSuratJalan');
     });
 
     $routes->group('User/Ruangan', function($routes) {

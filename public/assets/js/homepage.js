@@ -1247,3 +1247,118 @@ function showFileUnsafeModal(message) {
     }
   });
 }
+// Di file homepage.js
+$(document).ready(function () {
+  // Tangani klik tombol setujui
+  $(".btn-setujui").on("click", function () {
+    const pinjamId = $(this).data("id");
+    showSetujuModal(pinjamId);
+  });
+
+  // Form buat otomatis
+  $("#formBuatOtomatis").on("submit", function (e) {
+    e.preventDefault();
+
+    // Show loading
+    const submitBtn = $(this).find('button[type="submit"]');
+    const originalText = submitBtn.html();
+    submitBtn.html(
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...'
+    );
+    submitBtn.prop("disabled", true);
+
+    // Ambil data form
+    const formData = new FormData(this);
+
+    // Kirim request AJAX
+    $.ajax({
+      url: "/admin/AsetKendaraan/generateSuratJalan",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function (response) {
+        // Reset button
+        submitBtn.html(originalText);
+        submitBtn.prop("disabled", false);
+
+        if (response.success) {
+          // Tutup modal
+          $("#modalSetuju").modal("hide");
+
+          // Tampilkan modal sukses
+          $("#modalSuccess").modal("show");
+
+          // Refresh halaman setelah 2 detik
+          setTimeout(function () {
+            location.reload();
+          }, 2000);
+        } else {
+          alert(
+            response.error || "Terjadi kesalahan saat memproses peminjaman"
+          );
+        }
+      },
+      error: function (xhr, status, error) {
+        // Reset button
+        submitBtn.html(originalText);
+        submitBtn.prop("disabled", false);
+
+        console.error(xhr.responseText);
+        alert("Terjadi kesalahan: " + error);
+      },
+    });
+  });
+});
+
+// Function untuk menampilkan modal setuju
+function showSetujuModal(pinjamId) {
+  // Cek apakah form masih ada setelah modifikasi
+  const form = document.getElementById("formBuatOtomatis");
+  if (form) {
+    form.reset(); // Reset form jika elemen ditemukan
+  }
+
+  // Set pinjam id
+  document.getElementById("pinjamId").value = pinjamId;
+
+  // Ambil data peminjaman
+  $.ajax({
+    url: "/admin/AsetKendaraan/getPeminjamanData",
+    type: "POST",
+    data: { pinjam_id: pinjamId },
+    dataType: "json",
+    success: function (data) {
+      if (data.success) {
+        // Isi form dengan data
+        $("#nama_penanggung_jawab").val(data.pinjam.nama_penanggung_jawab);
+        $("#nip_nrp").val(data.pinjam.nip_nrp);
+        $("#pangkat_golongan").val(data.pinjam.pangkat_golongan);
+        $("#jabatan").val(data.pinjam.jabatan);
+        $("#kode_barang").val(data.pinjam.kode_barang);
+        $("#no_polisi").val(data.asset.no_polisi);
+        $("#tanggal_mulai").val(data.pinjam.tanggal_pinjam);
+        $("#tanggal_selesai").val(data.pinjam.tanggal_kembali);
+        $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan);
+
+        // Set jam default
+        $("#jam_mulai").val("08:00");
+        $("#jam_selesai").val("17:00");
+
+        // Tampilkan modal
+        const modalElement = document.getElementById("modalSetuju");
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        } else {
+          console.error("Modal with ID modalSetuju not found");
+        }
+      } else {
+        alert(data.error || "Gagal mengambil data peminjaman");
+      }
+    },
+    error: function () {
+      alert("Terjadi kesalahan saat mengambil data peminjaman");
+    },
+  });
+}
