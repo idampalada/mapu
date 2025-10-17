@@ -215,6 +215,7 @@ $routes->group('admin', ['filter' => 'role:admin,admin_gedungutama,admin_pusdati
         $routes->post('verifikasiPengembalian', 'AsetKendaraan::verifikasiPengembalian');
         $routes->get('getAsetById/(:num)', 'AsetKendaraan::getAsetById/$1');
         $routes->post('edit/(:num)', 'AsetKendaraan::edit/$1');
+        $routes->post('updateSurat', 'AsetKendaraan::updateSurat');
     });
 
     $routes->group('User/Ruangan', function($routes) {
@@ -299,6 +300,9 @@ $routes->get('uploads/images/(:any)', function ($filename) {
 
 $routes->get('uploads/documents/(:any)', function ($filename) {
     $path = ROOTPATH . 'public/uploads/documents/' . $filename;
+    // Tambahkan debug log
+    log_message('debug', 'Mengakses file: ' . $path . ' | Exists: ' . (file_exists($path) ? 'YES' : 'NO'));
+    
     if (file_exists($path)) {
         $mime = mime_content_type($path);
         header('Content-Type: ' . $mime);
@@ -1420,3 +1424,14 @@ $routes->get('siman-extract/(:segment)/(:num)', 'SimanApi::extractAllDataSafe/$1
 // All-in-one
 $routes->get('siman-auto-sync', 'SimanApi::autoSyncWithDynamicColumns');
 $routes->get('siman-auto-sync/(:segment)', 'SimanApi::autoSyncWithDynamicColumns/$1');
+
+// Di Routes.php
+$routes->get('AsetKendaraan/checkFile/(:any)', 'AsetKendaraan::checkFile/$1');
+$routes->get('AsetKendaraan/checkFile', 'AsetKendaraan::checkFile');
+
+// TEMPLATE SURAT JALAN
+// Route untuk generate surat jalan
+$routes->post('/SuratJalan/generate', 'SuratJalanController::generate', ['filter' => 'auth:admin,admin_gedungutama']);
+
+// Route untuk mendapatkan data peminjaman
+$routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'auth:admin,admin_gedungutama']);

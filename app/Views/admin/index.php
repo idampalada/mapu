@@ -741,26 +741,45 @@
                                                             <span class="badge bg-warning">Pending</span>
                                                         </td>
                                                         <td>
-                                                            <?php if (!empty($pinjam['surat_permohonan'])): ?>
-                                                                <a href="<?= base_url('/uploads/documents/' . $pinjam['surat_permohonan']) ?>"
-                                                                    target="_blank" class="btn btn-sm btn-outline-primary mb-1">
-                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
-                                                                </a>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td><?= $pinjam['tanggal_pinjam'] ?></td>
-                                                        <td><?= $pinjam['tanggal_kembali'] ?></td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-success"
-                                                                onclick="showSetujuModal(<?= $pinjam['id'] ?>)">
-                                                                Setujui
-                                                            </button>
-                                                            <button class="btn btn-sm btn-danger"
+    <td>
+    <?php if (!empty($pinjam['surat_permohonan'])): ?>
+        <?php
+        // Deteksi tipe file berdasarkan prefix yang tersimpan di database
+        $isFinal = strpos($pinjam['surat_permohonan'], 'surat_permohonan_') === 0;
+        $buttonText = $isFinal ? 'Surat Permohonan' : 'Draft Surat';
+        $buttonClass = $isFinal ? 'btn-primary' : 'btn-outline-primary';
+        
+        // PENTING: Gunakan nama file LANGSUNG dari database
+        $filePath = base_url('/uploads/documents/' . $pinjam['surat_permohonan']);
+        
+        // Debug log
+        log_message('debug', 'Link PDF: ' . $filePath . ' | Nama file asli: ' . $pinjam['surat_permohonan']);
+        ?>
+        
+        <a href="<?= $filePath ?>" target="_blank" class="btn btn-sm <?= $buttonClass ?> mb-1">
+            <i class="bi bi-file-earmark-pdf"></i> <?= $buttonText ?>
+        </a>
+    <?php endif; ?>
+</td>
+<td><?= $pinjam['tanggal_pinjam'] ?></td>
+<td><?= $pinjam['tanggal_kembali'] ?></td>
+<td>
+    <button class="btn btn-sm btn-success"
+        onclick="showSetujuModal(<?= $pinjam['id'] ?>)">
+        Setujui
+    </button>
+    <button class="btn btn-sm btn-danger"
         data-tipe="kendaraan" 
         data-id="<?= $pinjam['id'] ?>"
         onclick="showTolakModal('kendaraan', <?= $pinjam['id'] ?>)">
-    Tolak
-</button>
+        Tolak
+    </button>
+    <!-- Tambah tombol edit surat -->
+    <button class="btn btn-sm btn-info"
+        onclick="showEditSuratModal(<?= $pinjam['id'] ?>)">
+        Edit Surat
+    </button>
+</td>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -850,6 +869,41 @@
         </div>
     </div>
 <?php endif; ?>
+
+<div class="modal fade" id="modalEditSurat" tabindex="-1" aria-labelledby="modalEditSuratLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditSuratLabel">Edit Surat Permohonan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formEditSurat" action="<?= base_url('/admin/AsetKendaraan/updateSurat'); ?>" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="pinjam_id_surat" name="pinjam_id">
+
+                    <div class="form-group mb-3">
+                        <label for="nomor_surat" class="form-label">Nomor Surat</label>
+                        <input type="text" class="form-control" id="nomor_surat" name="nomor_surat" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="tanggal_surat" class="form-label">Tanggal Surat</label>
+                        <input type="date" class="form-control" id="tanggal_surat" name="tanggal_surat" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="tempat_surat" class="form-label">Tempat Penandatanganan</label>
+                        <input type="text" class="form-control" id="tempat_surat" name="tempat_surat" value="Jakarta" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="modalPilihTambah" tabindex="-1" aria-labelledby="modalPilihTambahLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -1002,32 +1056,127 @@
     </div>
 <?php endif; ?>
 
+<!-- Modal Setuju Peminjaman -->
 <div class="modal fade" id="modalSetuju" tabindex="-1" aria-labelledby="modalSetujuLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalSetujuLabel">Upload Surat Jalan</h5>
+                <h5 class="modal-title" id="modalSetujuLabel">Buat Surat Jalan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formSetuju" method="post" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <input type="hidden" id="pinjamId" name="pinjam_id">
-                    <div class="mb-3">
-                        <label for="surat_jalan_admin" class="form-label">Surat Jalan (PDF)</label>
-                        <input type="file" class="form-control" id="surat_jalan_admin" name="surat_jalan_admin"
-                            accept="application/pdf" required>
-                        <small class="text-muted">Max 2MB</small>
-                    </div>
+            
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="peminjaman-pending-tab" data-bs-toggle="tab" data-bs-target="#peminjaman-pending-tab-pane" type="button" role="tab" aria-controls="peminjaman-pending-tab-pane">Peminjaman Pending</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="buat-otomatis-tab" data-bs-toggle="tab" data-bs-target="#buat-otomatis-tab-pane" type="button" role="tab" aria-controls="buat-otomatis-tab-pane">Buat Otomatis</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upload-file-tab" data-bs-toggle="tab" data-bs-target="#upload-file-tab-pane" type="button" role="tab" aria-controls="upload-file-tab-pane">Upload File</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- Tab Peminjaman Pending -->
+                <div class="tab-pane fade show active" id="peminjaman-pending-tab-pane" role="tabpanel" aria-labelledby="peminjaman-pending-tab" tabindex="0">
+                    <!-- Tabel peminjaman pending -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
+                
+                <!-- Tab Buat Otomatis -->
+                <div class="tab-pane fade" id="buat-otomatis-tab-pane" role="tabpanel" aria-labelledby="buat-otomatis-tab" tabindex="0">
+                    <form id="formBuatOtomatis">
+                        <div class="modal-body">
+                            <input type="hidden" id="pinjamId" name="pinjam_id">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
+                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="jabatan" class="form-label">Jabatan</label>
+                                    <input type="text" class="form-control" id="jabatan" name="jabatan" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="nip_nrp" class="form-label">NIP/NRP</label>
+                                    <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="kode_barang" class="form-label">Kode Barang</label>
+                                    <input type="text" class="form-control" id="kode_barang" name="kode_barang" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="pangkat_golongan" class="form-label">Pangkat/Golongan</label>
+                                    <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="no_polisi" class="form-label">Nomor Polisi</label>
+                                    <input type="text" class="form-control" id="no_polisi" name="no_polisi" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                                    <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                                    <input type="date" class="form-control" id="tanggal_selesai" name="tanggal_selesai" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="jam_mulai" class="form-label">Jam Mulai</label>
+                                    <input type="time" class="form-control" id="jam_mulai" name="jam_mulai" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="jam_selesai" class="form-label">Jam Selesai</label>
+                                    <input type="time" class="form-control" id="jam_selesai" name="jam_selesai" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
+                                <textarea class="form-control" id="urusan_kedinasan" name="urusan_kedinasan" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+                
+                <!-- Tab Upload File -->
+                <div class="tab-pane fade" id="upload-file-tab-pane" role="tabpanel" aria-labelledby="upload-file-tab" tabindex="0">
+                    <form id="formUploadFile" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="hidden" name="pinjam_id" id="upload_pinjam_id">
+                            <div class="mb-3">
+                                <label for="surat_jalan_admin" class="form-label">Surat Jalan (PDF)</label>
+                                <input type="file" class="form-control" id="surat_jalan_admin" name="surat_jalan_admin" accept="application/pdf" required>
+                                <small class="text-muted">Max 2MB</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Setujui Peminjaman</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
 <div class="modal fade" id="modalPreviewGambar" tabindex="-1" aria-labelledby="modalPreviewGambarLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -1061,19 +1210,14 @@
                                 <div class="form-group">
                                     <label for="kategori_id">Kategori</label>
                                     <select class="form-control" id="kategori_id" name="kategori_id" required>
-  <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
-  <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
-  <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
-  <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
-  <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
-  <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
-  <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
-</select>
-
-                                </div>
-                                <div class="form-group">
-                                    <label for="no_sk_psp">No SK PSP</label>
-                                    <input type="text" class="form-control" id="no_sk_psp" name="no_sk_psp" required>
+                                        <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
+                                        <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
+                                        <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
+                                        <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
+                                        <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
+                                        <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
+                                        <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="kode_barang">Kode Barang</label>
@@ -1084,11 +1228,15 @@
                                     <input type="text" class="form-control" id="merk" name="merk" required>
                                 </div>
                                 <div class="form-group">
+                                    <label for="warna">Warna</label>
+                                    <input type="text" class="form-control" id="warna" name="warna">
+                                </div>
+                                <div class="form-group">
                                     <label for="tahun_pembuatan">Tahun Pembuatan</label>
                                     <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan">
                                 </div>
                                 <div class="form-group">
-                                    <label for="tahun_pembuatan">Kapasitas</label>
+                                    <label for="kapasitas">Kapasitas</label>
                                     <input type="number" class="form-control" id="kapasitas" name="kapasitas">
                                 </div>
                             </div>
@@ -1099,12 +1247,12 @@
                                     <input type="text" class="form-control" id="no_polisi" name="no_polisi">
                                 </div>
                                 <div class="form-group">
-                                    <label for="no_bpkb">No BPKB</label>
-                                    <input type="text" class="form-control" id="no_bpkb" name="no_bpkb">
+                                    <label for="nup">NUP</label>
+                                    <input type="text" class="form-control" id="nup" name="nup">
                                 </div>
                                 <div class="form-group">
-                                    <label for="no_stnk">No STNK</label>
-                                    <input type="text" class="form-control" id="no_stnk" name="no_stnk">
+                                    <label for="nomor_mesin">Nomor Mesin</label>
+                                    <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin">
                                 </div>
                                 <div class="form-group">
                                     <label for="no_rangka">No Rangka</label>
@@ -1135,7 +1283,7 @@
                         <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
-
+                
             </div>
         </div>
     </div>
@@ -1596,5 +1744,7 @@
 
 <!-- Baru setelah itu load JS -->
 <script src="/assets/js/dashboard.js"></script>
+<script src="<?= base_url('assets/js/surat_jalan.js') ?>"></script>
+<script src="/assets/js/surat_jalan.js"></script>
 
 <?= $this->endSection() ?>

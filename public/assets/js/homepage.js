@@ -72,24 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
     formPeminjaman.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const suratPermohonan = e.target.querySelector(
-        '[name="surat_permohonan"]'
-      ).files[0];
-      if (suratPermohonan && suratPermohonan.size > 2 * 1024 * 1024) {
-        Swal.fire({
-          icon: "error",
-          title: "Gagal!",
-          text: "Ukuran file Surat Permohonan tidak boleh lebih dari 2MB",
-          confirmButtonText: "Tutup",
-          confirmButtonColor: "#dc3545",
-        });
-        return;
-      }
-
       const formData = new FormData(this);
       const requiredFields = [
         "nama_penanggung_jawab",
         "nip_nrp",
+        "no_ktp", // Tambahkan field baru
+        "alamat_rumah", // Tambahkan field baru
         "pangkat_golongan",
         "jabatan",
         "unit_organisasi",
@@ -99,7 +87,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "tanggal_pinjam",
         "tanggal_kembali",
         "urusan_kedinasan",
-        "surat_permohonan",
       ];
 
       for (const field of requiredFields) {
@@ -524,30 +511,27 @@ function openEditModal(id) {
       if (data.success) {
         const aset = data.data;
 
+        // Update daftar field yang digunakan, tanpa field yang sudah dihapus
         const fields = [
           "id",
           "kategori_id",
-          "no_sk_psp",
           "kode_barang",
           "merk",
           "tahun_pembuatan",
           "kapasitas",
           "no_polisi",
-          "no_bpkb",
-          "no_stnk",
           "no_rangka",
+          "warna", // Field baru
+          "nomor_mesin", // Field baru
+          "nup", // Field baru
           "kondisi",
         ];
 
-        for (const field of fields) {
-          if (typeof aset[field] === "undefined") {
-            throw new Error(`Data ${field} tidak ditemukan`);
-          }
-        }
-
+        // Isi field yang ada saja, jangan periksa field yang tidak ada
         fields.forEach((field) => {
           const element = document.getElementById(`edit_${field}`);
           if (element) {
+            // Gunakan nilai default string kosong jika field tidak ada
             element.value = aset[field] || "";
           }
         });
@@ -1230,6 +1214,18 @@ function loadKendaraanData() {
     .finally(() => {
       kendaraanSelect.disabled = false;
     });
+}
+function showEditSuratModal(pinjamId) {
+  // Isi ID peminjaman
+  $("#pinjam_id_surat").val(pinjamId);
+
+  // Set tanggal hari ini sebagai default
+  const today = new Date().toISOString().split("T")[0];
+  $("#tanggal_surat").val(today);
+
+  // Tampilkan modal
+  const modal = new bootstrap.Modal(document.getElementById("modalEditSurat"));
+  modal.show();
 }
 
 function showFileUnsafeModal(message) {

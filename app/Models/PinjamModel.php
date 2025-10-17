@@ -17,30 +17,32 @@ class PinjamModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = true;
 
-    protected $allowedFields = [
-        'user_id',
-        'kode_barang',
-        'kendaraan_id',
-        'nama_penanggung_jawab',
-        'nip_nrp',
-        'pangkat_golongan',
-        'jabatan',
-        'unit_organisasi',
-        'surat_permohonan',
-        'surat_jalan_admin',
-        'dokumen_tambahan',
-        'pengemudi',
-        'no_hp',
-        'tanggal_pinjam',
-        'tanggal_kembali',
-        'urusan_kedinasan',
-        'status',
-        'is_returned',
-        'keterangan',
-        'created_at',
-        'updated_at',
-        'deleted_at'
-    ];
+protected $allowedFields = [
+    'user_id',
+    'kode_barang',
+    'kendaraan_id',
+    'nama_penanggung_jawab',
+    'nip_nrp',
+    'no_ktp',           // Tambahkan field ini
+    'alamat_rumah',     // Tambahkan field ini
+    'pangkat_golongan',
+    'jabatan',
+    'unit_organisasi',
+    'surat_permohonan',
+    'surat_jalan_admin',
+    'dokumen_tambahan',
+    'pengemudi',
+    'no_hp',
+    'tanggal_pinjam',
+    'tanggal_kembali',
+    'urusan_kedinasan',
+    'status',
+    'is_returned',
+    'keterangan',
+    'created_at',
+    'updated_at',
+    'deleted_at'
+];
 
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

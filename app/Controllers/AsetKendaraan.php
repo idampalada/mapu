@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Models\AsetModel;
 use App\Models\KembaliModel;
 use App\Models\PinjamModel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class AsetKendaraan extends BaseController
 {
@@ -126,101 +128,97 @@ class AsetKendaraan extends BaseController
 }
 
     public function edit($id)
-    {
-        $model = new AsetModel();
-        $aset = $model->find($id);
+{
+    $model = new AsetModel();
+    $aset = $model->find($id);
 
-        if (!$aset) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Data aset tidak ditemukan'
-            ]);
-        }
-        if (!in_groups(['admin', 'admin_gedungutama'])) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Unauthorized Access'
-            ]);
-        }
+    if (!$aset) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data aset tidak ditemukan'
+        ]);
+    }
+    if (!in_groups(['admin', 'admin_gedungutama'])) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Unauthorized Access'
+        ]);
+    }
 
-        $data = [];
-        $fields = [
-            'kategori_id',
-            'no_sk_psp',
-            'kode_barang',
-            'merk',
-            'tahun_pembuatan',
-            'kapasitas',
-            'no_polisi',
-            'no_bpkb',
-            'no_stnk',
-            'no_rangka',
-            'kondisi'
-        ];
+    $data = [];
+    // Perbarui daftar field yang digunakan
+    $fields = [
+        'kategori_id',
+        'kode_barang',
+        'merk',
+        'tahun_pembuatan',
+        'kapasitas',
+        'no_polisi',
+        'no_rangka',
+        'kondisi',
+        'warna',        // Field baru
+        'nomor_mesin',  // Field baru
+        'nup'           // Field baru
+    ];
 
-        foreach ($fields as $field) {
-            $value = $this->request->getPost($field);
-            if ($value !== null && $value !== '') {
-                $data[$field] = $value;
-            }
-        }
-
-        $data['updated_at'] = date('Y-m-d H:i:s');
-
-        $gambar_mobil = $this->request->getFile('gambar_mobil');
-        if ($gambar_mobil && $gambar_mobil->isValid()) {
-            if ($gambar_mobil->getSize() > 5 * 1024 * 1024) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'error' => 'Ukuran file gambar mobil tidak boleh lebih dari 5MB'
-                ]);
-            }
-
-            if (!empty($aset['gambar_mobil'])) {
-                $oldImagePath = ROOTPATH . 'public/uploads/images/' . $aset['gambar_mobil'];
-                if (file_exists($oldImagePath)) {
-                    unlink($oldImagePath);
-                }
-            }
-
-            $newName = $gambar_mobil->getRandomName();
-            if ($gambar_mobil->move(ROOTPATH . 'public/uploads/images', $newName)) {
-                $data['gambar_mobil'] = $newName;
-            }
-        }
-
-        if (empty($data)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Tidak ada data yang diubah'
-            ]);
-        }
-
-        try {
-            $model->update($id, $data);
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Data berhasil diperbarui'
-            ]);
-        } catch (\Exception $e) {
-            log_message('error', 'Error updating asset: ' . $e->getMessage());
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Gagal memperbarui data: ' . $e->getMessage()
-            ]);
+    foreach ($fields as $field) {
+        $value = $this->request->getPost($field);
+        if ($value !== null && $value !== '') {
+            $data[$field] = $value;
         }
     }
+
+    $data['updated_at'] = date('Y-m-d H:i:s');
+
+    $gambar_mobil = $this->request->getFile('gambar_mobil');
+    if ($gambar_mobil && $gambar_mobil->isValid()) {
+        if ($gambar_mobil->getSize() > 5 * 1024 * 1024) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Ukuran file gambar mobil tidak boleh lebih dari 5MB'
+            ]);
+        }
+
+        if (!empty($aset['gambar_mobil'])) {
+            $oldImagePath = ROOTPATH . 'public/uploads/images/' . $aset['gambar_mobil'];
+            if (file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+        }
+
+        $newName = $gambar_mobil->getRandomName();
+        if ($gambar_mobil->move(ROOTPATH . 'public/uploads/images', $newName)) {
+            $data['gambar_mobil'] = $newName;
+        }
+    }
+
+    if (empty($data)) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Tidak ada data yang diubah'
+        ]);
+    }
+
+    try {
+        $model->update($id, $data);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Data berhasil diperbarui'
+        ]);
+    } catch (\Exception $e) {
+        log_message('error', 'Error updating asset: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Gagal memperbarui data: ' . $e->getMessage()
+        ]);
+    }
+}
 
     public function getAsetById($id)
     {
         try {
-            if (!in_groups(['admin', 'admin_gedungutama'])) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'error' => 'Unauthorized Access'
-                ]);
-            }
+
 
             $model = new AsetModel();
             $aset = $model->find($id);
@@ -317,45 +315,51 @@ class AsetKendaraan extends BaseController
         }
     }
 
-    public function getPeminjamanData($kendaraanId)
-    {
-        $model = new PinjamModel();
-        $asetModel = new AsetModel();
-    
-        $pinjam = $model->where([
-            'kendaraan_id' => $kendaraanId,
-            'status' => 'disetujui',
-            'is_returned' => false,
-            'deleted_at' => null
-        ])
-        ->orderBy('id', 'DESC')
-        ->first();
-    
-        log_message('debug', '🔥 DEBUG getPeminjamanData()');
-        log_message('debug', 'Logged in user_id: ' . user_id());
-        log_message('debug', 'Data peminjaman user_id: ' . ($pinjam['user_id'] ?? 'NULL'));
-        log_message('debug', 'Full pinjam data: ' . json_encode($pinjam));
-    
-        if (!$pinjam) {
-            return $this->response->setJSON(['error' => 'Data peminjaman tidak ditemukan']);
-        }
-    
-        if ((int)$pinjam['user_id'] !== (int)user_id()) {
-            return $this->response->setJSON([
-                'error' => 'Anda tidak memiliki akses untuk mengembalikan kendaraan ini'
-            ]);
-        }
-    
-        $pinjam['tanggal_pinjam'] = date('Y-m-d', strtotime($pinjam['tanggal_pinjam']));
-    
-        $kendaraan = $asetModel->find($kendaraanId);
-        if ($kendaraan) {
-            $pinjam['merk'] = $kendaraan['merk'];
-            $pinjam['no_polisi'] = $kendaraan['no_polisi'];
-        }
-    
-        return $this->response->setJSON($pinjam);
+public function getPeminjamanData()
+{
+    if (!in_groups(['admin', 'admin_gedungutama'])) {
+        return $this->response->setJSON(['error' => 'Unauthorized Access']);
     }
+
+    $pinjamId = $this->request->getPost('pinjam_id');
+    if (!$pinjamId) {
+        return $this->response->setJSON(['error' => 'ID Peminjaman tidak valid']);
+    }
+    
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+
+    $pinjam = $model->find($pinjamId);
+    log_message('debug', 'Data peminjaman: ' . json_encode($pinjam));
+
+    if (!$pinjam) {
+        return $this->response->setJSON(['error' => 'Data peminjaman tidak ditemukan']);
+    }
+
+    $kendaraan = $asetModel->find($pinjam['kendaraan_id']);
+    log_message('debug', 'Data kendaraan: ' . json_encode($kendaraan));
+    
+    if (!$kendaraan) {
+        return $this->response->setJSON(['error' => 'Data kendaraan tidak ditemukan']);
+    }
+
+    // Data untuk form
+    $data = [
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'] ?? '',
+        'nip_nrp' => $pinjam['nip_nrp'] ?? '',
+        'pangkat_golongan' => $pinjam['pangkat_golongan'] ?? '',
+        'jabatan' => $pinjam['jabatan'] ?? '',
+        'kode_barang' => $kendaraan['kode_barang'] ?? '',
+        'no_polisi' => $kendaraan['no_polisi'] ?? '',
+        'merk' => $kendaraan['merk'] ?? '',
+        'urusan_kedinasan' => $pinjam['urusan_kedinasan'] ?? ''
+    ];
+
+    return $this->response->setJSON([
+        'success' => true,
+        'data' => $data
+    ]);
+}
 
     public function tambah()
 {
@@ -448,22 +452,22 @@ class AsetKendaraan extends BaseController
         }
 
         $data = [
-            'user_id' => $userId,
-            'kategori_id' => $this->request->getPost('kategori_id'),
-            'no_sk_psp' => $this->request->getPost('no_sk_psp'),
-            'kode_barang' => $this->request->getPost('kode_barang'),
-            'merk' => $this->request->getPost('merk'),
-            'tahun_pembuatan' => $this->request->getPost('tahun_pembuatan'),
-            'kapasitas' => $this->request->getPost('kapasitas'),
-            'no_polisi' => $this->request->getPost('no_polisi'),
-            'no_bpkb' => $this->request->getPost('no_bpkb'),
-            'no_stnk' => $this->request->getPost('no_stnk'),
-            'no_rangka' => $this->request->getPost('no_rangka'),
-            'kondisi' => $this->request->getPost('kondisi'),
-            'status_pinjam' => 'Tersedia',
-            'created_at' => date('Y-m-d H:i:s'),
-            'gambar_mobil' => json_encode($fileNames)
-        ];
+    'user_id' => $userId,
+    'kategori_id' => $this->request->getPost('kategori_id'),
+    'kode_barang' => $this->request->getPost('kode_barang'),
+    'merk' => $this->request->getPost('merk'),
+    'warna' => $this->request->getPost('warna'),
+    'tahun_pembuatan' => $this->request->getPost('tahun_pembuatan'),
+    'kapasitas' => $this->request->getPost('kapasitas'),
+    'no_polisi' => $this->request->getPost('no_polisi'),
+    'nup' => $this->request->getPost('nup'),
+    'nomor_mesin' => $this->request->getPost('nomor_mesin'),
+    'no_rangka' => $this->request->getPost('no_rangka'),
+    'kondisi' => $this->request->getPost('kondisi'),
+    'status_pinjam' => 'Tersedia',
+    'created_at' => date('Y-m-d H:i:s'),
+    'gambar_mobil' => json_encode($fileNames)
+];
 
         log_message('info', 'Menyimpan data aset dengan gambar: ' . json_encode($fileNames));
         $model->insert($data);
@@ -494,183 +498,202 @@ class AsetKendaraan extends BaseController
     }
 }
 
-    public function pinjam()
-    {
-        $model = new PinjamModel();
-        $asetModel = new AsetModel();
-        $db = db_connect();
+public function pinjam()
+{
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+    $db = db_connect();
 
-        $userId = user_id();
-        $nama_penanggung_jawab = $this->request->getPost('nama_penanggung_jawab');
-        $nip_nrp = $this->request->getPost('nip_nrp');
-        $pangkat_golongan = $this->request->getPost('pangkat_golongan');
-        $jabatan = $this->request->getPost('jabatan');
-        $unit_organisasi = $this->request->getPost('unit_organisasi');
-        $kendaraan_id = $this->request->getPost('kendaraan_id');
-        $pengemudi = $this->request->getPost('pengemudi');
-        $no_hp = $this->request->getPost('no_hp');
-        $tanggal_pinjam = $this->request->getPost('tanggal_pinjam');
-        $tanggal_kembali = $this->request->getPost('tanggal_kembali');
-        $urusan_kedinasan = $this->request->getPost('urusan_kedinasan');
-        $surat_permohonan = $this->request->getFile('surat_permohonan');
+    $userId = user_id();
+    $nama_penanggung_jawab = $this->request->getPost('nama_penanggung_jawab');
+    $nip_nrp = $this->request->getPost('nip_nrp');
+    $no_ktp = $this->request->getPost('no_ktp'); // Field baru
+    $alamat_rumah = $this->request->getPost('alamat_rumah'); // Field baru
+    $pangkat_golongan = $this->request->getPost('pangkat_golongan');
+    $jabatan = $this->request->getPost('jabatan');
+    $unit_organisasi = $this->request->getPost('unit_organisasi');
+    $kendaraan_id = $this->request->getPost('kendaraan_id');
+    $pengemudi = $this->request->getPost('pengemudi');
+    $no_hp = $this->request->getPost('no_hp');
+    $tanggal_pinjam = $this->request->getPost('tanggal_pinjam');
+    $tanggal_kembali = $this->request->getPost('tanggal_kembali');
+    $urusan_kedinasan = $this->request->getPost('urusan_kedinasan');
+    
+    $validationRules = [
+        'nama_penanggung_jawab' => 'required',
+        'nip_nrp' => 'required',
+        'no_ktp' => 'required', 
+        'alamat_rumah' => 'required',
+        'pangkat_golongan' => 'required',
+        'jabatan' => 'required',
+        'unit_organisasi' => 'required',
+        'kendaraan_id' => 'required',
+        'pengemudi' => 'required',
+        'no_hp' => 'required',
+        'tanggal_pinjam' => 'required',
+        'tanggal_kembali' => 'required',
+        'urusan_kedinasan' => 'required'
+    ];
 
-        if (!$surat_permohonan->isValid() || $surat_permohonan->getError() !== 0) {
-            return $this->response->setJSON(['error' => 'Surat Permohonan tidak valid: ' . $surat_permohonan->getErrorString()]);
-        }
-
-        if ($surat_permohonan->getClientMimeType() !== 'application/pdf') {
-            return $this->response->setJSON(['error' => 'Format file Surat Permohonan harus PDF']);
-        }
-
-        if ($surat_permohonan->getSize() > 2 * 1024 * 1024) {
-            return $this->response->setJSON(['error' => 'Ukuran file Surat Permohonan tidak boleh lebih dari 2MB']);
-        }
-
-        if ($this->check_file_with_virustotal($surat_permohonan)) {
-            return $this->response->setJSON(['error' => 'File Surat Permohonan terdeteksi tidak aman']);
-        }
-
-        if ($this->check_file_with_virustotal($surat_permohonan)) {
+    foreach ($validationRules as $field => $rule) {
+        $value = $this->request->getPost($field);
+        if (empty($value)) {
             return $this->response->setJSON([
-                'error' => 'File Surat Permohonan terdeteksi tidak aman'
-            ]);
-        }
-
-        $suratPermohonanName = $surat_permohonan->getRandomName();
-
-        try {
-            $surat_permohonan->move(ROOTPATH . 'public/uploads/documents', $suratPermohonanName);
-        } catch (\Exception $e) {
-            return $this->response->setJSON(['error' => 'Gagal mengupload file: ' . $e->getMessage()]);
-        }
-
-        $validationRules = [
-            'nama_penanggung_jawab' => 'required',
-            'nip_nrp' => 'required',
-            'pangkat_golongan' => 'required',
-            'jabatan' => 'required',
-            'unit_organisasi' => 'required',
-            'kendaraan_id' => 'required',
-            'pengemudi' => 'required',
-            'no_hp' => 'required',
-            'tanggal_pinjam' => 'required',
-            'tanggal_kembali' => 'required',
-            'urusan_kedinasan' => 'required'
-        ];
-
-        foreach ($validationRules as $field => $rule) {
-            $value = $this->request->getPost($field);
-            if (empty($value)) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-                return $this->response->setJSON([
-                    'error' => ucwords(str_replace('_', ' ', $field)) . ' harus diisi.'
-                ]);
-            }
-        }
-
-        $asset = $asetModel->find($kendaraan_id);
-        if (!$asset) {
-            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-            return $this->response->setJSON([
-                'error' => 'Kendaraan tidak ditemukan dalam database.'
-            ]);
-        }
-
-        $existingPinjam = $model->where([
-            'kendaraan_id' => $kendaraan_id,
-            'status' => 'disetujui',
-            'is_returned' => false,
-            'deleted_at' => null
-        ])->first();
-
-        if ($existingPinjam) {
-            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-            return $this->response->setJSON([
-                'error' => 'Kendaraan ini sedang dipinjam.'
-            ]);
-        }
-
-        $pendingPinjam = $model->where([
-            'kendaraan_id' => $kendaraan_id,
-            'status' => 'pending',
-            'deleted_at' => null
-        ])->first();
-
-        if ($pendingPinjam) {
-            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-            return $this->response->setJSON([
-                'error' => 'Kendaraan ini sedang dalam proses verifikasi peminjaman.'
-            ]);
-        }
-
-        $db->transStart();
-
-        try {
-            $data = [
-                'user_id' => $userId,
-                'nama_penanggung_jawab' => $nama_penanggung_jawab,
-                'nip_nrp' => $nip_nrp,
-                'pangkat_golongan' => $pangkat_golongan,
-                'jabatan' => $jabatan,
-                'unit_organisasi' => $unit_organisasi,
-                'kendaraan_id' => $kendaraan_id,
-                'pengemudi' => $pengemudi,
-                'no_hp' => $no_hp,
-                'tanggal_pinjam' => $tanggal_pinjam,
-                'tanggal_kembali' => $tanggal_kembali,
-                'urusan_kedinasan' => $urusan_kedinasan,
-                'kode_barang' => $asset['kode_barang'],
-                'surat_permohonan' => $suratPermohonanName,
-                'surat_jalan_admin' => null,
-                'status' => PinjamModel::STATUS_PENDING,
-                'is_returned' => false,
-                'keterangan' => null,
-                'created_at' => date('Y-m-d H:i:s')
-            ];
-
-            $model->insert($data);
-
-            $data['merk'] = $asset['merk'];
-            $data['no_polisi'] = $asset['no_polisi'];
-
-            $userData = user()->toArray();
-            $data['user_email'] = $userData['email'];
-            $data['user_fullname'] = $userData['fullname'];
-
-            $asetModel->update($kendaraan_id, [
-                'status_pinjam' => 'Dalam Verifikasi'
-            ]);
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-                return $this->response->setJSON([
-                    'error' => 'Gagal menyimpan data: Terjadi kesalahan pada transaksi database'
-                ]);
-            }
-
-            $userData = user()->toArray();
-            $data['user_email'] = $userData['email'];
-            $data['user_fullname'] = $userData['fullname'];
-            $data['merk'] = $asset['merk'];
-            $data['no_polisi'] = $asset['no_polisi'];
-            sendPeminjamanNotification($data, 'new');
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Data peminjaman berhasil disimpan'
-            ]);
-
-        } catch (\Exception $e) {
-            $db->transRollback();
-            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
-            log_message('error', 'Error in loan process: ' . $e->getMessage());
-            return $this->response->setJSON([
-                'error' => 'Gagal menyimpan data: ' . $e->getMessage()
+                'error' => ucwords(str_replace('_', ' ', $field)) . ' harus diisi.'
             ]);
         }
     }
+
+    $asset = $asetModel->find($kendaraan_id);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'error' => 'Kendaraan tidak ditemukan dalam database.'
+        ]);
+    }
+
+    $existingPinjam = $model->where([
+        'kendaraan_id' => $kendaraan_id,
+        'status' => 'disetujui',
+        'is_returned' => false,
+        'deleted_at' => null
+    ])->first();
+
+    if ($existingPinjam) {
+        return $this->response->setJSON([
+            'error' => 'Kendaraan ini sedang dipinjam.'
+        ]);
+    }
+
+    $pendingPinjam = $model->where([
+        'kendaraan_id' => $kendaraan_id,
+        'status' => 'pending',
+        'deleted_at' => null
+    ])->first();
+
+    if ($pendingPinjam) {
+        return $this->response->setJSON([
+            'error' => 'Kendaraan ini sedang dalam proses verifikasi peminjaman.'
+        ]);
+    }
+
+    $db->transStart();
+
+    try {
+        // Konversi kategori_id ke jenis kendaraan
+        $jenisKendaraan = "Tidak Diketahui";
+        switch($asset['kategori_id']) {
+            case "KDJ":
+                $jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
+                break;
+            case "KDO":
+                $jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
+                break;
+            case "KDF":
+                $jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
+                break;
+            default:
+                $jenisKendaraan = $asset['kategori_id'] ?? "Tidak Diketahui";
+        }
+        
+        // Buat data yang akan dikirim ke template PDF
+        $pdfData = [
+            'nama_penanggung_jawab' => $nama_penanggung_jawab,
+            'nip_nrp' => $nip_nrp,
+            'no_ktp' => $no_ktp,
+            'alamat_rumah' => $alamat_rumah,
+            'pangkat_golongan' => $pangkat_golongan,
+            'jabatan' => $jabatan,
+            'unit_organisasi' => $unit_organisasi,
+            'pengemudi' => $pengemudi,
+            'no_hp' => $no_hp,
+            'tanggal_pinjam' => $tanggal_pinjam,
+            'tanggal_kembali' => $tanggal_kembali,
+            'urusan_kedinasan' => $urusan_kedinasan,
+            'jenis_kendaraan' => $jenisKendaraan,
+            'merk' => $asset['merk'],
+            'no_polisi' => $asset['no_polisi'],
+            'warna' => $asset['warna'] ?? '-',
+            'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+            'no_rangka' => $asset['no_rangka'] ?? '-',
+            'nup' => $asset['nup'] ?? '-',
+            'kode_barang' => $asset['kode_barang'],
+            'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+            'tanggal_pengajuan' => date('Y-m-d'),
+            // Tambahkan data penanggung jawab kendaraan dan kepala satuan kerja
+            'nama_penanggung_jawab_kendaraan' => 'Pak Solihin',
+            'nip_penanggung_jawab_kendaraan' => '123123',
+            'nama_kepala_satuan_kerja' => 'Pak Udin',
+            'nip_kepala_satuan_kerja' => '12345678'
+        ];
+        
+        // Generate surat permohonan PDF
+        $suratPermohonanName = $this->generateSuratPermohonan($pdfData);
+        
+        $data = [
+            'user_id' => $userId,
+            'nama_penanggung_jawab' => $nama_penanggung_jawab,
+            'nip_nrp' => $nip_nrp,
+            'no_ktp' => $no_ktp,
+            'alamat_rumah' => $alamat_rumah,
+            'pangkat_golongan' => $pangkat_golongan,
+            'jabatan' => $jabatan,
+            'unit_organisasi' => $unit_organisasi,
+            'kendaraan_id' => $kendaraan_id,
+            'pengemudi' => $pengemudi,
+            'no_hp' => $no_hp,
+            'tanggal_pinjam' => $tanggal_pinjam,
+            'tanggal_kembali' => $tanggal_kembali,
+            'urusan_kedinasan' => $urusan_kedinasan,
+            'kode_barang' => $asset['kode_barang'],
+            'surat_permohonan' => $suratPermohonanName, // Gunakan nama file PDF yang digenerate
+            'surat_jalan_admin' => null,
+            'status' => PinjamModel::STATUS_PENDING,
+            'is_returned' => false,
+            'keterangan' => null,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $model->insert($data);
+
+        $data['merk'] = $asset['merk'];
+        $data['no_polisi'] = $asset['no_polisi'];
+
+        $userData = user()->toArray();
+        $data['user_email'] = $userData['email'];
+        $data['user_fullname'] = $userData['fullname'];
+
+        $asetModel->update($kendaraan_id, [
+            'status_pinjam' => 'Dalam Verifikasi'
+        ]);
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            // Hapus file jika transaksi gagal
+            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
+            return $this->response->setJSON([
+                'error' => 'Gagal menyimpan data: Terjadi kesalahan pada transaksi database'
+            ]);
+        }
+
+        sendPeminjamanNotification($data, 'new');
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Data peminjaman berhasil disimpan'
+        ]);
+
+    } catch (\Exception $e) {
+        $db->transRollback();
+        if (isset($suratPermohonanName)) {
+            @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName);
+        }
+        log_message('error', 'Error in loan process: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'error' => 'Gagal menyimpan data: ' . $e->getMessage()
+        ]);
+    }
+}
 
     public function kembali()
 {
@@ -1208,4 +1231,200 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
             return $this->response->setJSON(['error' => $e->getMessage()]);
         }
     }
+public function updateSurat()
+{
+    $pinjamId = $this->request->getPost('pinjam_id');
+    $nomorSurat = $this->request->getPost('nomor_surat');
+    $tanggalSurat = $this->request->getPost('tanggal_surat');
+    $tempatSurat = $this->request->getPost('tempat_surat');
+    
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data pinjam
+    $pinjam = $model->find($pinjamId);
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data aset
+    $asset = $asetModel->find($pinjam['kendaraan_id']);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data kendaraan tidak ditemukan'
+        ]);
+    }
+    
+    // Konversi kategori_id ke jenis kendaraan
+    $jenisKendaraan = "Tidak Diketahui";
+    switch($asset['kategori_id']) {
+        case "KDJ":
+            $jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
+            break;
+        case "KDO":
+            $jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
+            break;
+        case "KDF":
+            $jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
+            break;
+        default:
+            $jenisKendaraan = $asset['kategori_id'] ?? "Tidak Diketahui";
+    }
+    
+    // Siapkan data untuk PDF
+    $pdfData = [
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+        'nip_nrp' => $pinjam['nip_nrp'],
+        'no_ktp' => $pinjam['no_ktp'],
+        'alamat_rumah' => $pinjam['alamat_rumah'],
+        'pangkat_golongan' => $pinjam['pangkat_golongan'],
+        'jabatan' => $pinjam['jabatan'],
+        'unit_organisasi' => $pinjam['unit_organisasi'],
+        'pengemudi' => $pinjam['pengemudi'],
+        'no_hp' => $pinjam['no_hp'],
+        'tanggal_pinjam' => $pinjam['tanggal_pinjam'],
+        'tanggal_kembali' => $pinjam['tanggal_kembali'],
+        'urusan_kedinasan' => $pinjam['urusan_kedinasan'],
+        'jenis_kendaraan' => $jenisKendaraan,
+        'merk' => $asset['merk'],
+        'no_polisi' => $asset['no_polisi'],
+        'warna' => $asset['warna'] ?? '-',
+        'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+        'no_rangka' => $asset['no_rangka'] ?? '-',
+        'nup' => $asset['nup'] ?? '-',
+        'kode_barang' => $asset['kode_barang'],
+        'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+        'tanggal_pengajuan' => date('Y-m-d'),
+        'nama_penanggung_jawab_kendaraan' => 'Pak Solihin',
+        'nip_penanggung_jawab_kendaraan' => '123123',
+        'nama_kepala_satuan_kerja' => 'Pak Udin',
+        'nip_kepala_satuan_kerja' => '12345678',
+        // Data tambahan
+        'nomor_surat' => $nomorSurat,
+        'tanggal_surat' => $tanggalSurat,
+        'tempat_surat' => $tempatSurat
+    ];
+    
+    // Hapus file draft lama
+    if (!empty($pinjam['surat_permohonan'])) {
+        $oldPath = ROOTPATH . 'public/uploads/documents/' . $pinjam['surat_permohonan'];
+        if (file_exists($oldPath)) {
+            @unlink($oldPath);
+        }
+    }
+    
+    // Generate surat permohonan PDF yang final
+    $suratPermohonanName = $this->generateSuratPermohonan($pdfData, true);
+    
+    // Update data peminjaman
+    $model->update($pinjamId, [
+        'surat_permohonan' => $suratPermohonanName
+    ]);
+    
+    // Kembalikan response JSON untuk ditangani oleh JavaScript
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => 'Surat permohonan berhasil diperbarui',
+        'file_name' => $suratPermohonanName
+    ]);
+}
+
+// Perbarui method generateSuratPermohonan
+private function generateSuratPermohonan($data, $isFinal = false)
+{
+    // Setup DOMPDF
+    helper('dompdf');
+    
+    $options = new \Dompdf\Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isPhpEnabled', true);
+    
+    $dompdf = new \Dompdf\Dompdf($options);
+    
+    // HTML template surat permohonan
+    $html = view('templates/surat_permohonan', $data);
+    
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    
+    // Simpan PDF ke folder
+    $output = $dompdf->output();
+    
+    // PENTING: Gunakan nama file tanpa duplikasi
+    // Hindari huruf besar di awal yang bisa menyebabkan masalah case-sensitive
+    $timestamp = time();
+    $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
+    
+    if ($isFinal) {
+        $fileName = "surat_permohonan_{$timestamp}_{$cleanName}.pdf";
+    } else {
+        $fileName = "draft_surat_{$timestamp}_{$cleanName}.pdf"; 
+    }
+    
+    $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
+    
+    // Debug log
+    log_message('debug', 'Menyimpan PDF: ' . $filePath);
+    
+    // Pastikan direktori ada
+    $dir = ROOTPATH . 'public/uploads/documents/';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+    
+    // Simpan file dan set permission
+    file_put_contents($filePath, $output);
+    @chmod($filePath, 0644);
+    
+    // Debug log konfirmasi
+    log_message('debug', 'File PDF berhasil disimpan: ' . $fileName);
+    
+    return $fileName;
+}
+// Tambahkan function ini ke controller AsetKendaraan
+public function checkFile($filename = null)
+{
+    if (!$filename) {
+        $files = [];
+        $path = ROOTPATH . 'public/uploads/documents/';
+        
+        if (is_dir($path)) {
+            $fileList = scandir($path);
+            
+            foreach ($fileList as $file) {
+                if ($file != '.' && $file != '..') {
+                    $files[] = [
+                        'name' => $file,
+                        'size' => filesize($path . $file),
+                        'modified' => date('Y-m-d H:i:s', filemtime($path . $file)),
+                        'path' => $path . $file
+                    ];
+                }
+            }
+        }
+        
+        return $this->response->setJSON([
+            'directory' => $path,
+            'exists' => is_dir($path),
+            'writable' => is_dir($path) ? is_writable($path) : false,
+            'files' => $files
+        ]);
+    } else {
+        $path = ROOTPATH . 'public/uploads/documents/' . $filename;
+        
+        return $this->response->setJSON([
+            'file' => $filename,
+            'path' => $path,
+            'exists' => file_exists($path),
+            'size' => file_exists($path) ? filesize($path) : null,
+            'modified' => file_exists($path) ? date('Y-m-d H:i:s', filemtime($path)) : null
+        ]);
+    }
+}
+    
 }

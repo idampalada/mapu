@@ -393,9 +393,10 @@
 
             <form id="formPeminjaman" action="<?= base_url('/AsetKendaraan/pinjam'); ?>" method="post" class="pinjam"
                 enctype="multipart/form-data">
-                <div class="modal-body p-4">
+                
+                <!-- Halaman 1: Data Peminjam -->
+                <div id="page1" class="modal-body p-4">
                     <div class="row">
-
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
@@ -409,10 +410,21 @@
                             </div>
 
                             <div class="form-group mb-3">
+                                <label for="no_ktp" class="form-label">No. KTP</label>
+                                <input type="text" class="form-control" id="no_ktp" name="no_ktp" required>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="alamat_rumah" class="form-label">Alamat Rumah</label>
+                                <textarea class="form-control" id="alamat_rumah" name="alamat_rumah" rows="2"
+                                    required></textarea>
+                            </div>
+
+                            <div class="form-group mb-3">
                                 <label for="jabatan" class="form-label">Unit Organisasi</label>
                                 <select
                                     class="form-control <?php if (session('errors.unit_organisasi')): ?>is-invalid<?php endif ?>"
-                                    name="unit_organisasi">
+                                    name="unit_organisasi" id="unit_organisasi" required>
                                     <option value="" class="text-muted" disabled selected>Pilih</option>
                                     <option value="Setjen">Sekretariat Jenderal</option>
                                     <option value="Itjen">Inspektorat Jenderal</option>
@@ -430,19 +442,21 @@
                                     <option value="BPJT">Badan Pengatur Jalan Tol</option>
                                 </select>
                             </div>
+                        </div>
 
+                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="jabatan" class="form-label">Jabatan</label>
                                 <select
                                     class="form-control <?php if (session('errors.jabatan')): ?>is-invalid<?php endif ?>"
-                                    name="jabatan">
+                                    name="jabatan" id="jabatan" required>
                                     <option value="" class="text-muted" disabled selected>Pilih</option>
                                 </select>
                             </div>
 
                             <div class="form-group mb-3">
                                 <label for="pangkat_golongan" class="form-label">Pangkat / Golongan</label>
-                                <select class="form-control" name="pangkat_golongan">
+                                <select class="form-control" name="pangkat_golongan" id="pangkat_golongan" required>
                                     <option value="" class="text-muted" disabled selected>Pilih</option>
                                     <option value="IV A">IV A - Pembina</option>
                                     <option value="IV B">IV B - Pembina Tingkat 1</option>
@@ -451,9 +465,7 @@
                                     <option value="IV E">IV E - Pembina Utama</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="kendaraan_id" class="form-label">Pilih Kendaraan</label>
                                 <select class="form-control" id="kendaraan_id_pinjam" name="kendaraan_id" required>
@@ -463,20 +475,24 @@
 
                             <div class="form-group mb-3">
                                 <label for="pengemudi" class="form-label">Nama Pengemudi</label>
-                                <input type="text" class="form-control -lg" id="pengemudi" name="pengemudi" required>
+                                <input type="text" class="form-control" id="pengemudi" name="pengemudi" required>
                             </div>
 
                             <div class="form-group mb-3">
                                 <label for="no_hp" class="form-label">Nomor HP</label>
                                 <input type="text" class="form-control" id="no_hp" name="no_hp" required>
                             </div>
+                        </div>
 
+                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
                                 <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam" 
                                     required min="<?= date('Y-m-d') ?>">
                             </div>
+                        </div>
 
+                        <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
                                 <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
@@ -484,28 +500,77 @@
                             </div>
                         </div>
 
-
-                        <div class="form-group mb-3 mt-auto order-last">
+                        <div class="form-group mb-3">
                             <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
                             <textarea class="form-control" id="urusan_kedinasan" name="urusan_kedinasan" rows="3"
                                 required></textarea>
                         </div>
-
-                        <div class="form-group mb-3 mt-auto order-last">
-                            <label for="surat_permohonan" class="form-label">Surat Permohonan (PDF)</label>
-                            <input type="file" class="form-control" id="surat_permohonan" name="surat_permohonan"
-                                accept="application/pdf" required>
-                            <small class="text-muted">Max 2MB</small>
-                        </div>
-
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" id="nextBtn" class="btn btn-primary rounded-pill">Selanjutnya &raquo;</button>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submit" class="btn btn-primary rounded-pill">Ajukan Peminjaman</button>
-                </div>
-            </form>
 
+                <!-- Halaman 2: Data Kendaraan -->
+<div id="page2" class="modal-body p-4" style="display: none;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label for="detail_jenis_kendaraan" class="form-label">Jenis Kendaraan</label>
+                <input type="text" class="form-control" id="detail_jenis_kendaraan" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_nopol" class="form-label">Nomor Polisi</label>
+                <input type="text" class="form-control" id="detail_nopol" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_merk" class="form-label">Merk/Type</label>
+                <input type="text" class="form-control" id="detail_merk" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_warna" class="form-label">Warna</label>
+                <input type="text" class="form-control" id="detail_warna" readonly>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label for="detail_nomor_mesin" class="form-label">Nomor Mesin</label>
+                <input type="text" class="form-control" id="detail_nomor_mesin" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_no_rangka" class="form-label">Nomor Rangka</label>
+                <input type="text" class="form-control" id="detail_no_rangka" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_kode_barang" class="form-label">Kode Barang</label>
+                <input type="text" class="form-control" id="detail_kode_barang" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_nup" class="form-label">NUP</label>
+                <input type="text" class="form-control" id="detail_nup" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="detail_tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                <input type="text" class="form-control" id="detail_tahun_pembuatan" readonly>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-3">
+        <button type="button" id="prevBtn" class="btn btn-light rounded-pill">&laquo; Kembali</button>
+        <button type="submit" class="btn btn-primary rounded-pill">Ajukan Peminjaman</button>
+    </div>
+</div>
+            </form>
         </div>
     </div>
 </div>
@@ -525,52 +590,54 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="edit_kategori_id" class="form-label">Kategori</label>
-                                <select class="form-control" id="kategori_id" name="kategori_id" required>
-                                    <option value="" class="text-muted" disabled selected> Pilih Kategori Aset</option>
+                                <select class="form-control" id="edit_kategori_id" name="kategori_id" required>
+                                    <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
+                                    <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
+                                    <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
+                                    <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
+                                    <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
                                     <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
-                                    <option class="text-muted" disabled selected>Ambulance, Mobil Derek, dan Mobil Crane</option>
+                                    <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
                                 </select>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="edit_no_sk_psp" class="form-label">No SK PSP</label>
-                                <input type="text" class="form-control" id="edit_no_sk_psp" name="no_sk_psp" required>
+                                <label for="edit_kode_barang" class="form-label">Kode Barang</label>
+                                <input type="text" class="form-control" id="edit_kode_barang" name="kode_barang" required>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="edit_kode_barang" class="form-label">Kode Barang</label>
-                                <input type="text" class="form-control" id="edit_kode_barang" name="kode_barang"
-                                    required>
+                                <label for="edit_nup" class="form-label">NUP</label>
+                                <input type="text" class="form-control" id="edit_nup" name="nup">
                             </div>
                             <div class="form-group mb-3">
                                 <label for="edit_merk" class="form-label">Merk</label>
                                 <input type="text" class="form-control" id="edit_merk" name="merk" required>
                             </div>
                             <div class="form-group mb-3">
-                                <label for="edit_tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
-                                <input type="number" class="form-control" id="edit_tahun_pembuatan"
-                                    name="tahun_pembuatan">
+                                <label for="edit_warna" class="form-label">Warna</label>
+                                <input type="text" class="form-control" id="edit_warna" name="warna">
                             </div>
                             <div class="form-group mb-3">
-                                <label for="edit_kapasitas" class="form-label">Kapasitas</label>
-                                <input type="number" class="form-control" id="edit_kapasitas" name="kapasitas">
+                                <label for="edit_tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                                <input type="number" class="form-control" id="edit_tahun_pembuatan" name="tahun_pembuatan">
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-group mb-3">
+                                <label for="edit_kapasitas" class="form-label">Kapasitas</label>
+                                <input type="number" class="form-control" id="edit_kapasitas" name="kapasitas">
+                            </div>
+                            <div class="form-group mb-3">
                                 <label for="edit_no_polisi" class="form-label">Nomor Polisi</label>
                                 <input type="text" class="form-control" id="edit_no_polisi" name="no_polisi">
                             </div>
                             <div class="form-group mb-3">
-                                <label for="edit_no_bpkb" class="form-label">No BPKB</label>
-                                <input type="number" class="form-control" id="edit_no_bpkb" name="no_bpkb">
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="edit_no_stnk" class="form-label">No STNK</label>
-                                <input type="number" class="form-control" id="edit_no_stnk" name="no_stnk">
+                                <label for="edit_nomor_mesin" class="form-label">Nomor Mesin</label>
+                                <input type="text" class="form-control" id="edit_nomor_mesin" name="nomor_mesin">
                             </div>
                             <div class="form-group mb-3">
                                 <label for="edit_no_rangka" class="form-label">No Rangka</label>
-                                <input type="number" class="form-control" id="edit_no_rangka" name="no_rangka">
+                                <input type="text" class="form-control" id="edit_no_rangka" name="no_rangka">
                             </div>
                             <div class="form-group mb-3">
                                 <label for="edit_kondisi" class="form-label">Kondisi</label>
@@ -582,9 +649,11 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label for="edit_gambar_mobil" class="form-label">Gambar Mobil (JPG/PNG)</label>
-                                <input type="file" class="form-control" id="edit_gambar_mobil" name="gambar_mobil"
-                                    accept="image/jpeg,image/png">
+                                <input type="file" class="form-control" id="edit_gambar_mobil" name="gambar_mobil" accept="image/jpeg,image/png">
                                 <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar</small>
+                                <div class="mt-2">
+                                    <img id="current_image_preview" class="img-fluid rounded" style="max-height: 150px; display: none;" alt="Preview Gambar">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -905,6 +974,152 @@ function stopCamera() {
         document.getElementById('camera-container').style.display = 'none';
     }
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const page1 = document.getElementById('page1');
+    const page2 = document.getElementById('page2');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const kendaraanSelect = document.getElementById('kendaraan_id_pinjam');
+    
+    // Navigasi antar halaman
+    nextBtn.addEventListener('click', function() {
+        // Validasi form halaman 1
+        const requiredFields = page1.querySelectorAll('[required]');
+        let valid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                valid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!valid) {
+            alert('Mohon lengkapi semua field yang diperlukan');
+            return;
+        }
+        
+        // Jika valid, load data kendaraan dan pindah ke halaman 2
+        const selectedKendaraanId = kendaraanSelect.value;
+        if (selectedKendaraanId) {
+            loadKendaraanDetails(selectedKendaraanId);
+            page1.style.display = 'none';
+            page2.style.display = 'block';
+        } else {
+            alert('Silahkan pilih kendaraan terlebih dahulu');
+        }
+    });
+    
+    prevBtn.addEventListener('click', function() {
+        page2.style.display = 'none';
+        page1.style.display = 'block';
+    });
+    
+    // Load detail kendaraan
+    function loadKendaraanDetails(kendaraanId) {
+    fetch(`<?= base_url('AsetKendaraan/getAsetById/') ?>${kendaraanId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const kendaraan = data.data;
+                
+                // Konversi kategori_id ke jenis kendaraan
+                let jenisKendaraan = "Tidak Diketahui";
+                switch(kendaraan.kategori_id) {
+                    case "KDJ":
+                        jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
+                        break;
+                    case "KDO":
+                        jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
+                        break;
+                    case "KDF":
+                        jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
+                        break;
+                    default:
+                        jenisKendaraan = kendaraan.kategori_id || "Tidak Diketahui";
+                }
+                
+                // Isi form dengan data kendaraan
+                document.getElementById('detail_jenis_kendaraan').value = jenisKendaraan;
+                document.getElementById('detail_nopol').value = kendaraan.no_polisi || '-';
+                document.getElementById('detail_merk').value = kendaraan.merk || '-';
+                document.getElementById('detail_warna').value = kendaraan.warna || '-';
+                document.getElementById('detail_nomor_mesin').value = kendaraan.nomor_mesin || '-';
+                document.getElementById('detail_no_rangka').value = kendaraan.no_rangka || '-';
+                document.getElementById('detail_kode_barang').value = kendaraan.kode_barang || '-';
+                document.getElementById('detail_nup').value = kendaraan.nup || '-';
+                document.getElementById('detail_tahun_pembuatan').value = kendaraan.tahun_pembuatan || '-';
+            } else {
+                alert('Gagal memuat detail kendaraan: ' + (data.error || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memuat detail kendaraan');
+        });
+}
+    
+    // Load daftar kendaraan tersedia saat form dibuka
+    function loadAvailableKendaraan() {
+        fetch('<?= base_url('AsetKendaraan/getKendaraan') ?>')
+            .then(response => response.json())
+            .then(data => {
+                kendaraanSelect.innerHTML = '<option value="" disabled selected>Pilih Kendaraan</option>';
+                
+                data.forEach(kendaraan => {
+                    if (kendaraan.status_pinjam === 'Tersedia') {
+                        const option = document.createElement('option');
+                        option.value = kendaraan.id;
+                        option.textContent = `${kendaraan.merk} - ${kendaraan.no_polisi}`;
+                        kendaraanSelect.appendChild(option);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Gagal memuat daftar kendaraan');
+            });
+    }
+    
+    // Initialize
+    loadAvailableKendaraan();
+    
+    // Dynamic jabatan options based on unit organisasi selection
+    const unitOrganisasiSelect = document.getElementById('unit_organisasi');
+    const jabatanSelect = document.getElementById('jabatan');
+    
+    unitOrganisasiSelect.addEventListener('change', function() {
+        // Reset jabatan options
+        jabatanSelect.innerHTML = '<option value="" disabled selected>Pilih</option>';
+        
+        // Add jabatan options based on selected unit
+        const unit = this.value;
+        let jabatanOptions = [];
+        
+        switch(unit) {
+            case 'Setjen':
+                jabatanOptions = ['Sekretaris Jenderal', 'Kepala Biro', 'Kepala Bagian', 'Kepala Subbagian', 'Staff'];
+                break;
+            case 'Itjen':
+                jabatanOptions = ['Inspektur Jenderal', 'Sekretaris Inspektorat Jenderal', 'Inspektur', 'Staff'];
+                break;
+            // Add more cases as needed
+            default:
+                jabatanOptions = ['Direktur Jenderal', 'Sekretaris Direktorat Jenderal', 'Direktur', 'Staff'];
+        }
+        
+        jabatanOptions.forEach(jabatan => {
+            const option = document.createElement('option');
+            option.value = jabatan;
+            option.textContent = jabatan;
+            jabatanSelect.appendChild(option);
+        });
+    });
+});
 </script>
 
 <?= $this->endSection() ?>="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>

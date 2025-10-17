@@ -30,6 +30,9 @@ class AsetModel extends Model
         'no_rangka',
         'kondisi',
         'status_pinjam',
+                'warna',          // Kolom baru
+        'nomor_mesin',    // Kolom baru
+        'nup',            // Kolom baru
         'created_at',
         'updated_at',
         'deleted_at',
