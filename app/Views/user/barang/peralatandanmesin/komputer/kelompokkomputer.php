@@ -139,31 +139,66 @@
         </div>
     <?php endif; ?>
 
-<!-- Tombol Import yang sudah disederhanakan -->
-<div class="mb-3 text-end">
-    <!-- Tombol Import/Sync dari API -->
-    <form action="<?= base_url('user/barang/peralatandanmesin/komputer/importFromApi') ?>" method="post" class="d-inline">
-        <button type="submit" class="btn btn-success" onclick="return confirm('Import/sync data dari API PM-TIK? (Data existing akan di-update, data baru akan ditambahkan)')">
-            <i class="bi bi-cloud-download"></i> Import/Sync API
+    <!-- Tombol Import yang diperbarui dengan tambahan Import Excel -->
+    <div class="mb-3 text-end">
+        <!-- Tombol Import Excel baru -->
+        <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+            <i class="bi bi-file-excel"></i> Import Excel
         </button>
-    </form>
-    
-    <!-- Tombol Reset Data -->
-    <form action="<?= base_url('user/barang/peralatandanmesin/komputer/resetData') ?>" method="post" class="d-inline">
-        <button type="submit" class="btn btn-danger" onclick="return confirm('PERINGATAN: Ini akan menghapus SEMUA data komputer! Yakin ingin melanjutkan?')">
-            <i class="bi bi-trash"></i> Reset Data
-        </button>
-    </form>
-</div>
+        
+        <!-- Tombol Import/Sync dari API (tetap seperti sebelumnya) -->
+        <form action="<?= base_url('user/barang/peralatandanmesin/komputer/importFromApi') ?>" method="post" class="d-inline">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Import/sync data dari API PM-TIK? (Data existing akan di-update, data baru akan ditambahkan)')">
+                <i class="bi bi-cloud-download"></i> Import/Sync API
+            </button>
+        </form>
+        
+        <!-- Tombol Reset Data (tetap seperti sebelumnya) -->
+        <form action="<?= base_url('user/barang/peralatandanmesin/komputer/resetData') ?>" method="post" class="d-inline">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('PERINGATAN: Ini akan menghapus SEMUA data komputer! Yakin ingin melanjutkan?')">
+                <i class="bi bi-trash"></i> Reset Data
+            </button>
+        </form>
+    </div>
 
-<!-- Info bantuan untuk user -->
-<div class="alert alert-info mb-3">
-    <h6><i class="bi bi-info-circle"></i> Petunjuk Import:</h6>
-    <ul class="mb-0">
-        <li><strong>Import/Sync API:</strong> Mengambil data dari API PM-TIK, update data yang sudah ada, tambah data baru</li>
-        <li><strong>Reset Data:</strong> Menghapus semua data dari database (gunakan dengan hati-hati!)</li>
-    </ul>
-</div>
+    <!-- Info bantuan untuk user - diperbarui -->
+    <div class="alert alert-info mb-3">
+        <h6><i class="bi bi-info-circle"></i> Petunjuk Import:</h6>
+        <ul class="mb-0">
+            <li><strong>Import Excel:</strong> Mengimpor data dari file Excel (format: .xlsx)</li>
+            <li><strong>Import/Sync API:</strong> Mengambil data dari API PM-TIK, update data yang sudah ada, tambah data baru</li>
+            <li><strong>Reset Data:</strong> Menghapus semua data dari database (gunakan dengan hati-hati!)</li>
+        </ul>
+    </div>
+
+    <!-- Modal Import Excel baru -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="importExcelModalLabel">Import Data dari Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="<?= base_url('user/barang/peralatandanmesin/komputer/importFromExcel') ?>" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="excelFile" class="form-label">Pilih File Excel (.xlsx)</label>
+                            <input type="file" class="form-control" id="excelFile" name="excelFile" accept=".xlsx" required>
+                            <div class="form-text text-muted">
+                                File harus berformat .xlsx dan memiliki sheet: Master Aset, MTI, BDI, TU, dll.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Pencarian -->
     <form method="GET" class="d-flex mb-4">
@@ -241,7 +276,7 @@
         </button>
     </div>
 
-    <!-- Form Tambah Komputer -->
+    <!-- Form Tambah Komputer - diperbarui dengan field baru -->
     <div class="card mb-4" id="formTambahKomputer" style="display: none;">
         <div class="card-header bg-primary text-white">
             <strong>Form Tambah <?= esc($activeKelompok) ?></strong>
@@ -264,6 +299,15 @@
                     <div class="col-md-6 mb-3">
                         <label for="merk" class="form-label">Merk</label>
                         <input type="text" name="merk" class="form-control" value="<?= old('merk') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="bidang" class="form-label">Bidang</label>
+                        <select name="bidang" class="form-select">
+                            <option value="">-- Pilih Bidang --</option>
+                            <option value="MTI" <?= old('bidang') === 'MTI' ? 'selected' : '' ?>>MTI</option>
+                            <option value="BDI" <?= old('bidang') === 'BDI' ? 'selected' : '' ?>>BDI</option>
+                            <option value="TU" <?= old('bidang') === 'TU' ? 'selected' : '' ?>>TU</option>
+                        </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="kelompok" class="form-label">Kelompok</label>
@@ -314,6 +358,23 @@
                         <label for="tanggal_perolehan" class="form-label">Tanggal Perolehan</label>
                         <input type="date" name="tanggal_perolehan" class="form-control" value="<?= old('tanggal_perolehan') ?>">
                     </div>
+                    <!-- Field Baru -->
+                    <div class="col-md-6 mb-3">
+                        <label for="pengguna_sebelumnya" class="form-label">Pengguna Sebelumnya</label>
+                        <input type="text" name="pengguna_sebelumnya" class="form-control" value="<?= old('pengguna_sebelumnya') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="pengguna_sekarang" class="form-label">Pengguna Sekarang</label>
+                        <input type="text" name="pengguna_sekarang" class="form-control" value="<?= old('pengguna_sekarang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="status_barang" class="form-label">Status Barang</label>
+                        <input type="text" name="status_barang" class="form-control" value="<?= old('status_barang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="keterangan" class="form-label">Keterangan</label>
+                        <textarea name="keterangan" class="form-control" rows="1"><?= old('keterangan') ?></textarea>
+                    </div>
                     <div class="col-md-12 mb-3">
                         <label for="spek_lain" class="form-label">Spesifikasi Lain</label>
                         <textarea name="spek_lain" class="form-control" rows="3" placeholder="Spesifikasi tambahan lainnya"><?= old('spek_lain') ?></textarea>
@@ -326,7 +387,6 @@
             </form>
         </div>
     </div>
-
     <?php endif; ?>
 
     <?php if (!empty($komputerList)): ?>
@@ -335,24 +395,30 @@
             <thead class="table-premium-blue">
                 <tr>
                     <th class="text-center">No</th>
-                    <th class="text-center">Kode Barang</th>
+                    <th class="text-center">Bidang</th>
                     <th class="text-center">Nama Barang</th>
                     <th class="text-center">Merk</th>
                     <th class="text-center">NUP</th>
                     <th class="text-center">Kelompok</th>
-                    <th class="text-center">Kondisi</th>
                     <th class="text-center">Processor</th>
                     <th class="text-center">Memori</th>
                     <th class="text-center">Hardisk</th>
+                    <th class="text-center">Tanggal Perolehan</th>
                     <th class="text-center">Nilai Perolehan</th>
-                    <th class="text-center">Status</th>
+                    <th class="text-center">Pengguna Sebelumnya</th>
+                    <th class="text-center">Pengguna Sekarang</th>
+                    <th class="text-center">Kondisi</th>
+                    <th class="text-center">Status Penggunaan</th>
+                    <th class="text-center">Status Barang</th>
+                    <th class="text-center">Keterangan</th>
+                    <th class="text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 <?php $no = 1; foreach ($komputerList as $item): ?>
                     <tr>
                         <td class="text-center"><?= $no++ ?></td>
-                        <td><span class="badge bg-light text-dark"><?= esc($item['kode_barang'] ?? '-') ?></span></td>
+                        <td><?= esc($item['bidang'] ?? '-') ?></td>
                         <td class="fw-medium"><?= esc($item['nama_barang'] ?? '-') ?></td>
                         <td><?= esc($item['merk'] ?? '-') ?></td>
                         <td><?= esc($item['nup'] ?? '-') ?></td>
@@ -361,6 +427,25 @@
                                 <?= esc($item['kelompok'] ?? '-') ?>
                             </span>
                         </td>
+                        <td><?= esc($item['processor'] ?? '-') ?></td>
+                        <td><?= esc($item['memori'] ?? '-') ?></td>
+                        <td><?= esc($item['hardisk'] ?? '-') ?></td>
+                        <td>
+                            <?php if (!empty($item['tanggal_perolehan'])): ?>
+                                <?= date('d-m-Y', strtotime($item['tanggal_perolehan'])) ?>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td class="fw-medium">
+                            <?php if (!empty($item['nilai_perolehan']) && $item['nilai_perolehan'] > 0): ?>
+                                Rp <?= number_format(floatval($item['nilai_perolehan']), 0, ',', '.') ?>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td><?= esc($item['pengguna_sebelumnya'] ?? '-') ?></td>
+                        <td><?= esc($item['pengguna_sekarang'] ?? '-') ?></td>
                         <td class="text-center">
                             <?php 
                                 $kondisiClass = 'secondary';
@@ -377,16 +462,6 @@
                             ?>
                             <span class="badge bg-<?= $kondisiClass ?>"><?= esc($item['kondisi'] ?? '-') ?></span>
                         </td>
-                        <td><?= esc($item['processor'] ?? '-') ?></td>
-                        <td><?= esc($item['memori'] ?? '-') ?></td>
-                        <td><?= esc($item['hardisk'] ?? '-') ?></td>
-                        <td class="fw-medium">
-                            <?php if (!empty($item['nilai_perolehan']) && $item['nilai_perolehan'] > 0): ?>
-                                Rp <?= number_format(floatval($item['nilai_perolehan']), 0, ',', '.') ?>
-                            <?php else: ?>
-                                -
-                            <?php endif; ?>
-                        </td>
                         <td class="text-center">
                             <?php 
                                 $statusClass = 'secondary';
@@ -402,6 +477,19 @@
                                 }
                             ?>
                             <span class="badge bg-<?= $statusClass ?>"><?= esc($item['status_penggunaan'] ?? '-') ?></span>
+                        </td>
+                        <td><?= esc($item['status_barang'] ?? '-') ?></td>
+                        <td><?= esc($item['keterangan'] ?? '-') ?></td>
+                        <td class="text-center">
+                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/detail/' . $item['id']) ?>" class="btn btn-sm btn-info mb-1">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/edit/' . $item['id']) ?>" class="btn btn-sm btn-primary mb-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/hapus/' . $item['id']) ?>" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                <i class="bi bi-trash"></i>
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach ?>
@@ -465,7 +553,7 @@
     <?php else: ?>
         <div class="alert alert-info text-center">
             <h5>Tidak ada data untuk kelompok ini.</h5>
-            <p>Silakan gunakan tombol "Import/Sync API" untuk mengimpor data dari API PM-TIK ke database.</p>
+            <p>Silakan gunakan tombol "Import/Sync API" atau "Import Excel" untuk mengimpor data ke database.</p>
         </div>
     <?php endif; ?>
 
@@ -473,7 +561,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    document.getElementById('toggleFormBtn').addEventListener('click', function () {
+    document.getElementById('toggleFormBtn')?.addEventListener('click', function () {
         const form = document.getElementById('formTambahKomputer');
         form.style.display = (form.style.display === 'none') ? 'block' : 'none';
         this.innerHTML = form.style.display === 'block'

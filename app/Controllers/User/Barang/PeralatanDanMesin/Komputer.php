@@ -183,6 +183,13 @@ class Komputer extends BaseController
             $nilai_perolehan = $data_source['nilai_perolehan'] ?? '';
             $tanggal_perolehan = $data_source['tanggal_perolehan'] ?? '';
             
+            // Tambahan field baru
+            $bidang = $data_source['bidang'] ?? '';
+            $pengguna_sebelumnya = $data_source['pengguna_sebelumnya'] ?? '';
+            $pengguna_sekarang = $data_source['pengguna_sekarang'] ?? '';
+            $status_barang = $data_source['status_barang'] ?? '';
+            $keterangan = $data_source['keterangan'] ?? '';
+            
             log_message('info', "Kode Barang: '{$kode_barang}'");
             log_message('info', "Nama Barang: '{$nama_barang}'");
             log_message('info', "Kelompok: '{$kelompok}'");
@@ -203,6 +210,11 @@ class Komputer extends BaseController
                 'spek_lain' => trim($spek_lain),
                 'nilai_perolehan' => $this->safeFloat($nilai_perolehan),
                 'tanggal_perolehan' => !empty($tanggal_perolehan) ? $tanggal_perolehan : null,
+                'bidang' => trim($bidang),
+                'pengguna_sebelumnya' => trim($pengguna_sebelumnya),
+                'pengguna_sekarang' => trim($pengguna_sekarang),
+                'status_barang' => trim($status_barang),
+                'keterangan' => trim($keterangan),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -380,6 +392,57 @@ class Komputer extends BaseController
             return redirect()->back();
         }
     }
+    
+    // Method baru untuk import dari Excel
+    public function importFromExcel()
+    {
+        log_message('info', '=== IMPORT EXCEL METHOD DIPANGGIL ===');
+        
+        try {
+            // Validasi upload file
+            $file = $this->request->getFile('excelFile');
+            
+            if (!$file || !$file->isValid() || $file->getExtension() !== 'xlsx') {
+                log_message('error', 'File tidak valid: ' . ($file ? $file->getErrorString() : 'File tidak ditemukan'));
+                session()->setFlashdata('error', 'File tidak valid. Pastikan file berformat Excel (.xlsx)');
+                return redirect()->back();
+            }
+            
+            // Pindahkan file ke temporary folder
+            $fileName = $file->getRandomName();
+            if (!$file->move(WRITEPATH . 'uploads', $fileName)) {
+                log_message('error', 'Gagal memindahkan file: ' . $file->getErrorString());
+                session()->setFlashdata('error', 'Gagal memindahkan file: ' . $file->getErrorString());
+                return redirect()->back();
+            }
+            
+            $filePath = WRITEPATH . 'uploads/' . $fileName;
+            log_message('info', 'File berhasil diupload ke: ' . $filePath);
+            
+            // Proses impor data
+            $result = $this->komputerModel->importFromExcel($filePath);
+            
+            // Hapus file setelah diproses
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            
+            if (isset($result['success']) && $result['success']) {
+                log_message('info', 'Import Excel berhasil: ' . json_encode($result));
+                session()->setFlashdata('success', $result['message']);
+            } else {
+                log_message('error', 'Import Excel gagal: ' . json_encode($result));
+                session()->setFlashdata('error', $result['message'] ?? 'Gagal import data Excel');
+            }
+            
+            return redirect()->to('user/barang/peralatandanmesin/komputer/kelompokkomputer');
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Exception saat import Excel: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            session()->setFlashdata('error', 'Gagal import data: ' . $e->getMessage());
+            return redirect()->back();
+        }
+    }
 
     // Method export ke CSV
     public function exportKomputerList($jenis = 'semua')
@@ -417,14 +480,17 @@ class Komputer extends BaseController
         $response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
         $output = fopen('php://output', 'w');
+        // Tambahkan field baru ke header CSV
         fputcsv($output, [
             'No', 'Kode Barang', 'Nama Barang', 'NUP', 'Merk', 'Kelompok', 'Kondisi', 
-            'Kuantitas', 'Status', 'Processor', 'Memori', 'Hardisk', 'Monitor', 'Spek Lain',
-            'Nilai Perolehan', 'Tanggal Perolehan'
+            'Kuantitas', 'Status Penggunaan', 'Processor', 'Memori', 'Hardisk', 'Monitor', 'Spek Lain',
+            'Nilai Perolehan', 'Tanggal Perolehan', 'Bidang', 'Pengguna Sebelumnya', 'Pengguna Sekarang',
+            'Status Barang', 'Keterangan'
         ]);
 
         $no = 1;
         foreach ($komputerList as $item) {
+            // Tambahkan field baru ke data CSV
             fputcsv($output, [
                 $no++,
                 $item['kode_barang'] ?? '-',
@@ -442,6 +508,11 @@ class Komputer extends BaseController
                 $item['spek_lain'] ?? '-',
                 number_format(floatval($item['nilai_perolehan'] ?? 0), 2, ',', '.'),
                 $item['tanggal_perolehan'] ?? '-',
+                $item['bidang'] ?? '-',
+                $item['pengguna_sebelumnya'] ?? '-',
+                $item['pengguna_sekarang'] ?? '-',
+                $item['status_barang'] ?? '-',
+                $item['keterangan'] ?? '-'
             ]);
         }
 

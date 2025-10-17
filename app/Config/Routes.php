@@ -762,6 +762,9 @@ $routes->post('user/barang/peralatandanmesin/komputer/tambah', 'User\Barang\Pera
 // 5. Import dari API - POST handler untuk import/sync data dari API
 $routes->post('user/barang/peralatandanmesin/komputer/importFromApi', 'User\Barang\PeralatanDanMesin\Komputer::importFromApi');
 
+// 5a. Import dari Excel - POST handler untuk import data dari Excel
+$routes->post('user/barang/peralatandanmesin/komputer/importFromExcel', 'User\Barang\PeralatanDanMesin\Komputer::importFromExcel');
+
 // 6. Reset Data - POST handler untuk menghapus semua data
 $routes->post('user/barang/peralatandanmesin/komputer/resetData', 'User\Barang\PeralatanDanMesin\Komputer::resetData');
 
