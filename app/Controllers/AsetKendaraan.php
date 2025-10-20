@@ -560,6 +560,55 @@ public function getPeminjamanData()
     ]);
 }
 
+public function getPeminjamanForKembali($kendaraanId = null)
+{
+    if (!$kendaraanId) {
+        return $this->response->setJSON([
+            'error' => 'ID Kendaraan tidak valid'
+        ]);
+    }
+    
+    $pinjamModel = new PinjamModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data peminjaman aktif
+    $pinjam = $pinjamModel->where([
+        'kendaraan_id' => $kendaraanId,
+        'status' => 'disetujui',
+        'is_returned' => false,
+        'deleted_at' => null
+    ])->first();
+    
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data aset
+    $asset = $asetModel->find($kendaraanId);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'error' => 'Data kendaraan tidak ditemukan'
+        ]);
+    }
+    
+    // Gabungkan data untuk respons
+    $response = array_merge($pinjam, [
+        'merk' => $asset['merk'],
+        'no_polisi' => $asset['no_polisi'],
+        'kategori_id' => $asset['kategori_id'],
+        'kode_barang' => $asset['kode_barang'],
+        'nup' => $asset['nup'] ?? '-',
+        'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+        'warna' => $asset['warna'] ?? '-',
+        'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+        'nomor_rangka' => $asset['no_rangka'] ?? '-'
+    ]);
+    
+    return $this->response->setJSON($response);
+}
+
     public function tambah()
 {
     $model = new AsetModel();
@@ -894,7 +943,7 @@ public function pinjam()
     }
 }
 
-    public function kembali()
+public function kembali()
 {
     log_message('debug', '🔥 MASUK FUNCTION KEMBALI');
     $model = new KembaliModel();
@@ -912,13 +961,21 @@ public function pinjam()
     $no_hp = $this->request->getPost('no_hp');
     $tanggal_pinjam = $this->request->getPost('tanggal_pinjam');
     $tanggal_kembali = $this->request->getPost('tanggal_kembali');
-    $suratPengembalian = $this->request->getFile('surat_pengembalian');
-    $beritaAcara = $this->request->getFile('berita_acara_pengembalian');
+    $photo_data = $this->request->getPost('photo_data');
     $kondisi_kembali = $this->request->getPost('kondisi_kembali');
+    $nomor_sip = $this->request->getPost('nomor_sip');
+    $alamat_rumah = $this->request->getPost('alamat_rumah');
+    $no_ktp = $this->request->getPost('no_ktp');
 
     if (empty($kendaraan_id)) {
         return $this->response->setJSON([
             'error' => 'Data kendaraan tidak valid'
+        ]);
+    }
+    
+    if (empty($nomor_sip)) {
+        return $this->response->setJSON([
+            'error' => 'Nomor SIP / Surat Penanggung Jawab harus diisi'
         ]);
     }
 
@@ -956,88 +1013,26 @@ public function pinjam()
         ]);
     }
 
-    // Daftar MIME types yang diizinkan
-    $allowedMimeTypes = ['application/pdf', 'image/png', 'image/jpeg'];
-
-    log_message('debug', '📁 Mulai proses upload file...');
-    
-    $suratPengembalianName = null;
-
-    if ($suratPengembalian && $suratPengembalian->isValid()) {
-        log_message('debug', '📎 Surat Pengembalian: ' . $suratPengembalian->getClientName() . ' (' . $suratPengembalian->getClientMimeType() . ')');
-        if (!in_array($suratPengembalian->getClientMimeType(), $allowedMimeTypes)) {
-            log_message('debug', '❌ Format surat pengembalian tidak valid: ' . $suratPengembalian->getClientMimeType());
-            return $this->response->setJSON(['error' => 'Format file Surat Pengembalian harus PDF, PNG, atau JPEG']);
-        }
-
-        if ($suratPengembalian->getSize() > 2 * 1024 * 1024) {
-            log_message('debug', '❌ Ukuran surat pengembalian terlalu besar: ' . $suratPengembalian->getSize());
-            return $this->response->setJSON(['error' => 'Ukuran file Surat Pengembalian tidak boleh lebih dari 2MB']);
-        }
-
-        log_message('debug', '🦠 Scanning surat pengembalian dengan VirusTotal...');
-        if ($this->check_file_with_virustotal($suratPengembalian)) {
-            log_message('debug', '❌ Surat pengembalian terdeteksi tidak aman oleh VirusTotal');
-            return $this->response->setJSON(['error' => 'File Surat Pengembalian terdeteksi tidak aman']);
-        }
-
-        $suratPengembalianName = $suratPengembalian->getRandomName();
-        log_message('debug', '💾 Upload surat pengembalian: ' . $suratPengembalianName);
-        try {
-            $suratPengembalian->move(ROOTPATH . 'public/uploads/documents', $suratPengembalianName);
-            log_message('debug', '✅ Surat pengembalian berhasil diupload');
-        } catch (\Exception $e) {
-            log_message('error', '❌ Gagal upload surat pengembalian: ' . $e->getMessage());
-            return $this->response->setJSON(['error' => 'Gagal mengupload surat pengembalian: ' . $e->getMessage()]);
-        }
-    } else {
-        log_message('debug', '📎 Tidak ada surat pengembalian yang diupload');
-    }
-
-    log_message('debug', '📁 Proses berita acara...');
-    $beritaAcaraName = null;
-
-    if ($beritaAcara && $beritaAcara->isValid()) {
-        log_message('debug', '📎 Berita Acara: ' . $beritaAcara->getClientName() . ' (' . $beritaAcara->getClientMimeType() . ')');
-        if (!in_array($beritaAcara->getClientMimeType(), $allowedMimeTypes)) {
-            log_message('debug', '❌ Format berita acara tidak valid: ' . $beritaAcara->getClientMimeType());
-            if ($suratPengembalianName) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPengembalianName);
-            }
-            return $this->response->setJSON(['error' => 'Format file Berita Acara harus PDF, PNG, atau JPEG']);
-        }
-
-        if ($beritaAcara->getSize() > 2 * 1024 * 1024) {
-            log_message('debug', '❌ Ukuran berita acara terlalu besar: ' . $beritaAcara->getSize());
-            if ($suratPengembalianName) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPengembalianName);
-            }
-            return $this->response->setJSON(['error' => 'Ukuran file Berita Acara tidak boleh lebih dari 2MB']);
-        }
-
-        log_message('debug', '🦠 Scanning berita acara dengan VirusTotal...');
-        if ($this->check_file_with_virustotal($beritaAcara)) {
-            log_message('debug', '❌ Berita acara terdeteksi tidak aman oleh VirusTotal');
-            if ($suratPengembalianName) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPengembalianName);
-            }
-            return $this->response->setJSON(['error' => 'File Berita Acara terdeteksi tidak aman']);
-        }
+    // Proses foto yang diambil
+    $photoFileName = null;
+    if (!empty($photo_data)) {
+        log_message('debug', '📷 Memproses foto dari kamera...');
+        $photo_data = str_replace('data:image/jpeg;base64,', '', $photo_data);
+        $photo_data = str_replace(' ', '+', $photo_data);
+        $imageData = base64_decode($photo_data);
+        $photoFileName = 'foto_pengembalian_' . time() . '.jpg';
+        $filePath = ROOTPATH . 'public/uploads/images/' . $photoFileName;
         
-        $beritaAcaraName = $beritaAcara->getRandomName();
-        log_message('debug', '💾 Upload berita acara: ' . $beritaAcaraName);
         try {
-            $beritaAcara->move(ROOTPATH . 'public/uploads/documents', $beritaAcaraName);
-            log_message('debug', '✅ Berita acara berhasil diupload');
+            file_put_contents($filePath, $imageData);
+            log_message('debug', '✅ Foto pengembalian berhasil disimpan: ' . $photoFileName);
         } catch (\Exception $e) {
-            log_message('error', '❌ Gagal upload berita acara: ' . $e->getMessage());
-            if ($suratPengembalianName) {
-                @unlink(ROOTPATH . 'public/uploads/documents/' . $suratPengembalianName);
-            }
-            return $this->response->setJSON(['error' => 'Gagal mengupload berita acara: ' . $e->getMessage()]);
+            log_message('error', '❌ Gagal menyimpan foto: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => 'Gagal menyimpan foto: ' . $e->getMessage()]);
         }
     } else {
-        log_message('debug', '📎 Tidak ada berita acara yang diupload');
+        log_message('debug', '❌ Tidak ada foto yang diambil');
+        return $this->response->setJSON(['error' => 'Foto kendaraan diperlukan untuk pengembalian']);
     }
 
     log_message('debug', '✅ Upload file selesai, lanjut validasi field...');
@@ -1050,13 +1045,17 @@ public function pinjam()
         'unit_organisasi' => $unit_organisasi,
         'no_hp' => $no_hp,
         'tanggal_pinjam' => $tanggal_pinjam,
-        'tanggal_kembali' => $tanggal_kembali
+        'tanggal_kembali' => $tanggal_kembali,
+        'kondisi_kembali' => $kondisi_kembali,
+        'nomor_sip' => $nomor_sip
     ];
 
     foreach ($requiredFields as $field => $value) {
         if (empty($value)) {
             log_message('debug', '❌ Field kosong: ' . $field);
-            $this->cleanupFiles($suratPengembalianName, $beritaAcaraName);
+            if ($photoFileName) {
+                @unlink(ROOTPATH . 'public/uploads/images/' . $photoFileName);
+            }
             return $this->response->setJSON(['error' => ucwords(str_replace('_', ' ', $field)) . ' harus diisi.']);
         }
     }
@@ -1064,7 +1063,37 @@ public function pinjam()
     log_message('debug', '✅ Semua field valid, mulai transaksi database...');
 
     try {
+        // Generate berita acara PDF terlebih dahulu
+        $beritaAcaraPdfName = $this->generateBeritaAcara([
+            'nomor_surat' => 'PENGEMBALIAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjam['id']),
+            'nama_penanggung_jawab' => $nama_penanggung_jawab,
+            'nip_nrp' => $nip_nrp,
+            'pangkat_golongan' => $pangkat_golongan,
+            'jabatan' => $jabatan,
+            'unit_organisasi' => $unit_organisasi,
+            'alamat_rumah' => $alamat_rumah ?? '',
+            'no_hp' => $no_hp,
+            'no_ktp' => $no_ktp ?? '',
+            'no_polisi' => $asset['no_polisi'],
+            'merk' => $asset['merk'],
+            'kode_barang' => $asset['kode_barang'],
+            'nomor_rangka' => $asset['no_rangka'] ?? '',
+            'warna' => $asset['warna'] ?? '',
+            'nomor_mesin' => $asset['nomor_mesin'] ?? '',
+            'nup' => $asset['nup'] ?? '',
+            'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '',
+            'kategori_id' => $asset['kategori_id'],
+            'tanggal_pengembalian' => date('Y-m-d'),
+            'kondisi_kembali' => $kondisi_kembali,
+            'foto_pengembalian' => $photoFileName,
+            'nomor_sip' => $nomor_sip,
+            'pihak_kedua_nama' => 'Pak Udin',
+            'pihak_kedua_nip' => '12345678',
+            'pihak_kedua_jabatan' => 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang'
+        ]);
+
         $db->transStart();
+        
         $data = [
             'user_id' => $userId,
             'nama_penanggung_jawab' => $nama_penanggung_jawab,
@@ -1079,16 +1108,21 @@ public function pinjam()
             'tanggal_pinjam' => $tanggal_pinjam,
             'tanggal_kembali' => $tanggal_kembali,
             'kode_barang' => $asset['kode_barang'],
+            'foto_pengembalian' => $photoFileName,
+            'nomor_sip' => $nomor_sip,
+            'alamat_rumah' => $alamat_rumah,
+            'no_ktp' => $no_ktp,
             'status' => KembaliModel::STATUS_PENDING,
             'keterangan' => null,
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            // Gunakan nilai default jika tidak ada surat/berita acara
+            'surat_pengembalian' => 'auto_generated.pdf',
+            'berita_acara_pengembalian' => $photoFileName // Gunakan foto sebagai berita acara
         ];
-
-        if ($suratPengembalianName) {
-            $data['surat_pengembalian'] = $suratPengembalianName;
-        }
-        if ($beritaAcaraName) {
-            $data['berita_acara_pengembalian'] = $beritaAcaraName;
+        
+        // Tambahkan berita acara PDF jika berhasil dibuat
+        if (!empty($beritaAcaraPdfName)) {
+            $data['berita_acara_pdf'] = $beritaAcaraPdfName;
         }
 
         $result = $model->insert($data);
@@ -1131,12 +1165,15 @@ public function pinjam()
             'nip_nrp' => $nip_nrp ?? '',
             'tanggal_pinjam' => $tanggal_pinjam ?? '',
             'tanggal_kembali' => $tanggal_kembali ?? '',
-            'surat_pengembalian' => $suratPengembalianName ?? '',
-            'berita_acara_pengembalian' => $beritaAcaraName ?? '',
+            'berita_acara_pdf' => $beritaAcaraPdfName ?? '',
+            'foto_pengembalian' => $photoFileName ?? '',
             'created_at' => date('Y-m-d H:i:s')
         ];
-        sendPengembalianNotification($notifData, 'new');
-        log_message('debug', '✅ Notifikasi berhasil dikirim');
+        
+        if (function_exists('sendPengembalianNotification')) {
+            sendPengembalianNotification($notifData, 'new');
+            log_message('debug', '✅ Notifikasi berhasil dikirim');
+        }
 
         log_message('debug', '🎉 Proses pengembalian selesai dengan sukses!');
 
@@ -1146,8 +1183,12 @@ public function pinjam()
         ]);
 
     } catch (\Exception $e) {
-        $db->transRollback();
-        $this->cleanupFiles($suratPengembalianName, $beritaAcaraName);
+        if (isset($db) && method_exists($db, 'transRollback')) {
+            $db->transRollback();
+        }
+        if (isset($photoFileName) && !empty($photoFileName)) {
+            @unlink(ROOTPATH . 'public/uploads/images/' . $photoFileName);
+        }
         log_message('error', 'Error in return process: ' . $e->getMessage());
         log_message('error', 'Stack trace: ' . $e->getTraceAsString());
 
@@ -1156,6 +1197,79 @@ public function pinjam()
         ]);
     }
 }
+// Di controller AsetKendaraan, tambahkan kode berikut untuk memastikan direktori ada
+   private function ensureUploadDirectories()
+   {
+       $paths = [
+           ROOTPATH . 'public/uploads',
+           ROOTPATH . 'public/uploads/images',
+           ROOTPATH . 'public/uploads/documents'
+       ];
+       
+       foreach ($paths as $path) {
+           if (!is_dir($path)) {
+               mkdir($path, 0777, true);
+           }
+       }
+   }
+
+private function generateBeritaAcara($data)
+   {
+       // Panggil fungsi pemastian direktori
+       $this->ensureUploadDirectories();
+       
+       // Setup DOMPDF
+       helper('dompdf');
+       
+       $options = new \Dompdf\Options();
+       $options->set('isHtml5ParserEnabled', true);
+       $options->set('isPhpEnabled', true);
+       
+       $dompdf = new \Dompdf\Dompdf($options);
+       
+       // HTML template berita acara
+       $html = view('templates/berita_acara_pengembalian', $data);
+       
+       $dompdf->loadHtml($html);
+       $dompdf->setPaper('A4', 'portrait');
+       $dompdf->render();
+       
+       // Simpan PDF ke folder
+       $output = $dompdf->output();
+       
+       $timestamp = time();
+       $fileName = "berita_acara_pengembalian_{$timestamp}.pdf";
+       $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
+       
+       log_message('debug', 'Menyimpan berita acara: ' . $filePath);
+       
+       // Pastikan direktori ada
+       $dir = ROOTPATH . 'public/uploads/documents/';
+       if (!is_dir($dir)) {
+           mkdir($dir, 0777, true);
+       }
+       
+       // Simpan file dengan penanganan error yang lebih baik
+       try {
+           if (file_put_contents($filePath, $output)) {
+               log_message('debug', 'Berita acara berhasil disimpan: ' . $fileName);
+           } else {
+               log_message('error', 'Gagal menyimpan berita acara ke: ' . $filePath);
+           }
+           
+           // Periksa apakah file berhasil dibuat
+           if (file_exists($filePath)) {
+               log_message('debug', 'File berita acara ditemukan setelah penyimpanan');
+           } else {
+               log_message('error', 'File berita acara tidak ditemukan setelah penyimpanan: ' . $filePath);
+           }
+       } catch (\Exception $e) {
+           log_message('error', 'Exception saat menyimpan berita acara: ' . $e->getMessage());
+           return null;
+       }
+       
+       return $fileName;
+   }
 
 private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
 {

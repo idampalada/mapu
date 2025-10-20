@@ -17,27 +17,32 @@ class KembaliModel extends Model
     protected $useSoftDeletes = true;
 
     protected $allowedFields = [
-        'user_id',
-        'kode_barang',
-        'nama_penanggung_jawab',
-        'nip_nrp',
-        'pangkat_golongan',
-        'jabatan',
-        'unit_organisasi',
-        'surat_pengembalian',
-        'berita_acara_pengembalian',
-        'dokumen_tambahan',
-        'kendaraan_id',
-        'pinjam_id',
-        'no_hp',
-        'tanggal_pinjam',
-        'tanggal_kembali',
-        'status',
-        'keterangan',
-        'created_at',
-        'updated_at',
-        'deleted_at'
-    ];
+    'user_id',
+    'kode_barang',
+    'nama_penanggung_jawab',
+    'nip_nrp',
+    'pangkat_golongan',
+    'jabatan',
+    'unit_organisasi',
+    'surat_pengembalian',
+    'berita_acara_pengembalian',
+    'dokumen_tambahan',
+    'kendaraan_id',
+    'pinjam_id',
+    'no_hp',
+    'tanggal_pinjam',
+    'tanggal_kembali',
+    'status',
+    'keterangan',
+    'created_at',
+    'updated_at',
+    'deleted_at',
+    'nomor_sip', // Tambahkan ini
+    'kondisi_kembali', // Pastikan ini juga ada
+    'foto_pengembalian', // Pastikan ini juga ada
+    'alamat_rumah', // Pastikan ini juga ada
+    'no_ktp' // Pastikan ini juga ada
+];
 
     protected $useTimestamps = true;
     protected $createdField = 'created_at';

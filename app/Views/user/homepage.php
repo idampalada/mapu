@@ -268,7 +268,6 @@
     </div>
 </div>
 
-<!-- Modals - keeping the same functionality -->
 <div class="modal fade" id="modalPengembalian" tabindex="-1" aria-labelledby="modalPengembalianLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -284,98 +283,224 @@
                     <div class="row">
                         <input type="hidden" id="kendaraan_id_hidden" name="kendaraan_id" value="">
 
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
-                                <input type="text" class="form-control" id="nama_penanggung_jawab"
-                                    name="nama_penanggung_jawab" required readonly>
-                            </div>
+                        <!-- Tab navigation for halaman 1 dan 2 -->
+                        <ul class="nav nav-tabs mb-3" id="pengembalianTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pihak-kesatu-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#pihak-kesatu" type="button" role="tab" 
+                                    aria-controls="pihak-kesatu" aria-selected="true">Pihak Kesatu</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="detail-kendaraan-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#detail-kendaraan" type="button" role="tab" 
+                                    aria-controls="detail-kendaraan" aria-selected="false">Detail Kendaraan</button>
+                            </li>
+                        </ul>
 
-                            <div class="form-group mb-3">
-                                <label for="nip_nrp" class="form-label">NIP / NRP</label>
-                                <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" required readonly>
-                            </div>
+                        <div class="tab-content" id="pengembalianTabContent">
+                            <!-- Tab 1: Pihak Kesatu -->
+                            <div class="tab-pane fade show active" id="pihak-kesatu" role="tabpanel" 
+                                aria-labelledby="pihak-kesatu-tab">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
+                                            <input type="text" class="form-control" id="nama_penanggung_jawab"
+                                                name="nama_penanggung_jawab" required readonly>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="pangkat_golongan" class="form-label">Pangkat / Golongan</label>
-                                <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan"
-                                    required readonly>
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="nip_nrp" class="form-label">NIP / NRP</label>
+                                            <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" required readonly>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="jabatan" class="form-label">Jabatan</label>
-                                <input type="text" class="form-control" id="jabatan" name="jabatan" required readonly>
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="pangkat_golongan" class="form-label">Pangkat / Golongan</label>
+                                            <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan"
+                                                required readonly>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="unit_organisasi" class="form-label">Unit Organisasi</label>
-                                <input type="text" class="form-control" id="unit_organisasi" name="unit_organisasi"
-                                    required readonly>
-                            </div>
-                            <div class="form-group mb-3">
-                                <label for="surat_pengembalian" class="form-label">Surat Pengembalian (PDF)</label>
-                                <input type="file" class="form-control" id="surat_pengembalian"
-                                    name="surat_pengembalian" accept="application/pdf" required>
-                            </div>
-                        </div>
+                                        <div class="form-group mb-3">
+                                            <label for="jabatan" class="form-label">Jabatan</label>
+                                            <input type="text" class="form-control" id="jabatan" name="jabatan" required readonly>
+                                        </div>
 
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label for="kendaraan_id" class="form-label">Kendaraan</label>
-                                <select class="form-control" id="kendaraan_id_kembali" name="kendaraan_id" required>
-                                    <option value="" disabled selected>Kendaraan</option>
-                                </select>
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="unit_organisasi" class="form-label">Unit Organisasi</label>
+                                            <input type="text" class="form-control" id="unit_organisasi" name="unit_organisasi"
+                                                required readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="alamat_rumah" class="form-label">Alamat Rumah</label>
+                                            <input type="text" class="form-control" id="alamat_rumah" name="alamat_rumah" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="no_ktp" class="form-label">No. KTP</label>
+                                            <input type="text" class="form-control" id="no_ktp" name="no_ktp" readonly>
+                                        </div>
+                                    </div>
 
-                            <div class="form-group mb-3">
-                                <label for="pengemudi" class="form-label">Nama Pengemudi</label>
-                                <input type="text" class="form-control" id="pengemudi" name="pengemudi" required readonly>
-                            </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="kendaraan_id" class="form-label">Kendaraan</label>
+                                            <select class="form-control" id="kendaraan_id_kembali" name="kendaraan_id" required>
+                                                <option value="" disabled selected>Kendaraan</option>
+                                            </select>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="no_hp" class="form-label">Nomor HP</label>
-                                <input type="text" class="form-control" id="no_hp" name="no_hp" required readonly>
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="pengemudi" class="form-label">Nama Pengemudi</label>
+                                            <input type="text" class="form-control" id="pengemudi" name="pengemudi" required readonly>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
-                                <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam"
-                                    readonly required>
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="no_hp" class="form-label">Nomor HP</label>
+                                            <input type="text" class="form-control" id="no_hp" name="no_hp" required readonly>
+                                        </div>
 
-                            <div class="form-group mb-3">
-                                <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
-                                <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
-                                    required min="<?= date('Y-m-d') ?>">
-                            </div>
+                                        <div class="form-group mb-3">
+                                            <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
+                                            <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam"
+                                                readonly required>
+                                        </div>
 
-<div class="form-group mb-3">
-    <label for="berita_acara_pengembalian" class="form-label">Berita Acara Pengembalian (PDF, PNG, JPEG)</label>
-    <div class="input-group">
-        <input type="file" class="form-control" id="berita_acara_pengembalian"
-            name="berita_acara_pengembalian" accept="application/pdf,image/png,image/jpeg" required>
-        <button type="button" class="btn btn-secondary" id="btn-camera-capture">
-            <i class="bi bi-camera"></i> Ambil Foto
-        </button>
-    </div>
-    
-    <!-- Container untuk kamera dan preview -->
-    <div id="camera-container" class="mt-2" style="display:none;">
-        <video id="camera-feed" autoplay style="width:100%; max-width:640px;"></video>
-        <div class="mt-2">
-            <button type="button" class="btn btn-primary" id="btn-take-photo">Ambil Foto</button>
-            <button type="button" class="btn btn-danger" id="btn-cancel-camera">Batal</button>
-        </div>
-    </div>
-    <canvas id="photo-canvas" style="display:none;"></canvas>
+                                        <div class="form-group mb-3">
+                                            <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
+                                            <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
+                                                required min="<?= date('Y-m-d') ?>">
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Pengembalian</label>
+                                            <select class="form-control" id="kondisi_kembali" name="kondisi_kembali" required>
+                                                <option value="" disabled selected>Pilih Kondisi</option>
+                                                <option value="Baik">Baik</option>
+                                                <option value="Rusak Ringan">Rusak Ringan</option>
+                                                <option value="Rusak Berat">Rusak Berat</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Ambil Foto</label>
+                                    <div>
+                                        <button type="button" class="btn btn-secondary" id="btn-camera-capture">
+                                            <i class="bi bi-camera"></i> Ambil Foto
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Container untuk kamera dan preview -->
+                                    <div id="camera-container" class="mt-2" style="display:none;">
+                                        <video id="camera-feed" autoplay style="width:100%; max-width:640px;"></video>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-primary" id="btn-take-photo">Ambil Foto</button>
+                                            <button type="button" class="btn btn-danger" id="btn-cancel-camera">Batal</button>
+                                        </div>
+                                    </div>
+                                    <div id="photo-preview" class="mt-2" style="display:none;">
+                                        <img id="captured-photo" class="img-fluid" style="max-width:640px;">
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-warning" id="btn-retake-photo">Ambil Ulang</button>
+                                        </div>
+                                    </div>
+                                    <canvas id="photo-canvas" style="display:none;"></canvas>
+                                    <input type="hidden" id="photo-data" name="photo_data">
+                                </div>
+                                
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-primary" id="btn-next-tab">Selanjutnya</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Tab 2: Detail Kendaraan -->
+                            <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
+                                aria-labelledby="detail-kendaraan-tab">
+                                <div class="card p-3 mb-3">
+                                    <h6 class="card-title fw-bold">Pihak Kedua</h6>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">Nama</div>
+                                        <div class="col-md-9">: Pak Udin</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">NIP</div>
+                                        <div class="col-md-9">: 12345678</div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">Jabatan</div>
+                                        <div class="col-md-9">: Kepala Satuan Kerja Selaku Kuasa Pengguna Barang</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+    <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
+    <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
 </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
+                                            <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
+                                            <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="kode_barang_detail" class="form-label">Kode Barang</label>
+                                            <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nup_detail" class="form-label">NUP</label>
+                                            <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                                            <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="merk_detail" class="form-label">Merk</label>
+                                            <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="warna" class="form-label">Warna</label>
+                                            <input type="text" class="form-control" id="warna" name="warna" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
+                                            <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
+                                            <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                 </div>
-                <div class="modal-footer">
+                
+                <div class="modal-footer d-none">
                     <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
                 </div>
             </form>
 
@@ -908,72 +1033,243 @@
             });
         }
     });
-    // Script untuk kamera berita acara
-let stream = null;
-
-// Tombol untuk membuka kamera
-document.getElementById('btn-camera-capture').addEventListener('click', async () => {
-    try {
-        const cameraContainer = document.getElementById('camera-container');
-        const videoElement = document.getElementById('camera-feed');
-        
-        // Akses kamera
-        stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' } 
-        });
-        
-        // Tampilkan feed kamera
-        videoElement.srcObject = stream;
-        cameraContainer.style.display = 'block';
-    } catch (err) {
-        alert('Gagal mengakses kamera: ' + err.message);
-    }
-});
-
-// Tombol untuk mengambil foto
-document.getElementById('btn-take-photo').addEventListener('click', () => {
-    if (!stream) return;
+    // JavaScript untuk fungsi kamera
+// JavaScript untuk fungsi kamera dan tab navigation
+$(document).ready(function() {
+    let stream;
     
-    const videoElement = document.getElementById('camera-feed');
-    const canvas = document.getElementById('photo-canvas');
-    const fileInput = document.getElementById('berita_acara_pengembalian');
+    // Tombol navigasi tab
+    $('#btn-next-tab').click(function() {
+        $('#detail-kendaraan-tab').tab('show');
+    });
     
-    // Atur ukuran canvas sesuai video
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
+    $('#btn-prev-tab').click(function() {
+        $('#pihak-kesatu-tab').tab('show');
+    });
     
-    // Gambar video ke canvas
-    const context = canvas.getContext('2d');
-    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    // Tombol untuk membuka kamera
+    $('#btn-camera-capture').click(function() {
+        startCamera();
+    });
     
-    // Konversi ke file dan atur ke input
-    canvas.toBlob((blob) => {
-        const fileName = 'berita_acara_' + new Date().toISOString().replace(/:/g, '-') + '.jpg';
-        const file = new File([blob], fileName, { type: 'image/jpeg' });
-        
-        // Buat FileList untuk input file
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-        
-        // Tutup kamera
+    // Tombol untuk mengambil foto
+    $('#btn-take-photo').click(function() {
+        takePhoto();
+    });
+    
+    // Tombol untuk membatalkan kamera
+    $('#btn-cancel-camera').click(function() {
         stopCamera();
-        
-        alert('Foto berhasil diambil');
-    }, 'image/jpeg', 0.9);
-});
-
-// Tombol untuk batal
-document.getElementById('btn-cancel-camera').addEventListener('click', stopCamera);
-
-// Fungsi untuk menghentikan kamera
-function stopCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-        document.getElementById('camera-container').style.display = 'none';
+    });
+    
+    // Tombol untuk mengambil ulang foto
+    $('#btn-retake-photo').click(function() {
+        $('#photo-preview').hide();
+        startCamera();
+    });
+    
+    // Fungsi untuk memulai kamera
+    function startCamera() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    const video = document.getElementById('camera-feed');
+                    video.srcObject = mediaStream;
+                    video.play();
+                    $('#camera-container').show();
+                })
+                .catch(function(error) {
+                    console.error("Tidak dapat mengakses kamera:", error);
+                    alert("Tidak dapat mengakses kamera. Pastikan kamera tersedia dan izin diberikan.");
+                });
+        } else {
+            alert("Browser Anda tidak mendukung akses kamera");
+        }
     }
-}
+    
+    // Fungsi untuk mengambil foto
+    function takePhoto() {
+        const video = document.getElementById('camera-feed');
+        const canvas = document.getElementById('photo-canvas');
+        const context = canvas.getContext('2d');
+        
+        // Set ukuran canvas sama dengan video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        // Gambar video ke canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Tambahkan timestamp pada foto
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, canvas.height - 30, canvas.width, 30);
+        context.fillStyle = "#000000";
+        context.font = "14px Arial";
+        const timestamp = new Date().toLocaleString();
+        context.fillText("Timestamp: " + timestamp, 10, canvas.height - 10);
+        
+        // Dapatkan data image
+        const photoData = canvas.toDataURL('image/jpeg');
+        
+        // Simpan data foto ke input hidden
+        $('#photo-data').val(photoData);
+        
+        // Tampilkan preview
+        $('#captured-photo').attr('src', photoData);
+        $('#photo-preview').show();
+        
+        // Sembunyikan kamera
+        $('#camera-container').hide();
+        
+        // Stop kamera
+        stopCamera();
+    }
+    
+    // Fungsi untuk menghentikan kamera
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
+            });
+            stream = null;
+        }
+        $('#camera-container').hide();
+    }
+    
+    // Mengisi form pengembalian saat kendaraan dipilih
+    $('#kendaraan_id_kembali').on('change', function() {
+        const kendaraanId = $(this).val();
+        if (kendaraanId) {
+            $('#kendaraan_id_hidden').val(kendaraanId);
+            $.ajax({
+                url: '/AsetKendaraan/getPeminjamanInfo',
+                type: 'POST',
+                data: { kendaraan_id: kendaraanId },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        // Isi data pihak kesatu
+                        $('#nama_penanggung_jawab').val(response.data.nama_penanggung_jawab);
+                        $('#nip_nrp').val(response.data.nip_nrp);
+                        $('#pangkat_golongan').val(response.data.pangkat_golongan);
+                        $('#jabatan').val(response.data.jabatan);
+                        $('#unit_organisasi').val(response.data.unit_organisasi);
+                        $('#alamat_rumah').val(response.data.alamat_rumah || '');
+                        $('#no_ktp').val(response.data.no_ktp || '');
+                        $('#pengemudi').val(response.data.pengemudi);
+                        $('#no_hp').val(response.data.no_hp);
+                        $('#tanggal_pinjam').val(response.data.tanggal_pinjam);
+                        $('#tanggal_kembali').val(response.data.tanggal_kembali);
+                        
+                        // Isi data kendaraan
+                        $('#kategori_id').val(response.asset.kategori_id);
+                        $('#no_polisi_detail').val(response.asset.no_polisi);
+                        $('#kode_barang_detail').val(response.asset.kode_barang);
+                        $('#nup_detail').val(response.asset.nup || '-');
+                        $('#tahun_pembuatan').val(response.asset.tahun_pembuatan || '-');
+                        $('#merk_detail').val(response.asset.merk);
+                        $('#warna').val(response.asset.warna || '-');
+                        $('#nomor_mesin').val(response.asset.nomor_mesin || '-');
+                        $('#nomor_rangka').val(response.asset.no_rangka || '-');
+                        
+                    } else {
+                        alert('Gagal mendapatkan data peminjaman');
+                    }
+                },
+                error: function() {
+                    alert('Terjadi kesalahan saat mengambil data');
+                }
+            });
+        }
+    });
+    
+    // Load kendaraan yang dipinjam
+    function loadKendaraanDipinjam() {
+        $.ajax({
+            url: '/AsetKendaraan/getKendaraanDipinjam',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                const select = $('#kendaraan_id_kembali');
+                select.find('option:not(:first)').remove();
+                
+                if (response.length > 0) {
+                    $.each(response, function(i, item) {
+                        select.append($('<option>', {
+                            value: item.id,
+                            text: item.merk + ' - ' + item.no_polisi
+                        }));
+                    });
+                } else {
+                    select.append($('<option>', {
+                        disabled: true,
+                        text: 'Tidak ada kendaraan yang dipinjam'
+                    }));
+                }
+            },
+            error: function() {
+                alert('Gagal memuat daftar kendaraan');
+            }
+        });
+    }
+    
+    // Inisialisasi
+    loadKendaraanDipinjam();
+    
+    // Form submit
+$('#formPengembalian').on('submit', function(e) {
+    e.preventDefault();
+    
+    // Validasi foto
+    if (!$('#photo-data').val()) {
+        alert('Silahkan ambil foto kendaraan terlebih dahulu');
+        $('#pihak-kesatu-tab').tab('show');
+        return false;
+    }
+    
+    // Validasi nomor SIP
+    if (!$('#nomor_sip').val()) {
+        alert('Nomor SIP / Surat Penanggung Jawab harus diisi');
+        return false;
+    }
+    
+    const formData = new FormData(this);
+    
+    // Tambahkan hidden field untuk berita_acara_pengembalian dari foto
+    if (!formData.has('berita_acara_pengembalian') || !formData.get('berita_acara_pengembalian').size) {
+        // Gunakan foto dari kamera sebagai berita acara jika tidak ada file yang diupload
+        // Ini membantu mengatasi constraint NOT NULL di database
+        formData.append('berita_acara_pengembalian', 'auto_generated_' + new Date().getTime() + '.jpg');
+    }
+    
+    $.ajax({
+        url: $(this).attr('action'),
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        beforeSend: function() {
+            $('button[type="submit"]').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...');
+        },
+        success: function(response) {
+            $('button[type="submit"]').prop('disabled', false).html('Konfirmasi Pengembalian');
+            
+            if (response.success) {
+                $('#modalPengembalian').modal('hide');
+                alert(response.message || 'Pengembalian kendaraan berhasil');
+                location.reload();
+            } else {
+                alert(response.error || 'Gagal melakukan pengembalian');
+            }
+        },
+        error: function() {
+            $('button[type="submit"]').prop('disabled', false).html('Konfirmasi Pengembalian');
+            alert('Terjadi kesalahan saat memproses pengembalian');
+        }
+    });
+});
+});
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

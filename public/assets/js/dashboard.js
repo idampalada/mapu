@@ -332,24 +332,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function showVerifikasiKendaraan() {
-  const modalPilihVerifikasi = bootstrap.Modal.getInstance(
-    document.getElementById("modalPilihVerifikasi")
-  );
-  modalPilihVerifikasi?.hide();
-
-  const modalEl = document.getElementById("modalVerifikasi");
-  console.log("modalVerifikasi:", modalEl); // <-- Debug log
-
-  if (!modalEl) {
-    alert("Elemen modalVerifikasi tidak ditemukan di DOM.");
-    return;
-  }
-
-  const modalVerifikasi = new bootstrap.Modal(modalEl);
-  modalVerifikasi.show();
-}
-
-function showVerifikasiKendaraan() {
   const modalPilihVerifikasiEl = document.getElementById(
     "modalPilihVerifikasi"
   );
@@ -362,22 +344,40 @@ function showVerifikasiKendaraan() {
   let modalPilihVerifikasi = bootstrap.Modal.getInstance(
     modalPilihVerifikasiEl
   );
-  if (!modalPilihVerifikasi) {
-    modalPilihVerifikasi = new bootstrap.Modal(modalPilihVerifikasiEl);
+  if (modalPilihVerifikasi) {
+    modalPilihVerifikasi.hide();
   }
-  modalPilihVerifikasi.hide();
 
+  // Cek apakah modalVerifikasi sudah dimuat dalam DOM
   const modalVerifikasiEl = document.getElementById("modalVerifikasi");
-  if (!modalVerifikasiEl) {
-    alert("Modal Verifikasi tidak ditemukan.");
-    return;
-  }
+  console.log("Modal Verifikasi Element:", modalVerifikasiEl); // Debugging
 
-  let modalVerifikasi = bootstrap.Modal.getInstance(modalVerifikasiEl);
-  if (!modalVerifikasi) {
-    modalVerifikasi = new bootstrap.Modal(modalVerifikasiEl);
+  if (!modalVerifikasiEl) {
+    // Jika modal belum ada, load secara AJAX
+    $.ajax({
+      url: "/AsetKendaraan/loadModalVerifikasi",
+      type: "GET",
+      success: function (response) {
+        // Tambahkan modal ke body
+        $("body").append(response);
+        // Ambil referensi modal yang baru ditambahkan
+        const newModalEl = document.getElementById("modalVerifikasi");
+        // Buat instance modal baru dan tampilkan
+        const newModal = new bootstrap.Modal(newModalEl);
+        newModal.show();
+      },
+      error: function () {
+        alert("Gagal memuat modal verifikasi. Silakan coba lagi.");
+      },
+    });
+  } else {
+    // Jika modal sudah ada, tampilkan
+    let modalVerifikasi = bootstrap.Modal.getInstance(modalVerifikasiEl);
+    if (!modalVerifikasi) {
+      modalVerifikasi = new bootstrap.Modal(modalVerifikasiEl);
+    }
+    modalVerifikasi.show();
   }
-  modalVerifikasi.show();
 }
 function showVerifikasiBarang() {
   const modal = new bootstrap.Modal(

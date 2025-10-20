@@ -219,6 +219,7 @@ $routes->group('admin', ['filter' => 'role:admin,admin_gedungutama,admin_pusdati
                 $routes->post('getPeminjamanData', 'AsetKendaraan::getPeminjamanData');
         $routes->post('generateSuratJalan', 'AsetKendaraan::generateSuratJalan');
         $routes->post('uploadSuratJalan', 'AsetKendaraan::uploadSuratJalan');
+        $routes->get('AsetKendaraan/getPeminjamanForKembali/(:num)', 'AsetKendaraan::getPeminjamanForKembali/$1');
     });
 
     $routes->group('User/Ruangan', function($routes) {

@@ -335,26 +335,14 @@ function initializeJabatanDropdown() {
 function handlePengembalianSubmit(e) {
   e.preventDefault();
 
-  const suratPengembalian = e.target.querySelector(
-    '[name="surat_pengembalian"]'
-  )?.files[0];
+  // Hanya memeriksa berita acara, surat pengembalian dihapus
   const beritaAcara = e.target.querySelector(
     '[name="berita_acara_pengembalian"]'
   )?.files[0];
 
   const maxSize = 2 * 1024 * 1024;
 
-  if (suratPengembalian && suratPengembalian.size > maxSize) {
-    Swal.fire({
-      icon: "error",
-      title: "Gagal!",
-      text: "Ukuran file Surat Pengembalian tidak boleh lebih dari 2MB",
-      confirmButtonText: "Tutup",
-      confirmButtonColor: "#dc3545",
-    });
-    return;
-  }
-
+  // Validasi ukuran berita acara
   if (beritaAcara && beritaAcara.size > maxSize) {
     Swal.fire({
       icon: "error",
@@ -378,6 +366,7 @@ function handlePengembalianSubmit(e) {
     return;
   }
 
+  // Hapus surat_pengembalian dari daftar field yang wajib diisi
   const requiredFields = [
     "nama_penanggung_jawab",
     "nip_nrp",
@@ -385,7 +374,6 @@ function handlePengembalianSubmit(e) {
     "jabatan",
     "unit_organisasi",
     "tanggal_kembali",
-    "surat_pengembalian",
     "berita_acara_pengembalian",
   ];
 
@@ -1123,42 +1111,54 @@ function openPengembalianModal(kendaraanId) {
 
   console.log("Loading data for kendaraan:", kendaraanId);
 
-  fetch(`/AsetKendaraan/getPeminjamanData/${kendaraanId}`)
-    .then((response) => response.json())
+  // Panggil endpoint untuk mendapatkan data
+  fetch(`/AsetKendaraan/getPeminjamanForKembali/${kendaraanId}`)
     .then((response) => {
-      if (response.error) {
-        throw new Error(response.error);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Data received:", data);
+
+      if (data.error) {
+        throw new Error(data.error);
       }
 
+      // Set kendaraan ID
       document.getElementById("kendaraan_id_hidden").value = kendaraanId;
 
-      const fields = [
-        "nama_penanggung_jawab",
-        "nip_nrp",
-        "pangkat_golongan",
-        "jabatan",
-        "unit_organisasi",
-        "pengemudi",
-        "no_hp",
-      ];
+      // Tab Pihak Kesatu - Isi data
+      document.getElementById("nama_penanggung_jawab").value =
+        data.nama_penanggung_jawab || "";
+      document.getElementById("nip_nrp").value = data.nip_nrp || "";
+      document.getElementById("pangkat_golongan").value =
+        data.pangkat_golongan || "";
+      document.getElementById("jabatan").value = data.jabatan || "";
+      document.getElementById("unit_organisasi").value =
+        data.unit_organisasi || "";
+      document.getElementById("alamat_rumah").value = data.alamat_rumah || "";
+      document.getElementById("no_ktp").value = data.no_ktp || "";
+      document.getElementById("no_hp").value = data.no_hp || "";
+      document.getElementById("pengemudi").value = data.pengemudi || "";
 
-      fields.forEach((field) => {
-        const input = document.getElementById(field);
-        if (input && response[field]) {
-          input.value = response[field];
-        }
-      });
-
-      if (response.tanggal_pinjam) {
-        const tanggalPinjam = response.tanggal_pinjam.split("T")[0];
+      if (data.tanggal_pinjam) {
+        const tanggalPinjam = data.tanggal_pinjam.split("T")[0];
         document.getElementById("tanggal_pinjam").value = tanggalPinjam;
       }
 
+      if (data.tanggal_kembali) {
+        const tanggalKembali = data.tanggal_kembali.split("T")[0];
+        document.getElementById("tanggal_kembali").value = tanggalKembali;
+      }
+
+      // Isi dropdown kendaraan
       const kendaraanSelect = document.getElementById("kendaraan_id_kembali");
       if (kendaraanSelect) {
         kendaraanSelect.innerHTML = "";
         const option = new Option(
-          `${response.merk} - ${response.no_polisi}`,
+          `${data.merk} - ${data.no_polisi}`,
           kendaraanId,
           true,
           true
@@ -1166,10 +1166,31 @@ function openPengembalianModal(kendaraanId) {
         kendaraanSelect.appendChild(option);
       }
 
+      // Tab Detail Kendaraan - Isi data
+      document.getElementById("kategori_id").value = data.kategori_id || "";
+      document.getElementById("no_polisi_detail").value = data.no_polisi || "";
+      document.getElementById("kode_barang_detail").value =
+        data.kode_barang || "";
+      document.getElementById("nup_detail").value = data.nup || "-";
+      document.getElementById("tahun_pembuatan").value =
+        data.tahun_pembuatan || "-";
+      document.getElementById("merk_detail").value = data.merk || "";
+      document.getElementById("warna").value = data.warna || "-";
+      document.getElementById("nomor_mesin").value = data.nomor_mesin || "-";
+      document.getElementById("nomor_rangka").value = data.nomor_rangka || "-";
+
+      // Tampilkan modal
       const modal = new bootstrap.Modal(
         document.getElementById("modalPengembalian")
       );
       modal.show();
+
+      // Aktifkan tab pertama
+      const firstTab = document.getElementById("pihak-kesatu-tab");
+      if (firstTab) {
+        const tab = new bootstrap.Tab(firstTab);
+        tab.show();
+      }
     })
     .catch((error) => {
       console.error("Error:", error);
