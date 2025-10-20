@@ -819,19 +819,19 @@
                                                             <span class="badge bg-warning">Pending</span>
                                                         </td>
                                                         <td>
-                                                            <?php if (!empty($kembali['surat_pengembalian'])): ?>
-                                                                <a href="<?= base_url('/uploads/documents/' . $kembali['surat_pengembalian']) ?>"
-                                                                    target="_blank" class="btn btn-sm btn-outline-primary mb-1">
-                                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
-                                                                </a>
-                                                            <?php endif; ?>
+<?php if (!empty($kembali['surat_pengembalian'])): ?>
+    <a href="<?= base_url('/uploads/documents/' . $kembali['surat_pengembalian']) ?>"
+        target="_blank" class="btn btn-sm btn-outline-primary mb-1">
+        <i class="bi bi-file-earmark-pdf"></i> Berita Acara Pengembalian
+    </a>
+<?php endif; ?>
 
-                                                            <?php if (!empty($kembali['berita_acara_pengembalian'])): ?>
-                                                                <a href="<?= base_url('/uploads/documents/' . $kembali['berita_acara_pengembalian']) ?>"
-                                                                    target="_blank" class="btn btn-sm btn-outline-primary mb-1">
-                                                                    <i class="bi bi-file-earmark-pdf"></i> Berita Acara
-                                                                </a>
-                                                            <?php endif; ?>
+<?php if (!empty($kembali['berita_acara_pengembalian'])): ?>
+    <a href="<?= base_url('/uploads/images/' . $kembali['foto_pengembalian']) ?>"
+        target="_blank" class="btn btn-sm btn-outline-primary mb-1">
+        <i class="bi bi-image"></i> Foto Pengembalian Kendaraan
+    </a>
+<?php endif; ?>
                                                         </td>
                                                         <td><?= $kembali['tanggal_pinjam'] ?></td>
                                                         <td>

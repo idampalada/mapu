@@ -335,25 +335,6 @@ function initializeJabatanDropdown() {
 function handlePengembalianSubmit(e) {
   e.preventDefault();
 
-  // Hanya memeriksa berita acara, surat pengembalian dihapus
-  const beritaAcara = e.target.querySelector(
-    '[name="berita_acara_pengembalian"]'
-  )?.files[0];
-
-  const maxSize = 2 * 1024 * 1024;
-
-  // Validasi ukuran berita acara
-  if (beritaAcara && beritaAcara.size > maxSize) {
-    Swal.fire({
-      icon: "error",
-      title: "Gagal!",
-      text: "Ukuran file Berita Acara tidak boleh lebih dari 2MB",
-      confirmButtonText: "Tutup",
-      confirmButtonColor: "#dc3545",
-    });
-    return;
-  }
-
   const kendaraanId = document.getElementById("kendaraan_id_hidden")?.value;
   if (!kendaraanId) {
     Swal.fire({
@@ -366,7 +347,20 @@ function handlePengembalianSubmit(e) {
     return;
   }
 
-  // Hapus surat_pengembalian dari daftar field yang wajib diisi
+  // Validasi foto kamera
+  const photoData = document.getElementById("photo-data")?.value;
+  if (!photoData) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Foto kendaraan diperlukan untuk pengembalian",
+      confirmButtonText: "Tutup",
+      confirmButtonColor: "#dc3545",
+    });
+    return;
+  }
+
+  // Ubah daftar field yang wajib diisi - HAPUS berita_acara_pengembalian dari daftar
   const requiredFields = [
     "nama_penanggung_jawab",
     "nip_nrp",
@@ -374,7 +368,8 @@ function handlePengembalianSubmit(e) {
     "jabatan",
     "unit_organisasi",
     "tanggal_kembali",
-    "berita_acara_pengembalian",
+    // "berita_acara_pengembalian", // Hapus validasi ini
+    "nomor_sip", // Tambahkan nomor_sip yang diperlukan
   ];
 
   for (const field of requiredFields) {
@@ -403,8 +398,10 @@ function handlePengembalianSubmit(e) {
 
   const formData = new FormData(e.target);
 
+  // Log form data for debugging
   console.log("Submitting form data:", {
     kendaraanId: kendaraanId,
+    photoData: photoData ? "Photo data exists" : "No photo data",
     formValues: Object.fromEntries(formData),
   });
 

@@ -987,7 +987,7 @@ public function kembali()
     $pinjam = $pinjamModel->where([
         'kendaraan_id' => $kendaraan_id,
         'status' => 'disetujui',
-        'is_returned' => false,
+        'is_returned' => true,
         'deleted_at' => null
     ])->first();
 
@@ -1024,7 +1024,14 @@ public function kembali()
         $filePath = ROOTPATH . 'public/uploads/images/' . $photoFileName;
         
         try {
+            // Pastikan direktori ada
+            $imagesDir = ROOTPATH . 'public/uploads/images/';
+            if (!is_dir($imagesDir)) {
+                mkdir($imagesDir, 0777, true);
+            }
+            
             file_put_contents($filePath, $imageData);
+            chmod($filePath, 0644);
             log_message('debug', '✅ Foto pengembalian berhasil disimpan: ' . $photoFileName);
         } catch (\Exception $e) {
             log_message('error', '❌ Gagal menyimpan foto: ' . $e->getMessage());
@@ -1061,10 +1068,21 @@ public function kembali()
     }
 
     log_message('debug', '✅ Semua field valid, mulai transaksi database...');
+    
+    // Pastikan direktori uploads/documents ada
+    $docsDir = ROOTPATH . 'public/uploads/documents/';
+    if (!is_dir($docsDir)) {
+        mkdir($docsDir, 0777, true);
+        log_message('debug', '✅ Direktori documents dibuat: ' . $docsDir);
+    }
 
     try {
-        // Generate berita acara PDF terlebih dahulu
-        $beritaAcaraPdfName = $this->generateBeritaAcara([
+        // Generate berita acara PDF
+        $timestamp = time();
+        $beritaAcaraPdfName = "berita_acara_pengembalian_{$timestamp}.pdf";
+        
+        // Data untuk PDF
+        $pdfData = [
             'nomor_surat' => 'PENGEMBALIAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjam['id']),
             'nama_penanggung_jawab' => $nama_penanggung_jawab,
             'nip_nrp' => $nip_nrp,
@@ -1090,7 +1108,31 @@ public function kembali()
             'pihak_kedua_nama' => 'Pak Udin',
             'pihak_kedua_nip' => '12345678',
             'pihak_kedua_jabatan' => 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang'
-        ]);
+        ];
+
+        // Generate PDF
+        helper('dompdf');
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        $html = view('templates/berita_acara_pengembalian', $pdfData);
+        
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        // Simpan PDF ke folder
+        $output = $dompdf->output();
+        $filePath = $docsDir . $beritaAcaraPdfName;
+        
+        if (!file_put_contents($filePath, $output)) {
+            throw new \Exception('Gagal menyimpan berita acara pengembalian');
+        }
+        
+        chmod($filePath, 0644);
+        log_message('debug', '✅ Berita acara berhasil dibuat: ' . $beritaAcaraPdfName);
 
         $db->transStart();
         
@@ -1115,15 +1157,9 @@ public function kembali()
             'status' => KembaliModel::STATUS_PENDING,
             'keterangan' => null,
             'created_at' => date('Y-m-d H:i:s'),
-            // Gunakan nilai default jika tidak ada surat/berita acara
-            'surat_pengembalian' => 'auto_generated.pdf',
-            'berita_acara_pengembalian' => $photoFileName // Gunakan foto sebagai berita acara
+            'surat_pengembalian' => $beritaAcaraPdfName,
+            'berita_acara_pengembalian' => $beritaAcaraPdfName
         ];
-        
-        // Tambahkan berita acara PDF jika berhasil dibuat
-        if (!empty($beritaAcaraPdfName)) {
-            $data['berita_acara_pdf'] = $beritaAcaraPdfName;
-        }
 
         $result = $model->insert($data);
 
@@ -1189,6 +1225,11 @@ public function kembali()
         if (isset($photoFileName) && !empty($photoFileName)) {
             @unlink(ROOTPATH . 'public/uploads/images/' . $photoFileName);
         }
+        // Hapus juga file berita acara jika ada error
+        if (isset($beritaAcaraPdfName) && !empty($beritaAcaraPdfName)) {
+            @unlink(ROOTPATH . 'public/uploads/documents/' . $beritaAcaraPdfName);
+        }
+        
         log_message('error', 'Error in return process: ' . $e->getMessage());
         log_message('error', 'Stack trace: ' . $e->getTraceAsString());
 
@@ -1197,79 +1238,55 @@ public function kembali()
         ]);
     }
 }
-// Di controller AsetKendaraan, tambahkan kode berikut untuk memastikan direktori ada
-   private function ensureUploadDirectories()
-   {
-       $paths = [
-           ROOTPATH . 'public/uploads',
-           ROOTPATH . 'public/uploads/images',
-           ROOTPATH . 'public/uploads/documents'
-       ];
-       
-       foreach ($paths as $path) {
-           if (!is_dir($path)) {
-               mkdir($path, 0777, true);
-           }
-       }
-   }
 
 private function generateBeritaAcara($data)
-   {
-       // Panggil fungsi pemastian direktori
-       $this->ensureUploadDirectories();
-       
-       // Setup DOMPDF
-       helper('dompdf');
-       
-       $options = new \Dompdf\Options();
-       $options->set('isHtml5ParserEnabled', true);
-       $options->set('isPhpEnabled', true);
-       
-       $dompdf = new \Dompdf\Dompdf($options);
-       
-       // HTML template berita acara
-       $html = view('templates/berita_acara_pengembalian', $data);
-       
-       $dompdf->loadHtml($html);
-       $dompdf->setPaper('A4', 'portrait');
-       $dompdf->render();
-       
-       // Simpan PDF ke folder
-       $output = $dompdf->output();
-       
-       $timestamp = time();
-       $fileName = "berita_acara_pengembalian_{$timestamp}.pdf";
-       $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
-       
-       log_message('debug', 'Menyimpan berita acara: ' . $filePath);
-       
-       // Pastikan direktori ada
-       $dir = ROOTPATH . 'public/uploads/documents/';
-       if (!is_dir($dir)) {
-           mkdir($dir, 0777, true);
-       }
-       
-       // Simpan file dengan penanganan error yang lebih baik
-       try {
-           if (file_put_contents($filePath, $output)) {
-               log_message('debug', 'Berita acara berhasil disimpan: ' . $fileName);
-           } else {
-               log_message('error', 'Gagal menyimpan berita acara ke: ' . $filePath);
-           }
-           
-           // Periksa apakah file berhasil dibuat
-           if (file_exists($filePath)) {
-               log_message('debug', 'File berita acara ditemukan setelah penyimpanan');
-           } else {
-               log_message('error', 'File berita acara tidak ditemukan setelah penyimpanan: ' . $filePath);
-           }
-       } catch (\Exception $e) {
-           log_message('error', 'Exception saat menyimpan berita acara: ' . $e->getMessage());
-           return null;
-       }
-       
-       return $fileName;
-   }
+{
+    // Setup DOMPDF
+    helper('dompdf');
+    
+    $options = new \Dompdf\Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isPhpEnabled', true);
+    
+    $dompdf = new \Dompdf\Dompdf($options);
+    
+    // HTML template berita acara
+    $html = view('templates/berita_acara_pengembalian', $data);
+    
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    
+    // Simpan PDF ke folder
+    $output = $dompdf->output();
+    
+    $timestamp = time();
+    $fileName = "berita_acara_pengembalian_{$timestamp}.pdf";
+    
+    // Pastikan direktori ada
+    $dir = ROOTPATH . 'public/uploads/documents/';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+    
+    $filePath = $dir . $fileName;
+    log_message('debug', 'Menyimpan berita acara: ' . $filePath);
+    
+    // Simpan file dengan error handling
+    try {
+        if (file_put_contents($filePath, $output)) {
+            log_message('debug', 'Berita acara berhasil disimpan: ' . $fileName);
+            @chmod($filePath, 0644); // Set file permissions
+            return $fileName;
+        } else {
+            log_message('error', 'Gagal menyimpan berita acara ke: ' . $filePath);
+            return null;
+        }
+    } catch (\Exception $e) {
+        log_message('error', 'Exception saat menyimpan berita acara: ' . $e->getMessage());
+        return null;
+    }
+}
 
 private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
 {

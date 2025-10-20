@@ -216,13 +216,15 @@
             <li>Kelengkapan berupa ..., ..., dan ...</li>
         </ol>
         
-        <?php if (isset($foto_pengembalian) && !empty($foto_pengembalian)): ?>
-            <div class="image-container">
-                <p><strong>Foto Kendaraan Saat Pengembalian:</strong></p>
-                <img src="<?= ROOTPATH . 'public/uploads/images/' . $foto_pengembalian ?>" alt="Foto Kendaraan">
-                <div class="timestamp">Timestamp: <?= date('d/m/Y H:i:s') ?></div>
-            </div>
-        <?php endif; ?>
+        <div class="image-container">
+            <p><strong>Foto Kendaraan Saat Pengembalian:</strong></p>
+            <?php if (!empty($foto_pengembalian)): ?>
+                <img src="<?= 'data:image/jpeg;base64,' . base64_encode(@file_get_contents(ROOTPATH . 'public/uploads/images/' . $foto_pengembalian)) ?>" alt="Foto Kendaraan">
+            <?php else: ?>
+                <p>Foto Kendaraan</p>
+            <?php endif; ?>
+            <div class="timestamp">Timestamp: <?= date('d/m/Y H:i:s') ?></div>
+        </div>
         
         <p>Dengan adanya Serah Terima ini maka selanjutnya tanggung jawab Kendaraan Dinas tersebut beralih dari PIHAK KESATU kepada PIHAK KEDUA.</p>
         
