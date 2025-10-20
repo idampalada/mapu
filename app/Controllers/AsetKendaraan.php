@@ -984,10 +984,11 @@ public function kembali()
         return $this->response->setJSON(['error' => 'Kendaraan tidak ditemukan dalam database.']);
     }
 
+    // PERBAIKAN: Ubah is_returned dari true menjadi false
     $pinjam = $pinjamModel->where([
         'kendaraan_id' => $kendaraan_id,
         'status' => 'disetujui',
-        'is_returned' => true,
+        'is_returned' => false,
         'deleted_at' => null
     ])->first();
 
@@ -1434,133 +1435,130 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
     }
 
     public function verifikasiPengembalian()
-    {
-        if (!in_groups(['admin', 'admin_gedungutama'])) {
-            return $this->response->setJSON(['error' => 'Unauthorized Access']);
+{
+    if (!in_groups(['admin', 'admin_gedungutama'])) {
+        return $this->response->setJSON(['error' => 'Unauthorized Access']);
+    }
+
+    $kembaliId = $this->request->getPost('kembali_id');
+    $status = $this->request->getPost('status');
+    $keterangan = $this->request->getPost('keterangan');
+    $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
+
+    $model = new KembaliModel();
+    $pinjamModel = new PinjamModel();
+    $asetModel = new AsetModel();
+    $db = db_connect();
+
+    if (!in_array($status, [KembaliModel::STATUS_DISETUJUI, KembaliModel::STATUS_DITOLAK])) {
+        return $this->response->setJSON(['error' => 'Status tidak valid']);
+    }
+
+    $kembali = $model->find($kembaliId);
+    if (!$kembali) {
+        return $this->response->setJSON(['error' => 'Data pengembalian tidak ditemukan']);
+    }
+
+    $updateData = [
+        'status' => $status,
+        'keterangan' => $keterangan
+    ];
+
+    if ($dokumenTambahan && $dokumenTambahan->isValid()) {
+        if ($dokumenTambahan->getClientMimeType() !== 'application/pdf') {
+            return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF']);
         }
 
-        $kembaliId = $this->request->getPost('kembali_id');
-        $status = $this->request->getPost('status');
-        $keterangan = $this->request->getPost('keterangan');
-        $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
-
-        $model = new KembaliModel();
-        $pinjamModel = new PinjamModel();
-        $asetModel = new AsetModel();
-        $db = db_connect();
-
-        if (!in_array($status, [KembaliModel::STATUS_DISETUJUI, KembaliModel::STATUS_DITOLAK])) {
-            return $this->response->setJSON(['error' => 'Status tidak valid']);
+        if ($dokumenTambahan->getSize() > 2 * 1024 * 1024) {
+            return $this->response->setJSON(['error' => 'Ukuran file Dokumen Tambahan tidak boleh lebih dari 2MB']);
+        }
+        
+        if ($this->check_file_with_virustotal($dokumenTambahan)) {
+            return $this->response->setJSON(['error' => 'File Dokumen Tambahan terdeteksi tidak aman']);
         }
 
-        $kembali = $model->find($kembaliId);
-        if (!$kembali) {
-            return $this->response->setJSON(['error' => 'Data pengembalian tidak ditemukan']);
-        }
+        $newName = $dokumenTambahan->getRandomName();
+        $dokumenTambahan->move(ROOTPATH . 'public/uploads/documents', $newName);
+        $updateData['dokumen_tambahan'] = $newName;
+    }
 
-        $updateData = [
+    // SOLUSI: Perbaiki kondisi pencarian peminjaman - Cari peminjaman yang mungkin sudah berubah statusnya
+    // Gunakan pinjam_id yang ada di data pengembalian, bukan mencari dengan kondisi lain
+    $pinjam = $pinjamModel->find($kembali['pinjam_id']);
+
+    if (!$pinjam) {
+        return $this->response->setJSON(['error' => 'Data peminjaman terkait tidak ditemukan']);
+    }
+
+    $db->transStart();
+
+    try {
+        $model->update($kembaliId, [
             'status' => $status,
             'keterangan' => $keterangan
+        ]);
+
+        if ($status === 'disetujui') {
+            $asetModel->update($kembali['kendaraan_id'], [
+                'status_pinjam' => 'Tersedia'
+            ]);
+
+            $pinjamModel->update($pinjam['id'], [
+                'status' => 'selesai',
+                'is_returned' => false
+            ]);
+
+        } else if ($status === 'ditolak') {
+            $asetModel->update($kembali['kendaraan_id'], [
+                'status_pinjam' => 'Dipinjam'
+            ]);
+
+            $pinjamModel->update($pinjam['id'], [
+                'is_returned' => false
+            ]);
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return $this->response->setJSON(['error' => 'Terjadi kesalahan pada transaksi database']);
+        }
+
+        $asset = $asetModel->find($kembali['kendaraan_id']);
+        $userData = $this->getUserData($kembali['user_id']);
+        $notifData = [
+            'user_email' => $userData->email ?? '',
+            'user_fullname' => $userData->fullname ?? '',
+            'merk' => $asset['merk'] ?? '',
+            'no_polisi' => $asset['no_polisi'] ?? '',
+            'status' => $status ?? '',
+            'keterangan' => $keterangan ?? '',
+            'kondisi_kembali' => $kembali['kondisi_kembali'] ?? '-',
+            'nama_penanggung_jawab' => $kembali['nama_penanggung_jawab'] ?? '',
+            'nip_nrp' => $kembali['nip_nrp'] ?? '',
+            'tanggal_pinjam' => $kembali['tanggal_pinjam'] ?? '',
+            'tanggal_kembali' => $kembali['tanggal_kembali'] ?? '',
+            'surat_pengembalian' => $kembali['surat_pengembalian'] ?? '',
+            'berita_acara_pengembalian' => $kembali['berita_acara_pengembalian'] ?? '',
+            'dokumen_tambahan' => $kembali['dokumen_tambahan'] ?? ''
         ];
+        sendPengembalianNotification($notifData, 'verified');
 
-        if ($dokumenTambahan && $dokumenTambahan->isValid()) {
-            if ($dokumenTambahan->getClientMimeType() !== 'application/pdf') {
-                return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF']);
-            }
+        $message = $status === 'disetujui'
+            ? 'Pengembalian kendaraan berhasil disetujui'
+            : 'Pengembalian kendaraan ditolak. Status dikembalikan ke Dipinjam';
 
-            if ($dokumenTambahan->getSize() > 2 * 1024 * 1024) {
-                return $this->response->setJSON(['error' => 'Ukuran file Dokumen Tambahan tidak boleh lebih dari 2MB']);
-            }
-            
-            if ($this->check_file_with_virustotal($dokumenTambahan)) {
-                return $this->response->setJSON(['error' => 'File Dokumen Tambahan terdeteksi tidak aman']);
-            }
-    
-            $newName = $dokumenTambahan->getRandomName();
-            $dokumenTambahan->move(ROOTPATH . 'public/uploads/documents', $newName);
-            $updateData['dokumen_tambahan'] = $newName;
-        }
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => $message
+        ]);
 
-        $pinjam = $pinjamModel->where([
-            'kendaraan_id' => $kembali['kendaraan_id'],
-            'status' => 'disetujui',
-            'is_returned' => true,
-            'deleted_at' => null
-        ])->first();
-
-        if (!$pinjam) {
-            return $this->response->setJSON(['error' => 'Data peminjaman terkait tidak ditemukan']);
-        }
-
-        $db->transStart();
-
-        try {
-            $model->update($kembaliId, [
-                'status' => $status,
-                'keterangan' => $keterangan
-            ]);
-
-            if ($status === 'disetujui') {
-                $asetModel->update($kembali['kendaraan_id'], [
-                    'status_pinjam' => 'Tersedia'
-                ]);
-
-                $pinjamModel->update($pinjam['id'], [
-                    'status' => 'selesai',
-                    'is_returned' => true
-                ]);
-
-            } else if ($status === 'ditolak') {
-                $asetModel->update($kembali['kendaraan_id'], [
-                    'status_pinjam' => 'Dipinjam'
-                ]);
-
-                $pinjamModel->update($pinjam['id'], [
-                    'is_returned' => false
-                ]);
-            }
-
-            $db->transComplete();
-
-            if ($db->transStatus() === false) {
-                return $this->response->setJSON(['error' => 'Terjadi kesalahan pada transaksi database']);
-            }
-
-            $asset = $asetModel->find($kembali['kendaraan_id']);
-            $userData = $this->getUserData($kembali['user_id']);
-            $notifData = [
-                'user_email' => $userData->email ?? '',
-                'user_fullname' => $userData->fullname ?? '',
-                'merk' => $asset['merk'] ?? '',
-                'no_polisi' => $asset['no_polisi'] ?? '',
-                'status' => $status ?? '',
-                'keterangan' => $keterangan ?? '',
-                'kondisi_kembali' => $kembali['kondisi_kembali'] ?? '-',
-                'nama_penanggung_jawab' => $kembali['nama_penanggung_jawab'] ?? '',
-                'nip_nrp' => $kembali['nip_nrp'] ?? '',
-                'tanggal_pinjam' => $kembali['tanggal_pinjam'] ?? '',
-                'tanggal_kembali' => $kembali['tanggal_kembali'] ?? '',
-                'surat_pengembalian' => $kembali['surat_pengembalian'] ?? '',
-                'berita_acara_pengembalian' => $kembali['berita_acara_pengembalian'] ?? '',
-                'dokumen_tambahan' => $kembali['dokumen_tambahan'] ?? ''
-            ];
-            sendPengembalianNotification($notifData, 'verified');
-
-            $message = $status === 'disetujui'
-                ? 'Pengembalian kendaraan berhasil disetujui'
-                : 'Pengembalian kendaraan ditolak. Status dikembalikan ke Dipinjam';
-
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => $message
-            ]);
-
-        } catch (\Exception $e) {
-            $db->transRollback();
-            log_message('error', 'Error in verification: ' . $e->getMessage());
-            return $this->response->setJSON(['error' => $e->getMessage()]);
-        }
+    } catch (\Exception $e) {
+        $db->transRollback();
+        log_message('error', 'Error in verification: ' . $e->getMessage());
+        return $this->response->setJSON(['error' => $e->getMessage()]);
     }
+}
 public function updateSurat()
 {
     $pinjamId = $this->request->getPost('pinjam_id');

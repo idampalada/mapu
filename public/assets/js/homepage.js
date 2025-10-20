@@ -172,12 +172,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const formPengembalian = document.getElementById("formPengembalian");
-  if (formPengembalian) {
-    formPengembalian.removeEventListener("submit", handlePengembalianSubmit);
-    formPengembalian.addEventListener("submit", handlePengembalianSubmit);
-  }
-
   const modalPengembalian = document.getElementById("modalPengembalian");
   if (modalPengembalian) {
   }

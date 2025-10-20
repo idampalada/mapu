@@ -1223,14 +1223,24 @@ $('#formPengembalian').on('submit', function(e) {
     
     // Validasi foto
     if (!$('#photo-data').val()) {
-        alert('Silahkan ambil foto kendaraan terlebih dahulu');
+        Swal.fire({
+            icon: 'error',
+            title: 'Perhatian',
+            text: 'Silahkan ambil foto kendaraan terlebih dahulu',
+            confirmButtonColor: '#dc3545'
+        });
         $('#pihak-kesatu-tab').tab('show');
         return false;
     }
     
     // Validasi nomor SIP
     if (!$('#nomor_sip').val()) {
-        alert('Nomor SIP / Surat Penanggung Jawab harus diisi');
+        Swal.fire({
+            icon: 'error',
+            title: 'Perhatian',
+            text: 'Nomor SIP / Surat Penanggung Jawab harus diisi',
+            confirmButtonColor: '#dc3545'
+        });
         return false;
     }
     
@@ -1239,7 +1249,6 @@ $('#formPengembalian').on('submit', function(e) {
     // Tambahkan hidden field untuk berita_acara_pengembalian dari foto
     if (!formData.has('berita_acara_pengembalian') || !formData.get('berita_acara_pengembalian').size) {
         // Gunakan foto dari kamera sebagai berita acara jika tidak ada file yang diupload
-        // Ini membantu mengatasi constraint NOT NULL di database
         formData.append('berita_acara_pengembalian', 'auto_generated_' + new Date().getTime() + '.jpg');
     }
     
@@ -1257,15 +1266,34 @@ $('#formPengembalian').on('submit', function(e) {
             
             if (response.success) {
                 $('#modalPengembalian').modal('hide');
-                alert(response.message || 'Pengembalian kendaraan berhasil');
-                location.reload();
+                
+                // Tampilkan modal sukses dengan ikon ceklis
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Pengajuan pengembalian berhasil dikirim',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#198754'
+                }).then(() => {
+                    location.reload();
+                });
             } else {
-                alert(response.error || 'Gagal melakukan pengembalian');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: response.error || 'Gagal melakukan pengembalian',
+                    confirmButtonColor: '#dc3545'
+                });
             }
         },
         error: function() {
             $('button[type="submit"]').prop('disabled', false).html('Konfirmasi Pengembalian');
-            alert('Terjadi kesalahan saat memproses pengembalian');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan saat memproses pengembalian',
+                confirmButtonColor: '#dc3545'
+            });
         }
     });
 });
