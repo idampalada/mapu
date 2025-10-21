@@ -280,17 +280,18 @@ function addTimePickerStyles() {
 
 function generateTimeSlots() {
   const slots = [];
-  const startHour = 7; // 07:00
-  const endHour = 17; // 17:00
+  // Mulai dari 07:30
+  let current = new Date("2000-01-01T07:30:00");
+  // Sampai 17:30
+  const end = new Date("2000-01-01T17:30:00");
 
-  for (let hour = startHour; hour <= endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += 30) {
-      // interval 30 menit
-      const timeString = `${hour.toString().padStart(2, "0")}:${minute
-        .toString()
-        .padStart(2, "0")}`;
-      slots.push(timeString);
-    }
+  while (current <= end) {
+    const hour = current.getHours().toString().padStart(2, "0");
+    const minute = current.getMinutes().toString().padStart(2, "0");
+    slots.push(`${hour}:${minute}`);
+
+    // Tambah 30 menit
+    current.setMinutes(current.getMinutes() + 30);
   }
 
   return slots;

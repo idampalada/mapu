@@ -1,4 +1,7 @@
 <?= $this->extend('admin/layouts/app') ?>
+<?php
+use App\Models\PinjamRuanganModel;
+?>
 
 <?= $this->section('content') ?>
 
@@ -111,128 +114,270 @@
                             </div>
                         </div>
 
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold"><?= $ruangan['nama_ruangan'] ?></h5>
-                            <div class="mb-3">
-                                <p class="mb-1">
-                                    <small class="text-muted">Kapasitas:</small>
-                                    <?= $ruangan['kapasitas'] ?> orang
-                                </p>
-                                <?php if (!empty($ruangan['fasilitas'])): ?>
+                        <?php 
+                        $isAvailable = $ruangan['status'] === 'Tersedia' && !isset($ruangan['peminjam_id']);
+                        $isPending = $ruangan['status'] === 'Menunggu Verifikasi';
+                        $isCurrentUserBorrowing = isset($ruangan['peminjam_id']) && $ruangan['peminjam_id'] == user_id();
+                        
+                        // Sanitasi data untuk JavaScript
+                        $cleanRuanganName = htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES);
+                        $cleanFasilitas = htmlspecialchars($ruangan['fasilitas'] ?? '', ENT_QUOTES);
+                        // Escape quotes dan newlines untuk JavaScript
+                        $cleanFasilitas = str_replace(["\r\n", "\n", "\r"], ' ', $cleanFasilitas);
+                        $cleanFasilitas = str_replace(["'", '"'], ["\\'", '\\"'], $cleanFasilitas);
+                        
+                        // Cek status aktif untuk PostgreSQL (support 't', 'f', true, false)
+                        $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+                        ?>
+
+                        <?php if ($isRuanganActive): ?>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold"><?= $ruangan['nama_ruangan'] ?></h5>
+                                <div class="mb-3">
                                     <p class="mb-1">
-                                        <small class="text-muted">Fasilitas & Keterangan:</small>
-                                        <?= htmlspecialchars($ruangan['fasilitas']) ?>
+                                        <small class="text-muted">Kapasitas:</small>
+                                        <?= $ruangan['kapasitas'] ?> orang
                                     </p>
-                                <?php endif; ?>
-                            </div>
-                            
-                            <?php if (!empty($ruangan['jam_mulai']) && !empty($ruangan['jam_selesai'])): ?>
-                                <p class="mb-1">
-                                    <small class="text-muted">Dipinjam:</small>
-                                    <?= substr($ruangan['jam_mulai'], 0, 5) ?> - <?= substr($ruangan['jam_selesai'], 0, 5) ?> WIB
-                                </p>
-                            <?php else: ?>
-                                <p class="mb-1 text-success fw-bold">Tersedia Hari Ini</p>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="card-footer bg-white border-0">
-                            <div class="d-grid">
-                                <?php 
-                                $isAvailable = $ruangan['status'] === 'Tersedia' && !isset($ruangan['peminjam_id']);
-                                $isPending = $ruangan['status'] === 'Menunggu Verifikasi';
-                                $isCurrentUserBorrowing = isset($ruangan['peminjam_id']) && $ruangan['peminjam_id'] == user_id();
-                                
-                                // PERBAIKAN: Sanitasi data untuk JavaScript dengan lebih aman
-                                $cleanRuanganName = htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES);
-                                $cleanFasilitas = htmlspecialchars($ruangan['fasilitas'] ?? '', ENT_QUOTES);
-                                // Escape quotes dan newlines untuk JavaScript
-                                $cleanFasilitas = str_replace(["\r\n", "\n", "\r"], ' ', $cleanFasilitas);
-                                $cleanFasilitas = str_replace(["'", '"'], ["\\'", '\\"'], $cleanFasilitas);
-                                ?>
-
-
-
-<!-- Cek status aktif ruangan -->
+                                    <?php if (!empty($ruangan['fasilitas'])): ?>
+                                        <p class="mb-1">
+                                            <small class="text-muted">Fasilitas & Keterangan:</small>
+                                            <?= htmlspecialchars($ruangan['fasilitas']) ?>
+                                        </p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (!empty($ruangan['jam_mulai']) && !empty($ruangan['jam_selesai'])): ?>
+    <p class="mb-1">
+        <small class="text-muted">Dipinjam:</small>
+        <?= substr($ruangan['jam_mulai'], 0, 5) ?> - <?= substr($ruangan['jam_selesai'], 0, 5) ?> WIB
+    </p>
+    
     <?php 
-    // Cek status aktif untuk PostgreSQL (support 't', 'f', true, false)
-    $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+    // Cek semua peminjaman hari ini untuk ruangan ini
+    $pinjamModel = new PinjamRuanganModel();
+    $bookings = $pinjamModel->where('ruangan_id', $ruangan['id'])
+        ->where('tanggal', date('Y-m-d'))
+        ->where('status', 'disetujui')
+        ->where('deleted_at', null)
+        ->orderBy('waktu_mulai', 'ASC')
+        ->findAll();
+
+    // Jam operasional
+    $startTime = '07:30';
+    $endTime = '16:30';
+    
+    // Jam saat ini
+    $currentTime = date('H:i');
+    
+    // Gunakan waktu saat ini jika sudah melewati waktu mulai operasional
+    if (strtotime($currentTime) > strtotime($startTime)) {
+        $startTime = $currentTime;
+    }
+
+    // Array untuk menyimpan semua slot waktu yang tidak tersedia (termasuk buffer 30 menit)
+    $unavailableSlots = [];
+
+    // Loop semua booking untuk mengidentifikasi slot yang tidak tersedia
+    foreach ($bookings as $booking) {
+        $bookingStart = substr($booking['waktu_mulai'], 0, 5);
+        $bookingEnd = substr($booking['waktu_selesai'], 0, 5);
+        
+        // Tambahkan buffer 30 menit sebelum dan setelah peminjaman
+        $unavailableStart = date('H:i', strtotime('-30 minutes', strtotime($bookingStart)));
+        $unavailableEnd = date('H:i', strtotime('+30 minutes', strtotime($bookingEnd)));
+        
+        $unavailableSlots[] = [
+            'start' => $unavailableStart,
+            'end' => $unavailableEnd
+        ];
+    }
+
+    // Gabungkan slot yang tumpang tindih
+    $mergedUnavailableSlots = [];
+    if (!empty($unavailableSlots)) {
+        // Sort berdasarkan waktu mulai
+        usort($unavailableSlots, function($a, $b) {
+            return strcmp($a['start'], $b['start']);
+        });
+        
+        $mergedUnavailableSlots[] = $unavailableSlots[0];
+        for ($i = 1; $i < count($unavailableSlots); $i++) {
+            $lastSlot = &$mergedUnavailableSlots[count($mergedUnavailableSlots) - 1];
+            
+            // Jika slot berikutnya tumpang tindih dengan slot terakhir, gabungkan
+            if (strtotime($unavailableSlots[$i]['start']) <= strtotime($lastSlot['end'])) {
+                if (strtotime($unavailableSlots[$i]['end']) > strtotime($lastSlot['end'])) {
+                    $lastSlot['end'] = $unavailableSlots[$i]['end'];
+                }
+            } else {
+                // Tidak tumpang tindih, tambahkan slot baru
+                $mergedUnavailableSlots[] = $unavailableSlots[$i];
+            }
+        }
+    }
+
+    // Tentukan slot yang tersedia
+    $availableSlots = [];
+    $currentStart = $startTime;
+
+    // Jika tidak ada slot yang tidak tersedia, semua jam tersedia
+    if (empty($mergedUnavailableSlots)) {
+        $availableSlots[] = ['start' => $startTime, 'end' => $endTime];
+    } else {
+        // Cek apakah ada slot tersedia sebelum slot pertama yang tidak tersedia
+        foreach ($mergedUnavailableSlots as $slot) {
+            if (strtotime($currentStart) < strtotime($slot['start'])) {
+                $availableSlots[] = ['start' => $currentStart, 'end' => $slot['start']];
+            }
+            $currentStart = $slot['end'];
+        }
+        
+        // Cek apakah ada slot tersedia setelah slot terakhir yang tidak tersedia
+        if (strtotime($currentStart) < strtotime($endTime)) {
+            $availableSlots[] = ['start' => $currentStart, 'end' => $endTime];
+        }
+    }
+
+    // Tampilkan slot tersedia
+    if (!empty($availableSlots)) {
+        foreach ($availableSlots as $slot) {
+            // Tampilkan hanya jika durasi valid (waktu mulai lebih kecil dari waktu selesai)
+            // dan waktu mulai lebih besar atau sama dengan waktu saat ini
+            if (strtotime($slot['start']) < strtotime($slot['end']) && 
+                strtotime($slot['end']) > strtotime($currentTime)) {
+                
+                // Jika waktu mulai sudah lewat, gunakan waktu saat ini
+                $displayStart = (strtotime($slot['start']) < strtotime($currentTime)) 
+                    ? $currentTime 
+                    : $slot['start'];
+                    
+                echo '<div class="mb-1">';
+                echo '<span class="badge bg-success available-time">Tersedia ' . $displayStart . ' - ' . $slot['end'] . '</span>';
+                echo '</div>';
+            }
+        }
+    } else {
+        echo '<div class="mb-1 text-muted"><small>Tidak tersedia hari ini</small></div>';
+    }
+    ?>
+<?php else: ?>
+    <p class="mb-1 text-success fw-bold">Tersedia Hari Ini</p>
+    <?php
+    // Jam saat ini
+    $currentTime = date('H:i');
+    $startTime = '07:30';
+    $endTime = '16:30';
+    
+    // Jika waktu saat ini sudah melewati waktu mulai operasional, gunakan waktu saat ini
+    $displayStart = (strtotime($currentTime) > strtotime($startTime)) ? $currentTime : $startTime;
     ?>
     
-    <?php if ($isRuanganActive): ?>
-        <!-- TOMBOL PINJAM AKTIF -->
-        <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
-                style="background-color: #133E87; color: white; border: none; height: 2.2rem;" 
-                data-ruangan-id="<?= $ruangan['id'] ?>"
-                data-ruangan-nama="<?= $cleanRuanganName ?>"
-                data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                data-ruangan-fasilitas="<?= $cleanFasilitas ?>">
-            <i class="bi bi-calendar-plus"></i>
-            <span>Pinjam</span>
-        </button>
-    
-    <!-- Info Status untuk Reference User -->
-    <?php if (!empty($ruangan['jam_mulai']) && !empty($ruangan['jam_selesai'])): ?>
-        <small class="text-center mt-2 text-muted">
-            <i class="bi bi-info-circle"></i>
-            Dipinjam hari ini: <?= substr($ruangan['jam_mulai'], 0, 5) ?> - <?= substr($ruangan['jam_selesai'], 0, 5) ?> WIB
-        </small>
-    <?php elseif ($isPending): ?>
-        <small class="text-center mt-2 text-warning">
-            <i class="bi bi-clock"></i>
-            Ada booking menunggu verifikasi
-        </small>
-    <?php else: ?>
-        <small class="text-center mt-2 text-success">
-            <i class="bi bi-check-circle"></i>
-            Tersedia untuk booking
-        </small>
-    <?php endif; ?>
-
-    <?php else: ?>
-        <!-- TOMBOL MAINTENANCE - LOCKED -->
-        <button class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
-                style="height: 2.2rem; cursor: not-allowed;" disabled>
-            <i class="bi bi-tools"></i>
-            <span>Maintenance</span>
-        </button>
-    
-        <small class="text-center mt-2 text-warning">
-            <i class="bi bi-exclamation-triangle"></i>
-            Ruangan sedang maintenance, tidak dapat dipinjam
-        </small>
-    <?php endif; ?>
-
-<!-- Admin buttons -->
-<?php if (in_groups('admin_gedungutama') || 
-    in_groups('admin_pusdatin') || 
-    in_groups('admin_binamarga') || 
-    in_groups('admin_ciptakarya') || 
-    in_groups('admin_sda') || 
-    in_groups('admin_gedungg') ||
-    in_groups('admin_heritage') ||
-    in_groups('admin') ||
-    in_groups('admin_auditorium')): ?>
-    <div class="d-flex flex-column gap-2 mt-2">
-        <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
-            style="background-color: #608BC1; color: white; border: none;"
-            onclick="openEditRuangan('<?= $ruangan['id'] ?>')">
-            <i class="bi bi-pencil"></i> Edit
-        </button>
-        <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2" 
-            style="background-color: #AE445A; color: white; border: none;"
-            onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
-            <i class="bi bi-trash"></i> Hapus
-        </button>
+    <div class="mb-1">
+        <span class="badge bg-success available-time">Tersedia <?= $displayStart ?> - <?= $endTime ?></span>
     </div>
 <?php endif; ?>
-                        </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-white border-0">
+                                <div class="d-grid">
+                                    <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
+                                            style="background-color: #133E87; color: white; border: none; height: 2.2rem;" 
+                                            data-ruangan-id="<?= $ruangan['id'] ?>"
+                                            data-ruangan-nama="<?= $cleanRuanganName ?>"
+                                            data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
+                                            data-ruangan-fasilitas="<?= $cleanFasilitas ?>">
+                                        <i class="bi bi-calendar-plus"></i>
+                                        <span>Pinjam</span>
+                                    </button>
+                                    
+                                    <!-- Admin buttons -->
+                                    <?php if (in_groups('admin_gedungutama') || 
+                                        in_groups('admin_pusdatin') || 
+                                        in_groups('admin_binamarga') || 
+                                        in_groups('admin_ciptakarya') || 
+                                        in_groups('admin_sda') || 
+                                        in_groups('admin_gedungg') ||
+                                        in_groups('admin_heritage') ||
+                                        in_groups('admin') ||
+                                        in_groups('admin_auditorium')): ?>
+                                        <div class="d-flex flex-column gap-2 mt-2">
+                                            <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
+                                                style="background-color: #608BC1; color: white; border: none;"
+                                                onclick="openEditRuangan('<?= $ruangan['id'] ?>')">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2" 
+                                                style="background-color: #AE445A; color: white; border: none;"
+                                                onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold"><?= $ruangan['nama_ruangan'] ?></h5>
+                                <div class="mb-3">
+                                    <p class="mb-1">
+                                        <small class="text-muted">Kapasitas:</small>
+                                        <?= $ruangan['kapasitas'] ?> orang
+                                    </p>
+                                    <?php if (!empty($ruangan['fasilitas'])): ?>
+                                        <p class="mb-1">
+                                            <small class="text-muted">Fasilitas & Keterangan:</small>
+                                            <?= htmlspecialchars($ruangan['fasilitas']) ?>
+                                        </p>
+                                    <?php endif; ?>
+                                    <p class="mb-1 text-warning fw-bold">Maintenance</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-white border-0">
+                                <div class="d-grid">
+                                    <!-- TOMBOL MAINTENANCE - LOCKED -->
+                                    <button class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-2"
+                                            style="height: 2.2rem; cursor: not-allowed;" disabled>
+                                        <i class="bi bi-tools"></i>
+                                        <span>Maintenance</span>
+                                    </button>
+                                
+                                    <small class="text-center mt-2 text-warning">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        Ruangan sedang maintenance, tidak dapat dipinjam
+                                    </small>
+                                    
+                                    <!-- Admin buttons -->
+                                    <?php if (in_groups('admin_gedungutama') || 
+                                        in_groups('admin_pusdatin') || 
+                                        in_groups('admin_binamarga') || 
+                                        in_groups('admin_ciptakarya') || 
+                                        in_groups('admin_sda') || 
+                                        in_groups('admin_gedungg') ||
+                                        in_groups('admin_heritage') ||
+                                        in_groups('admin') ||
+                                        in_groups('admin_auditorium')): ?>
+                                        <div class="d-flex flex-column gap-2 mt-2">
+                                            <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
+                                                style="background-color: #608BC1; color: white; border: none;"
+                                                onclick="openEditRuangan('<?= $ruangan['id'] ?>')">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </button>
+                                            <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2" 
+                                                style="background-color: #AE445A; color: white; border: none;"
+                                                onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </section>
-<?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endif; ?>
 </div>
 
 <!-- Modal Detail Ruangan -->
@@ -268,7 +413,6 @@
 <div class="modal fade" id="modalPinjamRuangan" tabindex="-1" aria-labelledby="modalPinjamRuanganLabel" aria-hidden="true">
 </div>
 
-<!-- Modal Edit Ruangan -->
 <!-- Modal Edit Ruangan -->
 <div class="modal fade" id="modalEditRuangan" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -367,17 +511,6 @@
                                           placeholder="Tambahkan keterangan detail fasilitas..."></textarea>
                                 <small class="text-muted">Keterangan akan digabung dengan fasilitas yang dipilih</small>
                             </div>
-
-                            <!-- HAPUS SEMUA YANG INI - DUPLIKAT! -->
-                            <!-- 
-                            <input type="hidden" name="is_active" value="0">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="is_active" id="edit_is_active" value="1">
-                                <label class="form-check-label" for="edit_is_active">
-                                    Aktif (Dapat dipinjam)
-                                </label>
-                            </div>
-                            -->
                             
                             <div class="mb-3">
                                 <label class="form-label">Foto Ruangan (Opsional)</label>
@@ -468,6 +601,21 @@
         </div>
     </div>
 </div>
+<style>
+    .available-time {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+    .custom-alert-booking {
+  background-color: var(--booking-bg, #f8e48c);
+  border-color: var(--booking-border, #f3d96a);
+  color: var(--booking-text, #4b3b00);
+}
+
+/* kamu bisa ubah lewat CSS variable dari file lain juga */
+
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -498,8 +646,7 @@ function getIndonesianDayName(dateStr) {
 function formatDateTime(dateStr, timeStr) {
     const dateTime = new Date(`${dateStr}T${timeStr}`);
     return dateTime.toLocaleString("id-ID", {
-        day: "numeric", month: "long", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
+        day: "numeric", month: "long", year: "numeric",hour: "2-digit", minute: "2-digit"
     });
 }
 
@@ -524,7 +671,8 @@ function loadBookingNotices() {
                 const selesai = formatDateTime(item.tanggal, item.waktu_selesai);
                 
                 return `
-                    <div class="alert alert-warning shadow-sm mb-2">
+                    <div class="alert custom-alert-booking shadow-sm mb-2">
+
                         <i class="bi bi-calendar-event me-2 fs-4"></i>
                         <div>
                             <strong>${item.nama_ruangan}</strong> telah dibooking<br>
