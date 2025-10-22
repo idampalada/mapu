@@ -69,6 +69,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="<?= base_url(); ?>/assets/js/main.js"></script>
+    <script src="<?= base_url(); ?>/assets/js/timeline-peminjaman.js"></script>
     <script src="<?= base_url(); ?>/assets/js/homepage.js"></script>
     <script src="<?= base_url(); ?>/assets/js/laporan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/dashboard.js"></script>

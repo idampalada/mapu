@@ -569,6 +569,7 @@ public function edit($id)
                     'user_id' => $userId,
                     'ruangan_id' => $ruanganId,
                     'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
+                    'nomor_hp_penanggung_jawab' => $this->request->getPost('nomor_hp_penanggung_jawab'),
                     'unit_organisasi' => $this->request->getPost('unit_organisasi'),
                     'keperluan' => $this->request->getPost('keperluan'),
                     'tanggal' => $this->request->getPost('tanggal'),

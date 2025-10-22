@@ -216,11 +216,20 @@
                                         onclick="trackKendaraan('<?= $item['no_polisi'] ?>')">
                                         <i class="bi bi-geo-alt"></i> Status
                                     </button>
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-1"
+                    onclick="showTimelineModal('<?= $item['id'] ?>')">
+                    <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                </button>
                                     <?php else: ?>
                                         <button type="button" class="btn btn-info btn-sm rounded-pill action-button"
                                             onclick="openPengembalianModal('<?= $item['id'] ?>')">
                                             <i class="bi bi-box-arrow-in-down"></i> Kembalikan Kendaraan
                                         </button>
+
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-1 mt-2"
+                    onclick="showTimelineModal('<?= $item['id'] ?>')">
+                    <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                </button>
 
                                         <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
                                             <div class="mt-2 document-section">
@@ -832,6 +841,107 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Timeline Peminjaman -->
+<!-- Modal Timeline Peminjaman dengan Tab Section -->
+<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
+<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
+<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
+<div class="modal fade" id="modalTimeline" tabindex="-1" aria-labelledby="modalTimelineLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTimelineLabel">Verifikasi Peminjaman & Pengembalian</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs border-0" id="timelineTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="peminjaman-tab" data-bs-toggle="tab" data-bs-target="#peminjaman" type="button" role="tab" aria-controls="peminjaman" aria-selected="true">
+                            Peminjaman Pending <span id="peminjamanPendingCount" class="badge rounded-pill bg-danger ms-1">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pengembalian-tab" data-bs-toggle="tab" data-bs-target="#pengembalian" type="button" role="tab" aria-controls="pengembalian" aria-selected="false">
+                            Pengembalian Pending <span id="pengembalianPendingCount" class="badge rounded-pill bg-danger ms-1">0</span>
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tab Content -->
+                <div class="tab-content p-3" id="timelineTabContent">
+                    <!-- Peminjaman Pending -->
+                    <div class="tab-pane fade show active" id="peminjaman" role="tabpanel" aria-labelledby="peminjaman-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Penanggung Jawab</th>
+                                        <th>Kendaraan</th>
+                                        <th>Urusan Kedinasan</th>
+                                        <th>Status</th>
+                                        <th>Dokumen</th>
+                                        <th>Tanggal Pinjam</th>
+                                        <th>Tanggal Kembali</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="peminjamanPendingTable">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3">Memuat data peminjaman...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Pengembalian Pending -->
+                    <div class="tab-pane fade" id="pengembalian" role="tabpanel" aria-labelledby="pengembalian-tab">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Penanggung Jawab</th>
+                                        <th>Kendaraan</th>
+                                        <th>Urusan Kedinasan</th>
+                                        <th>Status</th>
+                                        <th>Dokumen</th>
+                                        <th>Tanggal Pinjam</th>
+                                        <th>Tanggal Kembali</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pengembalianPendingTable">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3">Memuat data pengembalian...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 <!-- Enhanced CSS for modern look -->
 <style>

@@ -1442,3 +1442,7 @@ $routes->post('/SuratJalan/generate', 'SuratJalanController::generate', ['filter
 
 // Route untuk mendapatkan data peminjaman
 $routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'auth:admin,admin_gedungutama']);
+
+
+//Route Untuk TIMELINE PEMINJAMAN
+$routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');

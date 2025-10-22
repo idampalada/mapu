@@ -1755,5 +1755,148 @@ public function checkFile($filename = null)
     }
 }
 
-    
+    public function getTimelineData($kendaraan_id = null)
+{
+    try {
+        // Validate input
+        if (!$kendaraan_id || !is_numeric($kendaraan_id)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'ID Kendaraan tidak valid'
+            ]);
+        }
+        
+        // Initialize models
+        $pinjamModel = new \App\Models\PinjamModel();
+        $kembaliModel = new \App\Models\KembaliModel();
+        $asetModel = new \App\Models\AsetModel();
+        
+        // Get asset information
+        $asset = $asetModel->find($kendaraan_id);
+        if (!$asset) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Kendaraan tidak ditemukan'
+            ]);
+        }
+        
+        // Log untuk debugging
+        log_message('info', 'Fetching data for kendaraan ID: ' . $kendaraan_id);
+        
+        // Get all peminjaman for this specific vehicle ID only
+        $peminjaman = $pinjamModel->builder()
+            ->select('
+                pinjam.*,
+                users.username, 
+                users.fullname,
+                assets.merk as kendaraan_nama
+            ')
+            ->join('users', 'users.id = pinjam.user_id', 'left')
+            ->join('assets', 'assets.id = pinjam.kendaraan_id', 'left')
+            ->where('pinjam.kendaraan_id', $kendaraan_id) // Specific kendaraan_id
+            ->where('pinjam.deleted_at IS NULL')
+            ->orderBy('pinjam.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+            
+        // Get all pengembalian for this specific vehicle ID only
+        $pengembalian = $kembaliModel->builder()
+            ->select('
+                kembali.*,
+                users.username, 
+                users.fullname,
+                pinjam.nama_penanggung_jawab,
+                pinjam.urusan_kedinasan,
+                pinjam.tanggal_pinjam,
+                pinjam.tanggal_kembali,
+                pinjam.surat_permohonan,
+                pinjam.surat_jalan_admin,
+                assets.merk as kendaraan_nama
+            ')
+            ->join('users', 'users.id = kembali.user_id', 'left')
+            ->join('pinjam', 'pinjam.id = kembali.pinjam_id', 'left')
+            ->join('assets', 'assets.id = kembali.kendaraan_id', 'left')
+            ->where('kembali.kendaraan_id', $kendaraan_id) // Specific kendaraan_id
+            ->where('kembali.deleted_at IS NULL')
+            ->orderBy('kembali.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+        
+        // Log jumlah data yang ditemukan
+        log_message('info', 'Found ' . count($peminjaman) . ' peminjaman and ' . count($pengembalian) . ' pengembalian for kendaraan ID: ' . $kendaraan_id);
+        
+        // Format peminjaman data
+$formattedPeminjaman = [];
+foreach ($peminjaman as $item) {
+    $formattedPeminjaman[] = [
+        'id' => $item['id'],
+        'user_id' => $item['user_id'] ?? null,
+        'username' => $item['username'] ?? '',
+        'fullname' => $item['fullname'] ?? '',
+        'nama_penanggung_jawab' => $item['nama_penanggung_jawab'] ?? 'Tidak Ada Nama',
+        'tanggal' => $item['created_at'],
+        'tanggal_formatted' => date('d/m/Y', strtotime($item['created_at'])),
+        'tanggal_pinjam' => $item['tanggal_pinjam'],
+        'tanggal_pinjam_formatted' => date('d/m/Y', strtotime($item['tanggal_pinjam'])),
+        'tanggal_kembali' => $item['tanggal_kembali'],
+        'tanggal_kembali_formatted' => date('d/m/Y', strtotime($item['tanggal_kembali'])),
+        'status' => $item['status'] ?? 'pending',
+        'keterangan' => $item['keterangan'] ?? '',
+        'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
+        'surat_permohonan' => $item['surat_permohonan'] ?? '',
+        'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
+        'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
+        'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
+        'kendaraan_id' => $item['kendaraan_id'],
+        'is_returned' => (bool)($item['is_returned'] ?? false)  // Pastikan field ini disertakan
+    ];
+}
+        
+        // Format pengembalian data
+        $formattedPengembalian = [];
+        foreach ($pengembalian as $item) {
+            $formattedPengembalian[] = [
+                'id' => $item['id'],
+                'pinjam_id' => $item['pinjam_id'],
+                'user_id' => $item['user_id'] ?? null,
+                'username' => $item['username'] ?? '',
+                'fullname' => $item['fullname'] ?? '',
+                'nama_penanggung_jawab' => $item['nama_penanggung_jawab'] ?? 'Tidak Ada Nama',
+                'tanggal' => $item['created_at'],
+                'tanggal_formatted' => date('d/m/Y', strtotime($item['created_at'])),
+                'tanggal_pinjam' => $item['tanggal_pinjam'],
+                'tanggal_pinjam_formatted' => date('d/m/Y', strtotime($item['tanggal_pinjam'])),
+                'tanggal_kembali' => $item['tanggal_kembali'],
+                'tanggal_kembali_formatted' => date('d/m/Y', strtotime($item['tanggal_kembali'])),
+                'status' => $item['status'] ?? 'pending',
+                'keterangan' => $item['keterangan'] ?? '',
+                'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
+                'surat_permohonan' => $item['surat_permohonan'] ?? '',
+                'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
+                'surat_pengembalian' => $item['surat_pengembalian'] ?? '',
+                'berita_acara_pengembalian' => $item['berita_acara_pengembalian'] ?? '',
+                'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
+                'kondisi_kembali' => $item['kondisi_kembali'] ?? '',
+                'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
+                'kendaraan_id' => $item['kendaraan_id']
+            ];
+        }
+        
+        // Return formatted data
+        return $this->response->setJSON([
+            'success' => true,
+            'asset' => $asset,
+            'kendaraan_id' => $kendaraan_id, // Tambahkan ID kendaraan yang diminta
+            'peminjaman' => $formattedPeminjaman,
+            'pengembalian' => $formattedPengembalian
+        ]);
+    } catch (\Exception $e) {
+        log_message('error', 'Error in getTimelineData: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ]);
+    }
+}
 }

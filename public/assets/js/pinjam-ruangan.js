@@ -427,9 +427,28 @@ function updateTimeSlotStyles() {
 
     // Set base class berdasarkan availability
     if (isTimeBooked(time)) {
+      // Ubah class menjadi booked
       slot.className = "time-slot booked";
+
+      // Cek apakah ini adalah periode cooldown
+      if (isTimeInCooldownPeriod(time, existingBookings)) {
+        // Jika waktu dalam cooldown period, tambahkan class khusus
+        slot.classList.add("cooldown-period");
+        slot.title = "Periode jeda untuk persiapan ruangan";
+      } else {
+        // Jika waktu dalam booking biasa
+        const booking = getBookingForTime(time);
+        if (booking) {
+          const statusText =
+            booking.status === "disetujui"
+              ? "Disetujui"
+              : "Menunggu Verifikasi";
+          slot.title = `${statusText}: ${booking.waktu_mulai}-${booking.waktu_selesai}\nKeperluan: ${booking.keperluan}`;
+        }
+      }
     } else {
       slot.className = "time-slot available";
+      slot.title = "Klik untuk pilih waktu";
     }
   });
 
@@ -469,20 +488,125 @@ function updateTimeSlotStyles() {
   }
 }
 
+// TAMBAHKAN INI: Fungsi untuk memperbarui style CSS untuk cooldown period
+function addCooldownPeriodStyles() {
+  // Tambahkan style CSS untuk cooldown period
+  const styleElement = document.createElement("style");
+  styleElement.innerHTML = `
+    .time-slot.booked.cooldown-period {
+      background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 100%) !important;
+      border: 2px dashed #ffa000 !important;
+      color: #ff6f00 !important;
+      cursor: not-allowed !important;
+      position: relative;
+    }
+    
+    .time-slot.booked.cooldown-period:before {
+      content: "⏱️";
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      font-size: 8px;
+    }
+    
+    /* Tambahkan ini jika perlu efek tambahan */
+    @keyframes cooldownPulse {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { opacity: 0.8; }
+    }
+    
+    .time-slot.booked.cooldown-period {
+      animation: cooldownPulse 2s infinite;
+    }
+  `;
+  document.head.appendChild(styleElement);
+
+  return true;
+}
+
+// TAMBAHKAN INI: Fungsi untuk memuat time picker dengan periode cooldown
+function loadTimePickerWithCooldown(
+  ruanganId,
+  tanggalElement,
+  waktuMulaiElement,
+  waktuSelesaiElement
+) {
+  const tanggalInput = document.getElementById(tanggalElement);
+  const tanggal = tanggalInput.value;
+
+  if (!tanggal) {
+    return false;
+  }
+
+  // Tambahkan style untuk cooldown period
+  addCooldownPeriodStyles();
+
+  // Load existing bookings
+  loadExistingBookings(ruanganId, tanggal);
+
+  // Inisialisasi time picker
+  initializeTimePicker(ruanganId);
+
+  // Update time slots berdasarkan booking yang ada
+  updateBookedTimeSlots();
+
+  // Validasi time slot blocking
+  setTimeout(validateTimeSlotBlocking, 500);
+
+  // Force block time slots jika perlu
+  setTimeout(forceBlockTimeSlots, 700);
+
+  return true;
+}
+
 function checkTimeConflict(startTime, endTime) {
   for (let booking of existingBookings) {
     const bookingStart = booking.waktu_mulai.substring(0, 5);
     const bookingEnd = booking.waktu_selesai.substring(0, 5);
+
+    // Konversi ke menit untuk perhitungan
+    const bookingEndMinutes = convertTimeToMinutes(bookingEnd);
+
+    // Tambahkan 30 menit sebagai cooldown period
+    const cooldownEnd = convertMinutesToTime(bookingEndMinutes + 30);
 
     // Cek berbagai jenis konflik
     const conflict1 = startTime >= bookingStart && startTime < bookingEnd; // Start time dalam booking
     const conflict2 = endTime > bookingStart && endTime <= bookingEnd; // End time dalam booking
     const conflict3 = startTime <= bookingStart && endTime >= bookingEnd; // Booking dalam range baru
 
-    if (conflict1 || conflict2 || conflict3) {
+    // BARU: Cek konflik dengan periode cooldown
+    const cooldownConflict1 =
+      startTime >= bookingEnd && startTime < cooldownEnd; // Start time dalam cooldown
+    const cooldownConflict2 = endTime > bookingEnd && endTime <= cooldownEnd; // End time dalam cooldown
+    const cooldownConflict3 = startTime <= bookingEnd && endTime >= cooldownEnd; // Cooldown dalam range baru
+
+    const hasConflict =
+      conflict1 ||
+      conflict2 ||
+      conflict3 ||
+      cooldownConflict1 ||
+      cooldownConflict2 ||
+      cooldownConflict3;
+
+    if (hasConflict) {
+      console.log(
+        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`
+      );
+      console.log(
+        `Conflicts: Regular(${conflict1},${conflict2},${conflict3}) Cooldown(${cooldownConflict1},${cooldownConflict2},${cooldownConflict3})`
+      );
+
+      // Jika konflika dengan cooldown period, tampilkan pesan khusus
+      if (cooldownConflict1 || cooldownConflict2 || cooldownConflict3) {
+        booking.isCooldownConflict = true;
+      }
+
       return booking;
     }
   }
+
   return null;
 }
 
@@ -889,6 +1013,11 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                     <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
                                     <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" required>
                                 </div>
+                                
+                                <div class="mb-3">
+    <label for="nomor_hp_penanggung_jawab" class="form-label">Nomor HP Penanggung Jawab</label>
+    <input type="tel" class="form-control" id="nomor_hp_penanggung_jawab" name="nomor_hp_penanggung_jawab" required>
+</div>
 
                                 <div class="form-group mb-3">
                                     <label for="unit_organisasi">Unit Organisasi</label>
@@ -1320,6 +1449,40 @@ function initializeVerifikasiHandlers() {
   }
 }
 
+// TAMBAHKAN INI: Fungsi untuk memastikan waktu akhir booking (cooldown period) juga diblokir
+function isTimeInCooldownPeriod(time, bookings) {
+  if (!bookings || bookings.length === 0) {
+    return false;
+  }
+
+  return bookings.some((booking) => {
+    // Format waktu selesai dari booking
+    const bookingEnd = booking.waktu_selesai.substring(0, 5);
+    // Konversi waktu ke menit untuk perhitungan
+    const bookingEndMinutes = convertTimeToMinutes(bookingEnd);
+    const currentTimeMinutes = convertTimeToMinutes(time);
+
+    // Cek apakah waktu berada tepat di waktu selesai booking
+    // atau dalam 30 menit setelah waktu selesai (cooldown period)
+    const isEndTime = bookingEnd === time;
+
+    // Waktu berada dalam rentang 30 menit setelah waktu akhir
+    const isInCooldownPeriod =
+      currentTimeMinutes > bookingEndMinutes &&
+      currentTimeMinutes <= bookingEndMinutes + 30;
+
+    if (isEndTime || isInCooldownPeriod) {
+      console.log(
+        `Time ${time} is in COOLDOWN PERIOD after booking ending at ${bookingEnd}`
+      );
+    }
+
+    return isEndTime || isInCooldownPeriod;
+  });
+}
+
+// MODIFIKASI: Fungsi isTimeBooked untuk juga mendeteksi waktu dalam cooldown period
+// Modifikasi fungsi isTimeBooked untuk juga memblokir waktu selesai
 function isTimeBooked(time) {
   if (!existingBookings || existingBookings.length === 0) {
     return false;
@@ -1331,13 +1494,10 @@ function isTimeBooked(time) {
     const bookingEnd = booking.waktu_selesai.substring(0, 5);
     const currentTime = time.substring(0, 5);
 
-    // Debug log untuk melihat perbandingan
-    console.log(
-      `Checking time ${currentTime} against booking ${bookingStart}-${bookingEnd}`
-    );
-
-    // Cek apakah waktu berada dalam range booking (include start, exclude end)
-    const isInRange = currentTime >= bookingStart && currentTime < bookingEnd;
+    // Cek apakah waktu berada dalam range booking (include start AND include end)
+    const isInRange =
+      (currentTime >= bookingStart && currentTime < bookingEnd) ||
+      currentTime === bookingEnd; // Tambahkan pengecekan untuk waktu selesai
 
     if (isInRange) {
       console.log(
@@ -1350,26 +1510,39 @@ function isTimeBooked(time) {
 }
 
 function forceBlockTimeSlots() {
-  console.log("🔒 FORCE BLOCKING TIME SLOTS...");
+  console.log("🔒 FORCE BLOCKING TIME SLOTS & COOLDOWN PERIODS...");
 
   if (!existingBookings || existingBookings.length === 0) {
     console.log("No bookings to block");
     return;
   }
 
-  // Generate all blocked time slots
+  // Generate all blocked time slots (termasuk booking dan cooldown)
   const blockedTimes = [];
+  const cooldownTimes = [];
+
   existingBookings.forEach((booking) => {
     const start = convertTimeToMinutes(booking.waktu_mulai);
     const end = convertTimeToMinutes(booking.waktu_selesai);
 
+    // Generate normal booking slots (start hingga SEBELUM end)
     for (let minutes = start; minutes < end; minutes += 30) {
       const timeSlot = convertMinutesToTime(minutes);
       blockedTimes.push(timeSlot);
     }
+
+    // Tambahkan waktu selesai ke cooldown times
+    cooldownTimes.push(booking.waktu_selesai.substring(0, 5));
+
+    // Tambahkan 30 menit setelah waktu selesai ke cooldown times (jika ada)
+    const cooldownEnd = convertMinutesToTime(end + 30);
+    if (cooldownEnd !== booking.waktu_selesai) {
+      cooldownTimes.push(cooldownEnd);
+    }
   });
 
   console.log("Generated blocked times:", blockedTimes);
+  console.log("Generated cooldown times:", cooldownTimes);
 
   // Force apply blocking styles
   blockedTimes.forEach((time) => {
@@ -1384,7 +1557,7 @@ function forceBlockTimeSlots() {
       );
       slot.classList.add("booked");
 
-      // Method 2: Force inline styles for maximum priority
+      // Method 2: Force inline styles untuk booking
       slot.style.cssText = `
         background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;
         border: 3px solid #f44336 !important;
@@ -1396,9 +1569,9 @@ function forceBlockTimeSlots() {
         box-shadow: 0 0 15px rgba(244, 67, 54, 0.5) !important;
       `;
 
-      // Method 3: Add data attributes for extra identification
+      // Method 3: Add data attributes
       slot.dataset.blocked = "true";
-      slot.dataset.bookingStatus = getBookingForTime(time)?.status || "unknown";
+      slot.dataset.blockType = "booking";
 
       // Method 4: Add tooltip
       const booking = getBookingForTime(time);
@@ -1408,15 +1581,52 @@ function forceBlockTimeSlots() {
         slot.title = `${statusText}: ${booking.waktu_mulai}-${booking.waktu_selesai}\nKeperluan: ${booking.keperluan}\nPIC: ${booking.nama_penanggung_jawab}`;
       }
 
-      console.log(`✅ FORCE BLOCKED: ${time}`);
-    } else {
-      console.log(`❌ Slot not found: ${time}`);
+      console.log(`✅ FORCE BLOCKED BOOKING: ${time}`);
+    }
+  });
+
+  // Force apply cooldown styles
+  cooldownTimes.forEach((time) => {
+    const slot = document.querySelector(`[data-time="${time}"]`);
+    if (slot) {
+      // Update classes
+      slot.classList.remove(
+        "available",
+        "selected-start",
+        "selected-end",
+        "in-range"
+      );
+      slot.classList.add("booked");
+      slot.classList.add("cooldown-period");
+
+      // Force inline styles untuk cooldown
+      slot.style.cssText = `
+        background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 100%) !important;
+        border: 2px dashed #ffa000 !important;
+        color: #ff6f00 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        opacity: 0.9 !important;
+        font-weight: bold !important;
+        position: relative !important;
+      `;
+
+      // Add data attributes
+      slot.dataset.blocked = "true";
+      slot.dataset.blockType = "cooldown";
+
+      // Add tooltip
+      slot.title = "Periode jeda untuk persiapan ruangan (30 menit)";
+
+      console.log(`✅ FORCE BLOCKED COOLDOWN: ${time}`);
     }
   });
 
   // Verify blocking worked
   const blockedSlots = document.querySelectorAll(".time-slot.booked");
-  console.log(`🎯 Successfully blocked ${blockedSlots.length} time slots`);
+  console.log(
+    `🎯 Successfully blocked ${blockedSlots.length} time slots (including cooldown periods)`
+  );
 }
 
 document.addEventListener("DOMContentLoaded", function () {

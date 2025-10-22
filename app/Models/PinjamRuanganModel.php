@@ -21,6 +21,7 @@ class PinjamRuanganModel extends Model
         'user_id',
         'ruangan_id',
         'nama_penanggung_jawab',
+        'nomor_hp_penanggung_jawab',
         'unit_organisasi',
         'tanggal',
         'waktu_mulai',
@@ -48,6 +49,7 @@ class PinjamRuanganModel extends Model
         'user_id' => 'required',
         'ruangan_id' => 'required',
         'nama_penanggung_jawab' => 'required',
+        'nomor_hp_penanggung_jawab' => 'required|regex_match[/^[0-9]{10,15}$/]',
         'unit_organisasi' => 'required|in_list[Setjen,Itjen,Ditjen Sumber Daya Air,Ditjen Bina Marga,Ditjen Cipta Karya,Ditjen Perumahan,Ditjen Bina Konstruksi,Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan,BPIW,BPSDM,BPJT]',
         'tanggal' => 'required|valid_date',
         'waktu_mulai' => 'required',
@@ -61,6 +63,10 @@ class PinjamRuanganModel extends Model
         'unit_organisasi' => [
             'in_list' => 'Unit organisasi harus dipilih dari daftar yang tersedia'
         ],
+            'nomor_hp_penanggung_jawab' => [
+        'required' => 'Nomor HP Penanggung Jawab wajib diisi',
+        'regex_match' => 'Format Nomor HP tidak valid (10-15 digit angka)'
+    ],
         'surat_permohonan' => [
             'uploaded' => 'Surat permohonan wajib diunggah',
             'mime_in' => 'File surat permohonan harus berformat PDF',
