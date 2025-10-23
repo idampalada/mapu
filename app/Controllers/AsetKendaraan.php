@@ -1851,6 +1851,7 @@ foreach ($peminjaman as $item) {
         'is_returned' => (bool)($item['is_returned'] ?? false)  // Pastikan field ini disertakan
     ];
 }
+
         
         // Format pengembalian data
         $formattedPengembalian = [];
@@ -1899,4 +1900,5 @@ foreach ($peminjaman as $item) {
         ]);
     }
 }
+
 }

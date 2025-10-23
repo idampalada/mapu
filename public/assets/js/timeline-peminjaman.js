@@ -1,60 +1,5 @@
 // Timeline Modal Functions
 document.addEventListener("DOMContentLoaded", function () {
-  // Definisikan fungsi showPengembalianModal di scope global
-  window.showPengembalianModal = function (id) {
-    // Ambil data dari server jika dibutuhkan
-    fetch(`${BASE_URL}/AsetKendaraan/getPeminjamanData/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Isi form dengan data
-          document.getElementById("kendaraan_id_hidden").value =
-            data.data.kendaraan_id;
-          document.getElementById("nama_penanggung_jawab").value =
-            data.data.nama_penanggung_jawab || "";
-          document.getElementById("nip_nrp").value = data.data.nip_nrp || "";
-          document.getElementById("pangkat_golongan").value =
-            data.data.pangkat_golongan || "";
-          document.getElementById("jabatan").value = data.data.jabatan || "";
-          document.getElementById("unit_organisasi").value =
-            data.data.unit_organisasi || "";
-          document.getElementById("no_hp").value = data.data.no_hp || "";
-          document.getElementById("tanggal_pinjam").value =
-            data.data.tanggal_pinjam || "";
-
-          // Set tanggal kembali ke hari ini
-          const today = new Date().toISOString().split("T")[0];
-          if (document.getElementById("tanggal_kembali")) {
-            document.getElementById("tanggal_kembali").value = today;
-          }
-
-          // Tampilkan modal
-          const modal = new bootstrap.Modal(
-            document.getElementById("modalPengembalian")
-          );
-          modal.show();
-
-          // Tutup modal timeline jika terbuka
-          const timelineModal = bootstrap.Modal.getInstance(
-            document.getElementById("modalTimeline")
-          );
-          if (timelineModal) {
-            timelineModal.hide();
-          }
-        } else {
-          // Tampilkan pesan error
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: data.error || "Gagal memuat data kendaraan",
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  };
-
   // Kode original untuk modal timeline
   window.showTimelineModal = function (kendaraanId) {
     // Show the modal
@@ -142,7 +87,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Render peminjaman pending table
-  // Render peminjaman pending table
   function renderPeminjamanPendingTable(peminjaman) {
     const tableBody = document.getElementById("peminjamanPendingTable");
 
@@ -182,15 +126,16 @@ document.addEventListener("DOMContentLoaded", function () {
           statusBadge = `<span class="badge bg-secondary">${item.status}</span>`;
       }
 
-      // Tombol aksi - PENTING: menggunakan modal kembali yang sudah ada
+      // Tombol aksi - PENTING: menggunakan fungsi showModalKembalikan yang sudah didefinisikan di window
       let actionButtons = "-";
 
       if (item.status === "disetujui") {
+        // Gunakan openPengembalianModal yang sudah ada, bukan showModalKembalikan
         actionButtons = `
-                <button type="button" class="btn btn-info btn-sm" onclick="showModalKembalikan(${item.id})">
-                    <i class="bi bi-box-arrow-in-down"></i> Kembalikan
-                </button>
-            `;
+        <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
+          <i class="bi bi-box-arrow-in-down"></i> Kembalikan
+        </button>
+      `;
       }
 
       html += `
@@ -229,72 +174,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     tableBody.innerHTML = html;
-  }
-
-  // Fungsi untuk menampilkan modal kembalikan kendaraan
-  function showModalKembalikan(pinjamId) {
-    // Tutup modal timeline
-    const timelineModal = bootstrap.Modal.getInstance(
-      document.getElementById("modalTimeline")
-    );
-    if (timelineModal) {
-      timelineModal.hide();
-    }
-
-    // Ambil data peminjaman dan isi form
-    fetch(`${BASE_URL}/AsetKendaraan/getPeminjamanForKembali/${pinjamId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.error) {
-          // Tampilkan error
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: data.error,
-          });
-          return;
-        }
-
-        // Isi form dengan data yang diterima
-        document.getElementById("kendaraan_id_hidden").value =
-          data.kendaraan_id;
-        document.getElementById("nama_penanggung_jawab").value =
-          data.nama_penanggung_jawab || "";
-        document.getElementById("nip_nrp").value = data.nip_nrp || "";
-        document.getElementById("pangkat_golongan").value =
-          data.pangkat_golongan || "";
-        document.getElementById("jabatan").value = data.jabatan || "";
-        document.getElementById("unit_organisasi").value =
-          data.unit_organisasi || "";
-        document.getElementById("no_hp").value = data.no_hp || "";
-        document.getElementById("tanggal_pinjam").value =
-          data.tanggal_pinjam || "";
-
-        // Set tanggal kembali ke hari ini jika field ada
-        if (document.getElementById("tanggal_kembali")) {
-          const today = new Date().toISOString().split("T")[0];
-          document.getElementById("tanggal_kembali").value = today;
-        }
-
-        // Tampilkan modal pengembalian
-        const pengembalianModal = new bootstrap.Modal(
-          document.getElementById("modalPengembalian")
-        );
-        pengembalianModal.show();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Terjadi kesalahan saat memuat data kendaraan",
-        });
-      });
   }
 
   // Render pengembalian pending table

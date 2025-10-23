@@ -1555,7 +1555,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<style>
+    #modalPengembalian .modal-dialog {
+  max-width: 800px; /* Sesuaikan dengan kebutuhan */
+  height: 90vh;
+}
 
+#modalPengembalian .modal-content {
+  height: 100%;
+}
+
+#modalPengembalian .modal-body {
+  max-height: calc(90vh - 120px); /* Tinggi viewport dikurangi header dan footer modal */
+  overflow-y: auto;
+  padding: 20px;
+}
+</style>
 <?= $this->endSection() ?>="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
                                     <option class="text-muted" disabled selected>Sedan, Hatchback, dan SUV</option>
                                     <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
