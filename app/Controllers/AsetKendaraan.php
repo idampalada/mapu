@@ -1158,8 +1158,9 @@ public function kembali()
             'status' => KembaliModel::STATUS_PENDING,
             'keterangan' => null,
             'created_at' => date('Y-m-d H:i:s'),
-            'surat_pengembalian' => $beritaAcaraPdfName,
-            'berita_acara_pengembalian' => $beritaAcaraPdfName
+            'berita_acara_pengembalian' => $beritaAcaraPdfName,
+            'surat_pengembalian' => null
+            
         ];
 
         $result = $model->insert($data);
@@ -1755,7 +1756,7 @@ public function checkFile($filename = null)
     }
 }
 
-    public function getTimelineData($kendaraan_id = null)
+public function getTimelineData($kendaraan_id = null)
 {
     try {
         // Validate input
@@ -1765,6 +1766,26 @@ public function checkFile($filename = null)
                 'error' => 'ID Kendaraan tidak valid'
             ]);
         }
+        
+        // Dapatkan user_id yang sedang login
+        $userId = user_id();
+        
+        // Periksa apakah user adalah admin - cara yang lebih aman
+        $isAdmin = false;
+        
+        // Cek apakah user adalah admin menggunakan Auth Groups
+        $authGroupsModel = new \Myth\Auth\Models\GroupModel();
+        $userGroups = $authGroupsModel->getGroupsForUser($userId);
+        
+        foreach ($userGroups as $group) {
+            if ($group['name'] === 'admin' || $group['name'] === 'admin_gedungutama') {
+                $isAdmin = true;
+                break;
+            }
+        }
+        
+        // Log untuk debugging
+        log_message('debug', 'User ID: ' . $userId . ', isAdmin: ' . ($isAdmin ? 'true' : 'false'));
         
         // Initialize models
         $pinjamModel = new \App\Models\PinjamModel();
@@ -1784,7 +1805,7 @@ public function checkFile($filename = null)
         log_message('info', 'Fetching data for kendaraan ID: ' . $kendaraan_id);
         
         // Get all peminjaman for this specific vehicle ID only
-        $peminjaman = $pinjamModel->builder()
+        $builder = $pinjamModel->builder()
             ->select('
                 pinjam.*,
                 users.username, 
@@ -1794,13 +1815,19 @@ public function checkFile($filename = null)
             ->join('users', 'users.id = pinjam.user_id', 'left')
             ->join('assets', 'assets.id = pinjam.kendaraan_id', 'left')
             ->where('pinjam.kendaraan_id', $kendaraan_id) // Specific kendaraan_id
-            ->where('pinjam.deleted_at IS NULL')
-            ->orderBy('pinjam.created_at', 'DESC')
+            ->where('pinjam.deleted_at IS NULL');
+        
+        // Jika bukan admin, filter berdasarkan user_id
+        if (!$isAdmin) {
+            $builder->where('pinjam.user_id', $userId);
+        }
+        
+        $peminjaman = $builder->orderBy('pinjam.created_at', 'DESC')
             ->get()
             ->getResultArray();
             
         // Get all pengembalian for this specific vehicle ID only
-        $pengembalian = $kembaliModel->builder()
+        $kembaliBuilder = $kembaliModel->builder()
             ->select('
                 kembali.*,
                 users.username, 
@@ -1817,8 +1844,14 @@ public function checkFile($filename = null)
             ->join('pinjam', 'pinjam.id = kembali.pinjam_id', 'left')
             ->join('assets', 'assets.id = kembali.kendaraan_id', 'left')
             ->where('kembali.kendaraan_id', $kendaraan_id) // Specific kendaraan_id
-            ->where('kembali.deleted_at IS NULL')
-            ->orderBy('kembali.created_at', 'DESC')
+            ->where('kembali.deleted_at IS NULL');
+        
+        // Jika bukan admin, filter berdasarkan user_id
+        if (!$isAdmin) {
+            $kembaliBuilder->where('kembali.user_id', $userId);
+        }
+        
+        $pengembalian = $kembaliBuilder->orderBy('kembali.created_at', 'DESC')
             ->get()
             ->getResultArray();
         
@@ -1826,33 +1859,32 @@ public function checkFile($filename = null)
         log_message('info', 'Found ' . count($peminjaman) . ' peminjaman and ' . count($pengembalian) . ' pengembalian for kendaraan ID: ' . $kendaraan_id);
         
         // Format peminjaman data
-$formattedPeminjaman = [];
-foreach ($peminjaman as $item) {
-    $formattedPeminjaman[] = [
-        'id' => $item['id'],
-        'user_id' => $item['user_id'] ?? null,
-        'username' => $item['username'] ?? '',
-        'fullname' => $item['fullname'] ?? '',
-        'nama_penanggung_jawab' => $item['nama_penanggung_jawab'] ?? 'Tidak Ada Nama',
-        'tanggal' => $item['created_at'],
-        'tanggal_formatted' => date('d/m/Y', strtotime($item['created_at'])),
-        'tanggal_pinjam' => $item['tanggal_pinjam'],
-        'tanggal_pinjam_formatted' => date('d/m/Y', strtotime($item['tanggal_pinjam'])),
-        'tanggal_kembali' => $item['tanggal_kembali'],
-        'tanggal_kembali_formatted' => date('d/m/Y', strtotime($item['tanggal_kembali'])),
-        'status' => $item['status'] ?? 'pending',
-        'keterangan' => $item['keterangan'] ?? '',
-        'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
-        'surat_permohonan' => $item['surat_permohonan'] ?? '',
-        'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
-        'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
-        'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
-        'kendaraan_id' => $item['kendaraan_id'],
-        'is_returned' => (bool)($item['is_returned'] ?? false)  // Pastikan field ini disertakan
-    ];
-}
+        $formattedPeminjaman = [];
+        foreach ($peminjaman as $item) {
+            $formattedPeminjaman[] = [
+                'id' => $item['id'],
+                'user_id' => $item['user_id'] ?? null,
+                'username' => $item['username'] ?? '',
+                'fullname' => $item['fullname'] ?? '',
+                'nama_penanggung_jawab' => $item['nama_penanggung_jawab'] ?? 'Tidak Ada Nama',
+                'tanggal' => $item['created_at'],
+                'tanggal_formatted' => date('d/m/Y', strtotime($item['created_at'])),
+                'tanggal_pinjam' => $item['tanggal_pinjam'],
+                'tanggal_pinjam_formatted' => date('d/m/Y', strtotime($item['tanggal_pinjam'])),
+                'tanggal_kembali' => $item['tanggal_kembali'],
+                'tanggal_kembali_formatted' => date('d/m/Y', strtotime($item['tanggal_kembali'])),
+                'status' => $item['status'] ?? 'pending',
+                'keterangan' => $item['keterangan'] ?? '',
+                'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
+                'surat_permohonan' => $item['surat_permohonan'] ?? '',
+                'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
+                'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
+                'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
+                'kendaraan_id' => $item['kendaraan_id'],
+                'is_returned' => (bool)($item['is_returned'] ?? false)  // Pastikan field ini disertakan
+            ];
+        }
 
-        
         // Format pengembalian data
         $formattedPengembalian = [];
         foreach ($pengembalian as $item) {

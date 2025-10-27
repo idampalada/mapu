@@ -10,26 +10,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reset tables
     document.getElementById("peminjamanPendingTable").innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-3">Memuat data peminjaman...</p>
-                </td>
-            </tr>
-        `;
+    <tr>
+      <td colspan="9" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Memuat data peminjaman...</p>
+      </td>
+    </tr>
+  `;
 
     document.getElementById("pengembalianPendingTable").innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-3">Memuat data pengembalian...</p>
-                </td>
-            </tr>
-        `;
+    <tr>
+      <td colspan="9" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Memuat data pengembalian...</p>
+      </td>
+    </tr>
+  `;
 
     // Reset counters
     document.getElementById("peminjamanPendingCount").textContent = "0";
@@ -69,38 +69,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to render timeline data
   function renderTimelineData(data) {
-    // Gunakan semua peminjaman
+    // Gunakan peminjaman data apa adanya
     const peminjamanAll = data.peminjaman;
-    const pengembalianAll = data.pengembalian;
 
-    // Update counters
+    // Untuk pengembalian, kelompokkan berdasarkan pinjam_id
+    const pengembalianAll = data.pengembalian;
+    const groupedPengembalian = {};
+
+    pengembalianAll.forEach((item) => {
+      const pinjamId = item.pinjam_id;
+      // Simpan data terbaru (berdasarkan tanggal created_at) untuk setiap pinjam_id
+      if (
+        !groupedPengembalian[pinjamId] ||
+        new Date(item.created_at) >
+          new Date(groupedPengembalian[pinjamId].created_at)
+      ) {
+        groupedPengembalian[pinjamId] = item;
+      }
+    });
+
+    // Konversi kembali ke array untuk ditampilkan
+    const uniquePengembalian = Object.values(groupedPengembalian);
+
+    // Update badge counter
     document.getElementById("peminjamanPendingCount").textContent =
       peminjamanAll.length;
     document.getElementById("pengembalianPendingCount").textContent =
-      pengembalianAll.length;
+      uniquePengembalian.length;
 
-    // Render peminjaman table
-    renderPeminjamanPendingTable(peminjamanAll);
+    // Render peminjaman table dengan passing data pengembalian
+    renderPeminjamanPendingTable(peminjamanAll, uniquePengembalian);
 
-    // Render pengembalian table
-    renderPengembalianPendingTable(pengembalianAll);
+    // Render pengembalian table dengan data yang sudah dikelompokkan
+    renderPengembalianPendingTable(uniquePengembalian);
   }
 
   // Render peminjaman pending table
-  function renderPeminjamanPendingTable(peminjaman) {
+  function renderPeminjamanPendingTable(peminjaman, pengembalianData = []) {
     const tableBody = document.getElementById("peminjamanPendingTable");
 
     if (peminjaman.length === 0) {
       tableBody.innerHTML = `
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="text-muted">
-                        <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                        <p class="mt-2">Belum ada peminjaman</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+      <tr>
+        <td colspan="9" class="text-center py-4">
+          <div class="text-muted">
+            <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+            <p class="mt-2">Belum ada peminjaman</p>
+          </div>
+        </td>
+      </tr>
+    `;
       return;
     }
 
@@ -126,11 +144,18 @@ document.addEventListener("DOMContentLoaded", function () {
           statusBadge = `<span class="badge bg-secondary">${item.status}</span>`;
       }
 
-      // Tombol aksi - PENTING: menggunakan fungsi showModalKembalikan yang sudah didefinisikan di window
+      // PENTING: Cek apakah ada data pengembalian untuk peminjaman ini
+      // Ini untuk memeriksa apakah kendaraan sudah dalam proses pengembalian
+      const hasReturn = pengembalianData.some(
+        (returnItem) =>
+          returnItem.pinjam_id === item.id ||
+          returnItem.kendaraan_id === item.kendaraan_id
+      );
+
+      // Tombol aksi - hanya tampilkan jika status disetujui dan BELUM ada pengajuan pengembalian
       let actionButtons = "-";
 
-      if (item.status === "disetujui") {
-        // Gunakan openPengembalianModal yang sudah ada, bukan showModalKembalikan
+      if (item.status === "disetujui" && !hasReturn && !item.is_returned) {
         actionButtons = `
         <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
           <i class="bi bi-box-arrow-in-down"></i> Kembalikan
@@ -138,39 +163,61 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
       }
 
-      html += `
-            <tr>
-                <td>${item.tanggal_formatted}</td>
-                <td>${item.nama_penanggung_jawab}</td>
-                <td>${item.kendaraan_nama}</td>
-                <td>${item.urusan_kedinasan || "-"}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    ${
-                      item.surat_permohonan
-                        ? `
-                        <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-file-earmark-pdf"></i> Surat
-                        </a>
-                    `
-                        : "-"
-                    }
-                    
-                    ${
-                      item.surat_jalan_admin
-                        ? `
-                        <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
-                            <i class="bi bi-file-earmark-pdf"></i> Jalan
-                        </a>
-                    `
-                        : ""
-                    }
-                </td>
-                <td>${item.tanggal_pinjam_formatted}</td>
-                <td>${item.tanggal_kembali_formatted}</td>
-                <td>${actionButtons}</td>
-            </tr>
+      // Bagian dokumen - menggunakan kode yang sudah benar
+      let dokumenLinks = "-";
+
+      if (item.status === "pending") {
+        if (item.surat_permohonan) {
+          dokumenLinks = `
+          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf"></i> Draft Surat Izin
+          </a>
         `;
+        }
+      } else if (item.status === "disetujui") {
+        let suratIzin = "";
+        let suratJalan = "";
+
+        if (item.surat_permohonan) {
+          suratIzin = `
+          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf"></i> Surat Izin Pemakaian
+          </a>
+        `;
+        }
+
+        if (item.surat_jalan_admin) {
+          suratJalan = `
+          <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+            <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
+          </a>
+        `;
+        }
+
+        dokumenLinks = suratIzin + suratJalan;
+      } else {
+        if (item.surat_permohonan) {
+          dokumenLinks = `
+          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
+          </a>
+        `;
+        }
+      }
+
+      html += `
+      <tr>
+        <td>${item.tanggal_formatted}</td>
+        <td>${item.nama_penanggung_jawab}</td>
+        <td>${item.kendaraan_nama}</td>
+        <td>${item.urusan_kedinasan || "-"}</td>
+        <td>${statusBadge}</td>
+        <td>${dokumenLinks || "-"}</td>
+        <td>${item.tanggal_pinjam_formatted}</td>
+        <td>${item.tanggal_kembali_formatted}</td>
+        <td>${actionButtons}</td>
+      </tr>
+    `;
     });
 
     tableBody.innerHTML = html;
@@ -182,26 +229,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (pengembalian.length === 0) {
       tableBody.innerHTML = `
-                <tr>
-                    <td colspan="9" class="text-center py-4">
-                        <div class="text-muted">
-                            <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
-                            <p class="mt-2">Belum ada pengembalian</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
+      <tr>
+        <td colspan="9" class="text-center py-4">
+          <div class="text-muted">
+            <i class="bi bi-calendar-x" style="font-size: 2rem;"></i>
+            <p class="mt-2">Belum ada pengembalian</p>
+          </div>
+        </td>
+      </tr>
+    `;
       return;
     }
 
     let html = "";
 
     pengembalian.forEach((item) => {
-      // Tentukan badge status
+      // Status di tab Pengembalian
       let statusBadge = "";
       switch (item.status) {
         case "pending":
-          statusBadge = '<span class="badge bg-warning">Pending</span>';
+          statusBadge =
+            '<span class="badge bg-warning">Menunggu Verifikasi Pengembalian</span>';
           break;
         case "disetujui":
           statusBadge = '<span class="badge bg-success">Disetujui</span>';
@@ -216,39 +264,41 @@ document.addEventListener("DOMContentLoaded", function () {
           statusBadge = `<span class="badge bg-secondary">${item.status}</span>`;
       }
 
+      // Tombol aksi - tampilkan tombol kembalikan hanya jika status ditolak
+      let actionButtons = "-";
+
+      if (item.status === "ditolak") {
+        actionButtons = `
+        <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
+          <i class="bi bi-box-arrow-in-down"></i> Kembalikan
+        </button>
+      `;
+      }
+
+      // Ubah nama dokumen pengembalian
+      let dokumenLinks = "-";
+
+      if (item.berita_acara_pengembalian) {
+        dokumenLinks = `
+        <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf"></i> Berita Acara
+        </a>
+      `;
+      }
+
       html += `
-                <tr>
-                    <td>${item.tanggal_formatted}</td>
-                    <td>${item.nama_penanggung_jawab}</td>
-                    <td>${item.kendaraan_nama}</td>
-                    <td>${item.urusan_kedinasan || "-"}</td>
-                    <td>${statusBadge}</td>
-                    <td>
-                        ${
-                          item.surat_permohonan
-                            ? `
-                            <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-file-earmark-pdf"></i> Surat
-                            </a>
-                        `
-                            : "-"
-                        }
-                        
-                        ${
-                          item.surat_jalan_admin
-                            ? `
-                            <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
-                                <i class="bi bi-file-earmark-pdf"></i> Jalan
-                            </a>
-                        `
-                            : ""
-                        }
-                    </td>
-                    <td>${item.tanggal_pinjam_formatted}</td>
-                    <td>${item.tanggal_kembali_formatted}</td>
-                    <td>-</td>
-                </tr>
-            `;
+      <tr>
+        <td>${item.tanggal_formatted}</td>
+        <td>${item.nama_penanggung_jawab}</td>
+        <td>${item.kendaraan_nama}</td>
+        <td>${item.urusan_kedinasan || "-"}</td>
+        <td>${statusBadge}</td>
+        <td>${dokumenLinks}</td>
+        <td>${item.tanggal_pinjam_formatted}</td>
+        <td>${item.tanggal_kembali_formatted}</td>
+        <td>${actionButtons}</td>
+      </tr>
+    `;
     });
 
     tableBody.innerHTML = html;
