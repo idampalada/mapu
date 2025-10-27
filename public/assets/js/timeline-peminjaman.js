@@ -163,16 +163,16 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
       }
 
-      // Bagian dokumen - menggunakan kode yang sudah benar
+      // Bagian dokumen - menggunakan kode yang sudah diperbarui
       let dokumenLinks = "-";
 
       if (item.status === "pending") {
         if (item.surat_permohonan) {
           dokumenLinks = `
-          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-file-earmark-pdf"></i> Draft Surat Izin
-          </a>
-        `;
+    <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Draft Surat Izin
+    </a>
+  `;
         }
       } else if (item.status === "disetujui") {
         let suratIzin = "";
@@ -180,28 +180,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (item.surat_permohonan) {
           suratIzin = `
-          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-file-earmark-pdf"></i> Surat Izin Pemakaian
-          </a>
-        `;
+    <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Izin Pemakaian
+    </a>
+  `;
         }
 
         if (item.surat_jalan_admin) {
           suratJalan = `
-          <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
-            <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
-          </a>
-        `;
+    <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
+    </a>
+  `;
         }
 
         dokumenLinks = suratIzin + suratJalan;
+      } else if (item.status === "selesai") {
+        // Tambahkan kondisi khusus untuk status 'selesai'
+        let suratPermohonan = "";
+        let suratJalan = "";
+        let beritaAcara = "";
+
+        if (item.surat_permohonan) {
+          suratPermohonan = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
+    </a>
+    `;
+        }
+
+        if (item.surat_jalan_admin) {
+          suratJalan = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
+    </a>
+    `;
+        }
+
+        // Tambahkan berita acara jika tersedia
+        if (item.berita_acara_pengembalian) {
+          beritaAcara = `
+    <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Berita Acara Pengembalian
+    </a>
+    `;
+        }
+
+        dokumenLinks = suratPermohonan + suratJalan + beritaAcara;
       } else {
+        // Untuk status lainnya
         if (item.surat_permohonan) {
           dokumenLinks = `
-          <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
-          </a>
-        `;
+    <a href="${BASE_URL}/uploads/documents/${item.surat_permohonan}" target="_blank" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
+    </a>
+    `;
         }
       }
 
@@ -275,15 +308,49 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
       }
 
-      // Ubah nama dokumen pengembalian
+      // Dokumen links untuk tab pengembalian
       let dokumenLinks = "-";
 
-      if (item.berita_acara_pengembalian) {
-        dokumenLinks = `
-        <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-file-earmark-pdf"></i> Berita Acara
-        </a>
-      `;
+      if (item.status === "selesai") {
+        // Untuk status selesai, tampilkan semua dokumen
+        let suratPengembalian = "";
+        let beritaAcara = "";
+        let suratJalanAdmin = "";
+
+        if (item.surat_pengembalian) {
+          suratPengembalian = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Pengembalian
+    </a>
+    `;
+        }
+
+        if (item.berita_acara_pengembalian) {
+          beritaAcara = `
+    <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Berita Acara
+    </a>
+    `;
+        }
+
+        if (item.surat_jalan_admin) {
+          suratJalanAdmin = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_jalan_admin}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Jalan Admin
+    </a>
+    `;
+        }
+
+        dokumenLinks = suratPengembalian + beritaAcara + suratJalanAdmin;
+      } else {
+        // Untuk status lainnya, tampilkan seperti sebelumnya
+        if (item.berita_acara_pengembalian) {
+          dokumenLinks = `
+    <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-file-earmark-pdf"></i> Berita Acara
+    </a>
+    `;
+        }
       }
 
       html += `
