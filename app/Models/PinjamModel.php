@@ -41,7 +41,11 @@ protected $allowedFields = [
     'keterangan',
     'created_at',
     'updated_at',
-    'deleted_at'
+    'deleted_at',
+    'nama_penanggung_jawab_kendaraan',
+    'nip_penanggung_jawab_kendaraan',
+    'nama_kepala_satuan_kerja',
+    'nip_kepala_satuan_kerja'
 ];
 
     protected $useTimestamps = true;

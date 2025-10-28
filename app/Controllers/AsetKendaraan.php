@@ -766,6 +766,12 @@ public function pinjam()
     $tanggal_pinjam = $this->request->getPost('tanggal_pinjam');
     $tanggal_kembali = $this->request->getPost('tanggal_kembali');
     $urusan_kedinasan = $this->request->getPost('urusan_kedinasan');
+
+    
+    $nama_penanggung_jawab_kendaraan = $this->request->getPost('nama_penanggung_jawab_kendaraan');
+    $nip_penanggung_jawab_kendaraan = $this->request->getPost('nip_penanggung_jawab_kendaraan');
+    $nama_kepala_satuan_kerja = $this->request->getPost('nama_kepala_satuan_kerja');
+    $nip_kepala_satuan_kerja = $this->request->getPost('nip_kepala_satuan_kerja');
     
     $validationRules = [
         'nama_penanggung_jawab' => 'required',
@@ -844,7 +850,7 @@ public function pinjam()
         }
         
         // Buat data yang akan dikirim ke template PDF
-        $pdfData = [
+                $pdfData = [
             'nama_penanggung_jawab' => $nama_penanggung_jawab,
             'nip_nrp' => $nip_nrp,
             'no_ktp' => $no_ktp,
@@ -867,17 +873,14 @@ public function pinjam()
             'kode_barang' => $asset['kode_barang'],
             'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
             'tanggal_pengajuan' => date('Y-m-d'),
-            // Tambahkan data penanggung jawab kendaraan dan kepala satuan kerja
-            'nama_penanggung_jawab_kendaraan' => 'Pak Solihin',
-            'nip_penanggung_jawab_kendaraan' => '123123',
-            'nama_kepala_satuan_kerja' => 'Pak Udin',
-            'nip_kepala_satuan_kerja' => '12345678'
+    'nama_kepala_satuan_kerja' => '',
+    'nip_kepala_satuan_kerja' => ''
         ];
         
         // Generate surat permohonan PDF
         $suratPermohonanName = $this->generateSuratPermohonan($pdfData);
         
-        $data = [
+                $data = [
             'user_id' => $userId,
             'nama_penanggung_jawab' => $nama_penanggung_jawab,
             'nip_nrp' => $nip_nrp,
@@ -893,12 +896,17 @@ public function pinjam()
             'tanggal_kembali' => $tanggal_kembali,
             'urusan_kedinasan' => $urusan_kedinasan,
             'kode_barang' => $asset['kode_barang'],
-            'surat_permohonan' => $suratPermohonanName, // Gunakan nama file PDF yang digenerate
+            'surat_permohonan' => $suratPermohonanName,
             'surat_jalan_admin' => null,
             'status' => PinjamModel::STATUS_PENDING,
             'is_returned' => false,
             'keterangan' => null,
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            // Simpan juga data penanda tangan ke database (opsional, jika ingin menyimpannya)
+    'nama_penanggung_jawab_kendaraan' => '', // Simpan nilai kosong
+    'nip_penanggung_jawab_kendaraan' => '', 
+    'nama_kepala_satuan_kerja' => '',
+    'nip_kepala_satuan_kerja' => ''
         ];
 
         $model->insert($data);
@@ -1567,6 +1575,10 @@ public function updateSurat()
     $tanggalSurat = $this->request->getPost('tanggal_surat');
     $tempatSurat = $this->request->getPost('tempat_surat');
     
+    // Hanya ambil data untuk Kepala Satuan Kerja
+    $namaKepalaSatuanKerja = $this->request->getPost('nama_kepala_satuan_kerja');
+    $nipKepalaSatuanKerja = $this->request->getPost('nip_kepala_satuan_kerja');
+    
     $model = new PinjamModel();
     $asetModel = new AsetModel();
     
@@ -1628,10 +1640,9 @@ public function updateSurat()
         'kode_barang' => $asset['kode_barang'],
         'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
         'tanggal_pengajuan' => date('Y-m-d'),
-        'nama_penanggung_jawab_kendaraan' => 'Pak Solihin',
-        'nip_penanggung_jawab_kendaraan' => '123123',
-        'nama_kepala_satuan_kerja' => 'Pak Udin',
-        'nip_kepala_satuan_kerja' => '12345678',
+        // Data kepala satuan kerja dari input admin
+        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja,
         // Data tambahan
         'nomor_surat' => $nomorSurat,
         'tanggal_surat' => $tanggalSurat,
@@ -1651,7 +1662,9 @@ public function updateSurat()
     
     // Update data peminjaman
     $model->update($pinjamId, [
-        'surat_permohonan' => $suratPermohonanName
+        'surat_permohonan' => $suratPermohonanName,
+        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
     ]);
     
     // Kembalikan response JSON untuk ditangani oleh JavaScript
@@ -1660,6 +1673,157 @@ public function updateSurat()
         'message' => 'Surat permohonan berhasil diperbarui',
         'file_name' => $suratPermohonanName
     ]);
+}
+public function generateSuratPenanggungJawabKdf()
+{
+           log_message('debug', '==== generateSuratPenanggungJawabKdf DIPANGGIL ====');
+       log_message('debug', 'POST DATA: ' . json_encode($this->request->getPost()));
+    $pinjamId = $this->request->getPost('pinjam_id');
+    $nomorSurat = $this->request->getPost('nomor_surat');
+    $tanggalSurat = $this->request->getPost('tanggal_surat');
+    $tempatSurat = $this->request->getPost('tempat_surat');
+    
+    // Data untuk kedua penandatangan
+    $namaPenanggungJawabKendaraan = $this->request->getPost('nama_penanggung_jawab_kendaraan');
+    $nipPenanggungJawabKendaraan = $this->request->getPost('nip_penanggung_jawab_kendaraan');
+    $namaKepalaSatuanKerja = $this->request->getPost('nama_kepala_satuan_kerja');
+    $nipKepalaSatuanKerja = $this->request->getPost('nip_kepala_satuan_kerja');
+    
+    $model = new PinjamModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data peminjaman
+    $pinjam = $model->find($pinjamId);
+    if (!$pinjam) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data peminjaman tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data kendaraan
+    $asset = $asetModel->find($pinjam['kendaraan_id']);
+    if (!$asset) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data kendaraan tidak ditemukan'
+        ]);
+    }
+    
+    // Konversi kategori_id ke jenis kendaraan
+    $jenisKendaraan = "Tidak Diketahui";
+    switch($asset['kategori_id']) {
+        case "KDJ":
+            $jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
+            break;
+        case "KDO":
+            $jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
+            break;
+        case "KDF":
+            $jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
+            break;
+        default:
+            $jenisKendaraan = $asset['kategori_id'] ?? "Tidak Diketahui";
+    }
+    
+    // Data untuk PDF surat penanggung jawab
+    $pdfData = [
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+        'nip_nrp' => $pinjam['nip_nrp'],
+        'no_ktp' => $pinjam['no_ktp'] ?? '-',
+        'alamat_rumah' => $pinjam['alamat_rumah'] ?? '-',
+        'pangkat_golongan' => $pinjam['pangkat_golongan'],
+        'jabatan' => $pinjam['jabatan'],
+        'unit_organisasi' => $pinjam['unit_organisasi'],
+        'jenis_kendaraan' => $jenisKendaraan,
+        'merk' => $asset['merk'],
+        'no_polisi' => $asset['no_polisi'],
+        'warna' => $asset['warna'] ?? '-',
+        'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+        'no_rangka' => $asset['no_rangka'] ?? '-',
+        'nup' => $asset['nup'] ?? '-',
+        'kode_barang' => $asset['kode_barang'],
+        'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+        // Data penomoran surat
+        'nomor_surat' => $nomorSurat,
+        'tanggal_surat' => $tanggalSurat,
+        'tempat_surat' => $tempatSurat,
+        // Data kepala satuan kerja
+        'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
+        'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
+        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja,
+    ];
+    
+    // Hapus file surat lama jika ada
+    if (!empty($pinjam['surat_penanggung_jawab'])) {
+        $oldPath = ROOTPATH . 'public/uploads/documents/' . $pinjam['surat_penanggung_jawab'];
+        if (file_exists($oldPath)) {
+            @unlink($oldPath);
+        }
+    }
+    
+    // Generate surat penanggung jawab PDF
+    $suratName = $this->generateSuratPenanggungJawab($pdfData);
+    
+    // Update data peminjaman
+    $model->update($pinjamId, [
+        'surat_penanggung_jawab' => $suratName,
+        'nomor_surat' => $nomorSurat,
+        'tanggal_surat' => $tanggalSurat,
+        'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
+        'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
+        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
+    ]);
+    
+    // Kembalikan response
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => 'Surat penanggung jawab berhasil dibuat',
+        'file_name' => $suratName
+    ]);
+}
+
+// Method untuk generate PDF surat penanggung jawab
+private function generateSuratPenanggungJawab($data)
+{
+    // Setup DOMPDF
+    helper('dompdf');
+    
+    $options = new \Dompdf\Options();
+    $options->set('isHtml5ParserEnabled', true);
+    $options->set('isPhpEnabled', true);
+    
+    $dompdf = new \Dompdf\Dompdf($options);
+    
+    // HTML template surat penanggung jawab
+    $html = view('templates/surat_penanggung_jawab', $data);
+    
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+    
+    // Simpan PDF
+    $output = $dompdf->output();
+    
+    $timestamp = time();
+    $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
+    $fileName = "surat_penanggung_jawab_{$timestamp}_{$cleanName}.pdf";
+    
+    $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
+    
+    // Pastikan direktori ada
+    $dir = ROOTPATH . 'public/uploads/documents/';
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
+    
+    // Simpan file
+    file_put_contents($filePath, $output);
+    @chmod($filePath, 0644);
+    
+    return $fileName;
 }
 
 // Perbarui method generateSuratPermohonan

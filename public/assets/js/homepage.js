@@ -1235,6 +1235,10 @@ function showEditSuratModal(pinjamId) {
   const today = new Date().toISOString().split("T")[0];
   $("#tanggal_surat").val(today);
 
+  // Nilai default untuk kepala satuan kerja
+  $("#nama_kepala_satuan_kerja").val(""); // Kosong untuk diisi user
+  $("#nip_kepala_satuan_kerja").val("");
+
   // Tampilkan modal
   const modal = new bootstrap.Modal(document.getElementById("modalEditSurat"));
   modal.show();
@@ -1324,53 +1328,325 @@ $(document).ready(function () {
 });
 
 // Function untuk menampilkan modal setuju
+// Function untuk menampilkan modal setuju dengan dual tab dan checkbox
 function showSetujuModal(pinjamId) {
-  // Cek apakah form masih ada setelah modifikasi
-  const form = document.getElementById("formBuatOtomatis");
-  if (form) {
-    form.reset(); // Reset form jika elemen ditemukan
-  }
+  // Reset form
+  $(".surat-penanggung-field, .surat-jalan-field").removeClass("is-invalid");
+  $("#buatSuratPenanggungJawab, #buatSuratJalan").prop("checked", true);
 
-  // Set pinjam id
-  document.getElementById("pinjamId").value = pinjamId;
+  // Set ID peminjaman
+  $("#pinjamId, #pinjamId2").val(pinjamId);
+
+  // Reset field data penandatangan (biarkan kosong)
+  $("#nama_penanggung_jawab_kendaraan, #nip_penanggung_jawab_kendaraan").val(
+    ""
+  );
+  $("#nama_kepala_satuan_kerja, #nip_kepala_satuan_kerja").val("");
+
+  // Set tanggal hari ini sebagai default
+  const today = new Date().toISOString().split("T")[0];
+  $("#tanggal_surat").val(today);
+  $("#tanggal_mulai").val(today);
+  $("#tanggal_selesai").val(today);
+
+  // Set jam default
+  $("#jam_mulai").val("08:00");
+  $("#jam_selesai").val("17:00");
 
   // Ambil data peminjaman
   $.ajax({
-    url: "/admin/AsetKendaraan/getPeminjamanData",
+    url: "/AsetKendaraan/getPeminjamanData",
     type: "POST",
     data: { pinjam_id: pinjamId },
     dataType: "json",
     success: function (data) {
       if (data.success) {
-        // Isi form dengan data
+        // Isi data peminjam di tab 1
         $("#nama_penanggung_jawab").val(data.pinjam.nama_penanggung_jawab);
         $("#nip_nrp").val(data.pinjam.nip_nrp);
         $("#pangkat_golongan").val(data.pinjam.pangkat_golongan);
         $("#jabatan").val(data.pinjam.jabatan);
         $("#kode_barang").val(data.pinjam.kode_barang);
         $("#no_polisi").val(data.asset.no_polisi);
-        $("#tanggal_mulai").val(data.pinjam.tanggal_pinjam);
-        $("#tanggal_selesai").val(data.pinjam.tanggal_kembali);
-        $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan);
 
-        // Set jam default
-        $("#jam_mulai").val("08:00");
-        $("#jam_selesai").val("17:00");
+        // Isi data peminjam di tab 2
+        $("#nama_penanggung_jawab2").val(data.pinjam.nama_penanggung_jawab);
+        $("#nip_nrp2").val(data.pinjam.nip_nrp);
+        $("#pangkat_golongan2").val(data.pinjam.pangkat_golongan);
+        $("#jabatan2").val(data.pinjam.jabatan);
+        $("#kode_barang2").val(data.pinjam.kode_barang);
+        $("#no_polisi2").val(data.asset.no_polisi);
+
+        // Isi tanggal dan data lainnya
+        $("#tanggal_mulai").val(
+          data.pinjam.tanggal_pinjam
+            ? data.pinjam.tanggal_pinjam.split("T")[0]
+            : today
+        );
+        $("#tanggal_selesai").val(
+          data.pinjam.tanggal_kembali
+            ? data.pinjam.tanggal_kembali.split("T")[0]
+            : today
+        );
+        $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan || "");
 
         // Tampilkan modal
-        const modalElement = document.getElementById("modalSetuju");
-        if (modalElement) {
-          const modal = new bootstrap.Modal(modalElement);
-          modal.show();
-        } else {
-          console.error("Modal with ID modalSetuju not found");
-        }
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalSetuju")
+        );
+        modal.show();
       } else {
-        alert(data.error || "Gagal mengambil data peminjaman");
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: data.error || "Gagal mengambil data peminjaman",
+          confirmButtonText: "Tutup",
+          confirmButtonColor: "#dc3545",
+        });
       }
     },
     error: function () {
-      alert("Terjadi kesalahan saat mengambil data peminjaman");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat mengambil data peminjaman",
+        confirmButtonText: "Tutup",
+        confirmButtonColor: "#dc3545",
+      });
     },
   });
 }
+
+// Event handler untuk tombol submit utama
+$(document).ready(function () {
+  // Menangani submit utama
+  $("#btnSubmitAll").on("click", function () {
+    const buatSuratPenanggungJawab = $("#buatSuratPenanggungJawab").is(
+      ":checked"
+    );
+    const buatSuratJalan = $("#buatSuratJalan").is(":checked");
+
+    // Validasi minimal satu jenis surat dipilih
+    if (!buatSuratPenanggungJawab && !buatSuratJalan) {
+      Swal.fire({
+        icon: "warning",
+        title: "Perhatian",
+        text: "Pilih minimal satu jenis surat yang akan dibuat",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#198754",
+      });
+      return;
+    }
+
+    // Validasi field yang diperlukan untuk surat yang dipilih
+    let isValid = true;
+
+    if (buatSuratPenanggungJawab) {
+      // Reset validasi terlebih dahulu
+      $(".surat-penanggung-field").removeClass("is-invalid");
+
+      // Cek field-field penting
+      const fields = [
+        { id: "nomor_surat", name: "Nomor Surat" },
+        { id: "tanggal_surat", name: "Tanggal Surat" },
+        { id: "tempat_surat", name: "Tempat Surat" },
+        {
+          id: "nama_penanggung_jawab_kendaraan",
+          name: "Nama Penanggung Jawab Kendaraan",
+        },
+        {
+          id: "nip_penanggung_jawab_kendaraan",
+          name: "NIP Penanggung Jawab Kendaraan",
+        },
+        { id: "nama_kepala_satuan_kerja", name: "Nama Kepala Satuan Kerja" },
+        { id: "nip_kepala_satuan_kerja", name: "NIP Kepala Satuan Kerja" },
+      ];
+
+      let missingFields = [];
+      fields.forEach((field) => {
+        const value = $("#" + field.id).val();
+        if (!value || value.trim() === "") {
+          $("#" + field.id).addClass("is-invalid");
+          missingFields.push(field.name);
+        }
+      });
+
+      if (missingFields.length > 0) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Lengkapi semua field untuk Surat Penanggung Jawab KDF",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#dc3545",
+        });
+        isValid = false;
+        return;
+      }
+    }
+
+    if (buatSuratJalan) {
+      // Reset validasi terlebih dahulu
+      $(".surat-jalan-field").removeClass("is-invalid");
+
+      // Cek field-field penting
+      const fields = [
+        { id: "tanggal_mulai", name: "Tanggal Mulai" },
+        { id: "jam_mulai", name: "Jam Mulai" },
+        { id: "tanggal_selesai", name: "Tanggal Selesai" },
+        { id: "jam_selesai", name: "Jam Selesai" },
+        { id: "urusan_kedinasan", name: "Urusan Kedinasan" },
+      ];
+
+      let missingFields = [];
+      fields.forEach((field) => {
+        const value = $("#" + field.id).val();
+        if (!value || value.trim() === "") {
+          $("#" + field.id).addClass("is-invalid");
+          missingFields.push(field.name);
+        }
+      });
+
+      if (missingFields.length > 0) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Lengkapi semua field untuk Surat Jalan",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#dc3545",
+        });
+        isValid = false;
+        return;
+      }
+    }
+
+    if (!isValid) {
+      return;
+    }
+
+    // Tampilkan loading
+    Swal.fire({
+      title: "Mohon Tunggu",
+      text: "Sedang memproses data...",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Buat array promises untuk menyimpan semua AJAX request
+    const promises = [];
+    const pinjamId = $("#pinjamId").val();
+
+    // Proses Surat Penanggung Jawab jika dipilih
+    if (buatSuratPenanggungJawab) {
+      const suratPenanggungData = new FormData();
+      suratPenanggungData.append("pinjam_id", pinjamId);
+      suratPenanggungData.append("nomor_surat", $("#nomor_surat").val());
+      suratPenanggungData.append("tanggal_surat", $("#tanggal_surat").val());
+      suratPenanggungData.append("tempat_surat", $("#tempat_surat").val());
+      suratPenanggungData.append(
+        "nama_penanggung_jawab_kendaraan",
+        $("#nama_penanggung_jawab_kendaraan").val()
+      );
+      suratPenanggungData.append(
+        "nip_penanggung_jawab_kendaraan",
+        $("#nip_penanggung_jawab_kendaraan").val()
+      );
+      suratPenanggungData.append(
+        "nama_kepala_satuan_kerja",
+        $("#nama_kepala_satuan_kerja").val()
+      );
+      suratPenanggungData.append(
+        "nip_kepala_satuan_kerja",
+        $("#nip_kepala_satuan_kerja").val()
+      );
+
+      const suratPenanggungPromise = $.ajax({
+        url: "/AsetKendaraan/generateSuratPenanggungJawabKdf",
+        type: "POST",
+        data: suratPenanggungData,
+        processData: false,
+        contentType: false,
+      });
+
+      promises.push(suratPenanggungPromise);
+    }
+
+    // Proses Surat Jalan jika dipilih
+    if (buatSuratJalan) {
+      const suratJalanData = new FormData();
+      suratJalanData.append("pinjam_id", pinjamId);
+      suratJalanData.append("tanggal_mulai", $("#tanggal_mulai").val());
+      suratJalanData.append("tanggal_selesai", $("#tanggal_selesai").val());
+      suratJalanData.append("jam_mulai", $("#jam_mulai").val());
+      suratJalanData.append("jam_selesai", $("#jam_selesai").val());
+      suratJalanData.append("urusan_kedinasan", $("#urusan_kedinasan").val());
+
+      const suratJalanPromise = $.ajax({
+        url: "/AsetKendaraan/generateSuratJalan",
+        type: "POST",
+        data: suratJalanData,
+        processData: false,
+        contentType: false,
+      });
+
+      promises.push(suratJalanPromise);
+    }
+
+    // Tunggu semua promises selesai
+    Promise.all(promises)
+      .then((responses) => {
+        // Cek apakah semua responses success
+        let allSuccess = true;
+        let errorMessage = "";
+
+        for (const response of responses) {
+          if (!response.success) {
+            allSuccess = false;
+            errorMessage += (response.error || "Terjadi kesalahan") + "\n";
+          }
+        }
+
+        if (allSuccess) {
+          Swal.fire({
+            icon: "success",
+            title: "Berhasil!",
+            text: "Dokumen berhasil dibuat",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#198754",
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal!",
+            text: "Terjadi kesalahan: " + errorMessage,
+            confirmButtonText: "Tutup",
+            confirmButtonColor: "#dc3545",
+          });
+        }
+      })
+      .catch((error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Terjadi kesalahan saat memproses data",
+          confirmButtonText: "Tutup",
+          confirmButtonColor: "#dc3545",
+        });
+      });
+  });
+
+  // Toggle required attribute berdasarkan checkbox
+  $("#buatSuratPenanggungJawab").on("change", function () {
+    const isChecked = $(this).is(":checked");
+    $(".surat-penanggung-field").prop("required", isChecked);
+  });
+
+  $("#buatSuratJalan").on("change", function () {
+    const isChecked = $(this).is(":checked");
+    $(".surat-jalan-field").prop("required", isChecked);
+  });
+});

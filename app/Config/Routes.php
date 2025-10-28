@@ -1440,9 +1440,13 @@ $routes->get('AsetKendaraan/checkFile', 'AsetKendaraan::checkFile');
 // Route untuk generate surat jalan
 $routes->post('/SuratJalan/generate', 'SuratJalanController::generate', ['filter' => 'auth:admin,admin_gedungutama']);
 
-// Route untuk mendapatkan data peminjaman
-$routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'auth:admin,admin_gedungutama']);
+// Route untuk generate surat penanggung jawab KDF
+// Route untuk generate surat penanggung jawab KDF
+$routes->post('/AsetKendaraan/generateSuratPenanggungJawabKdf', 'AsetKendaraan::generateSuratPenanggungJawabKdf', ['filter' => 'role:admin,admin_gedungutama']);
 
+// Route untuk mendapatkan data peminjaman
+// Route untuk mendapatkan data peminjaman
+   $routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'role:admin,admin_gedungutama']);
 
 //Route Untuk TIMELINE PEMINJAMAN
 $routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');

@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SURAT IZIN PEMAKAIAN KENDARAAN DINAS</title>
+    <title>SURAT PENANGGUNG JAWAB KENDARAAN DINAS FUNGSIONAL</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12pt;
+            font-size: 11pt;
             line-height: 1.5;
             margin: 20px;
         }
+        h1, h2, h3 {
+            text-align: center;
+            margin: 5px 0;
+        }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h2 {
-            margin-bottom: 5px;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
         .content {
             margin-bottom: 20px;
         }
-        table.data {
+        table {
             width: 100%;
-            border-collapse: collapse;
+            margin: 10px 0;
         }
-        table.data td {
-            padding: 5px;
+        table td {
+            padding: 3px;
             vertical-align: top;
         }
-        table.data td:first-child {
+        table td:first-child {
             width: 200px;
         }
-        .footer {
-            margin-top: 40px;
+        .ketentuan {
+            margin-bottom: 20px;
+        }
+        .ketentuan ol {
+            margin-top: 5px;
+            padding-left: 25px;
+        }
+        .signature-section {
+            margin-top: 50px;
             page-break-inside: avoid;
         }
         .signature-date {
@@ -39,49 +49,44 @@
             margin-bottom: 30px;
         }
         .signature-container {
+            display: flex;
             width: 100%;
-            display: table;
         }
-        .signature-left {
+        .signature-left, .signature-right {
             width: 50%;
-            display: table-cell;
             text-align: center;
-            vertical-align: top;
-        }
-        .signature-right {
-            width: 50%;
-            display: table-cell;
-            text-align: center;
-            vertical-align: top;
         }
         .signature-name {
             text-decoration: underline;
             margin-top: 60px;
             font-weight: bold;
         }
-        .clear {
-            clear: both;
+        .footer {
+            margin-top: 30px;
+            font-size: 10pt;
+        }
+        .footer p {
+            margin: 3px 0;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h2>SURAT IZIN PEMAKAIAN KENDARAAN DINAS</h2>
+        <h2>SURAT PENANGGUNG JAWAB KENDARAAN DINAS FUNGSIONAL</h2>
         <h3>KEMENTERIAN PEKERJAAN UMUM DAN PERUMAHAN RAKYAT</h3>
         <p>NOMOR: <?= isset($nomor_surat) ? $nomor_surat : '................................................' ?></p>
     </div>
     
     <div class="content">
-        <p>Dalam rangka penggunaan Kendaraan Dinas pada Satuan Kerja 
-        <?= $unit_organisasi ?> Kementerian PUPR, dengan ini:</p>
+        <p>Dalam rangka penggunaan Kendaraan Dinas Fungsional pada Satuan Kerja <?= $unit_organisasi ?> Kementerian PUPR, dengan ini:</p>
         
-        <table class="data">
+        <table>
             <tr>
                 <td>Nama</td>
                 <td>: <?= $nama_penanggung_jawab ?></td>
             </tr>
             <tr>
-                <td>NIP</td>
+                <td>NIP/NRP</td>
                 <td>: <?= $nip_nrp ?></td>
             </tr>
             <tr>
@@ -98,19 +103,19 @@
             </tr>
             <tr>
                 <td>No. Telp Rumah/HP</td>
-                <td>: <?= $no_hp ?></td>
+                <td>: <?= isset($no_hp) ? $no_hp : '-' ?></td>
             </tr>
             <tr>
                 <td>No. KTP</td>
-                <td>: <?= $no_ktp ?></td>
+                <td>: <?= isset($no_ktp) ? $no_ktp : '-' ?></td>
             </tr>
         </table>
         
-        <p style="text-align: center; margin: 20px 0;">DIIZINKAN</p>
+        <p style="text-align: center; font-weight: bold;">BERTANGGUNG JAWAB</p>
         
-        <p>untuk memakai dan menyimpan di rumah, 1 (satu) unit Kendaraan Dinas yaitu:</p>
+        <p>terhadap 1 (satu) unit Kendaraan Dinas Fungsional yaitu:</p>
         
-        <table class="data">
+        <table>
             <tr>
                 <td>Jenis Kendaraan</td>
                 <td>: <?= $jenis_kendaraan ?></td>
@@ -145,32 +150,43 @@
             </tr>
         </table>
         
-        <p>Dengan ketentuan:</p>
-        <ol>
-            <li>Izin bersifat sementara dan akan disesuaikan dengan kebutuhan dinas dan penugasan pejabat yang bersangkutan;</li>
-            <li>Pemakai bertanggung jawab atas kehilangan bersedia dikenakan Tuntutan Ganti Rugi sesuai dengan ketentuan peraturan perundang-undangan;</li>
-            <li>Kendaraan Dinas hanya untuk keperluan dinas/tugas, dan tidak diperkenankan digunakan untuk keperluan pribadi atau dipindahtangankan.</li>
-        </ol>
+        <div class="ketentuan">
+            <p>Dengan ketentuan:</p>
+            <ol>
+                <li>Kendaraan Dinas hanya untuk keperluan dinas/tugas, dan tidak diperkenankan untuk keperluan pribadi/keluarga;</li>
+                <li>Pemakaian Kendaraan Dinas berdasarkan Surat Jalan Kendaraan Dinas Fungsional yang ditandatangani penanggung jawab kendaraan dinas;</li>
+                <li>Surat Penanggung Jawab ini berlaku selama 2 (dua) tahun sejak ditandatanganinya surat ini;</li>
+                <li>Pemegang Surat Penanggung Jawab yang telah memasuki masa pensiun maka Surat Penanggung Jawab ini dinyatakan tidak berlaku lagi dan berkewajiban untuk mengembalikan kendaraan dinas;</li>
+                <li>Pemegang Surat Penanggung Jawab yang di mutasi / alih tugas ke satuan kerja lain maka Surat Penanggung Jawab ini dinyatakan tidak berlaku lagi dan berkewajiban untuk mengembalikan kendaraan dinas.</li>
+            </ol>
+        </div>
     </div>
     
-    <div class="footer">
-        <!-- Tanggal di atas footer, di kanan -->
+    <div class="signature-section">
         <div class="signature-date">
             <?= isset($tempat_surat) && isset($tanggal_surat) ? $tempat_surat . ', ' . date('d F Y', strtotime($tanggal_surat)) : '..............., ............................' ?>
         </div>
         
         <div class="signature-container">
     <div class="signature-left">
-        <p>Pemakai Kendaraan Dinas</p>
-        <p class="signature-name"><?= $nama_penanggung_jawab ?></p>
-        <p>NIP: <?= $nip_nrp ?></p>
+        <p>Penanggung Jawab<br>Kendaraan Dinas Fungsional</p>
+        <p class="signature-name"><?= $nama_penanggung_jawab_kendaraan ?></p>
+        <p>NIP: <?= $nip_penanggung_jawab_kendaraan ?></p>
     </div>
     <div class="signature-right">
         <p>Kepala Satuan Kerja<br>Selaku Kuasa Pengguna Barang</p>
-        <p class="signature-name"><?= isset($nama_kepala_satuan_kerja) && !empty($nama_kepala_satuan_kerja) ? $nama_kepala_satuan_kerja : '...................................' ?></p>
-        <p>NIP: <?= isset($nip_kepala_satuan_kerja) && !empty($nip_kepala_satuan_kerja) ? $nip_kepala_satuan_kerja : '...................................' ?></p>
+        <p class="signature-name"><?= $nama_kepala_satuan_kerja ?></p>
+        <p>NIP: <?= $nip_kepala_satuan_kerja ?></p>
     </div>
 </div>
+    </div>
+    
+    <div class="footer">
+        <p>Dibuat dalam rangkap 4, yaitu:</p>
+        <p>Lembar 1 untuk Satuan Kerja yang bersangkutan;</p>
+        <p>Lembar 2 untuk Pemegang Kendaraan Dinas Fungsional;</p>
+        <p>Lembar 3 untuk Bagian BMN Unit Oganisasi terkait;</p>
+        <p>Lembar 4 untuk Biro Pengelolaan BMN Kementerian PUPR;</p>
     </div>
 </body>
 </html>
