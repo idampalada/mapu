@@ -1,4 +1,4 @@
-// Timeline Modal Functions
+// Timeline Modal Functions - PERBAIKAN TOMBOL KEMBALIKAN
 document.addEventListener("DOMContentLoaded", function () {
   // Kode original untuk modal timeline
   window.showTimelineModal = function (kendaraanId) {
@@ -144,18 +144,12 @@ document.addEventListener("DOMContentLoaded", function () {
           statusBadge = `<span class="badge bg-secondary">${item.status}</span>`;
       }
 
-      // PENTING: Cek apakah ada data pengembalian untuk peminjaman ini
-      // Ini untuk memeriksa apakah kendaraan sudah dalam proses pengembalian
-      const hasReturn = pengembalianData.some(
-        (returnItem) =>
-          returnItem.pinjam_id === item.id ||
-          returnItem.kendaraan_id === item.kendaraan_id
-      );
-
-      // Tombol aksi - hanya tampilkan jika status disetujui dan BELUM ada pengajuan pengembalian
+      // PERBAIKAN: Selalu tampilkan tombol kembalikan pada status disetujui
       let actionButtons = "-";
 
-      if (item.status === "disetujui" && !hasReturn && !item.is_returned) {
+      // PERBAIKAN: Tanpa mengevaluasi hasReturn dan is_returned
+      // Cukup cek status
+      if (item.status === "disetujui") {
         actionButtons = `
         <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
           <i class="bi bi-box-arrow-in-down"></i> Kembalikan
@@ -302,10 +296,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (item.status === "ditolak") {
         actionButtons = `
-        <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
-          <i class="bi bi-box-arrow-in-down"></i> Kembalikan
-        </button>
-      `;
+  <button type="button" class="btn btn-info btn-sm" onclick="openPengembalianModal(${item.kendaraan_id})">
+    <i class="bi bi-box-arrow-in-down"></i> Kembalikan
+  </button>
+`;
       }
 
       // Dokumen links untuk tab pengembalian

@@ -777,7 +777,7 @@
     <!-- Tambah tombol edit surat -->
     <button class="btn btn-sm btn-info"
         onclick="showEditSuratModal(<?= $pinjam['id'] ?>)">
-        Edit Surat
+        Penomoran Surat
     </button>
 </td>
                                                         </td>
