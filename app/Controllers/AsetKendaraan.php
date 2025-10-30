@@ -1676,8 +1676,9 @@ public function updateSurat()
 }
 public function generateSuratPenanggungJawabKdf()
 {
-           log_message('debug', '==== generateSuratPenanggungJawabKdf DIPANGGIL ====');
-       log_message('debug', 'POST DATA: ' . json_encode($this->request->getPost()));
+    log_message('debug', '==== generateSuratPenanggungJawabKdf DIPANGGIL ====');
+    log_message('debug', 'POST DATA: ' . json_encode($this->request->getPost()));
+    
     $pinjamId = $this->request->getPost('pinjam_id');
     $nomorSurat = $this->request->getPost('nomor_surat');
     $tanggalSurat = $this->request->getPost('tanggal_surat');
@@ -1732,6 +1733,7 @@ public function generateSuratPenanggungJawabKdf()
         'nip_nrp' => $pinjam['nip_nrp'],
         'no_ktp' => $pinjam['no_ktp'] ?? '-',
         'alamat_rumah' => $pinjam['alamat_rumah'] ?? '-',
+        'no_hp' => $pinjam['no_hp'] ?? '-', 
         'pangkat_golongan' => $pinjam['pangkat_golongan'],
         'jabatan' => $pinjam['jabatan'],
         'unit_organisasi' => $pinjam['unit_organisasi'],
@@ -1764,7 +1766,9 @@ public function generateSuratPenanggungJawabKdf()
     }
     
     // Generate surat penanggung jawab PDF
+    log_message('debug', '==== Memanggil generateSuratPenanggungJawab ====');
     $suratName = $this->generateSuratPenanggungJawab($pdfData);
+    log_message('debug', '==== Hasil generateSuratPenanggungJawab: ' . $suratName . ' ====');
     
     // Update data peminjaman
     $model->update($pinjamId, [
@@ -1785,6 +1789,7 @@ public function generateSuratPenanggungJawabKdf()
     ]);
 }
 
+// Method untuk generate PDF surat penanggung jawab
 // Method untuk generate PDF surat penanggung jawab
 private function generateSuratPenanggungJawab($data)
 {
@@ -1813,15 +1818,21 @@ private function generateSuratPenanggungJawab($data)
     
     $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
     
+    // Debug log
+    log_message('debug', 'Menyimpan Surat Penanggung Jawab: ' . $filePath);
+    
     // Pastikan direktori ada
     $dir = ROOTPATH . 'public/uploads/documents/';
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
     
-    // Simpan file
+    // Simpan file dan set permission
     file_put_contents($filePath, $output);
     @chmod($filePath, 0644);
+    
+    // Debug log konfirmasi
+    log_message('debug', 'File Surat Penanggung Jawab berhasil disimpan: ' . $fileName);
     
     return $fileName;
 }
@@ -2002,6 +2013,7 @@ public function getTimelineData($kendaraan_id = null)
                 pinjam.tanggal_kembali,
                 pinjam.surat_permohonan,
                 pinjam.surat_jalan_admin,
+                pinjam.surat_penanggung_jawab,
                 assets.merk as kendaraan_nama
             ')
             ->join('users', 'users.id = kembali.user_id', 'left')
@@ -2042,6 +2054,7 @@ public function getTimelineData($kendaraan_id = null)
                 'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
                 'surat_permohonan' => $item['surat_permohonan'] ?? '',
                 'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
+                'surat_penanggung_jawab' => $item['surat_penanggung_jawab'] ?? '', // Menambahkan field surat_penanggung_jawab
                 'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
                 'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
                 'kendaraan_id' => $item['kendaraan_id'],
@@ -2070,6 +2083,7 @@ public function getTimelineData($kendaraan_id = null)
                 'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
                 'surat_permohonan' => $item['surat_permohonan'] ?? '',
                 'surat_jalan_admin' => $item['surat_jalan_admin'] ?? '',
+                'surat_penanggung_jawab' => $item['surat_penanggung_jawab'] ?? '', // Menambahkan field surat_penanggung_jawab
                 'surat_pengembalian' => $item['surat_pengembalian'] ?? '',
                 'berita_acara_pengembalian' => $item['berita_acara_pengembalian'] ?? '',
                 'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',

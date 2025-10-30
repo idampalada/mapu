@@ -169,8 +169,10 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
         }
       } else if (item.status === "disetujui") {
+        // Untuk status disetujui, tampilkan surat permohonan, surat jalan admin, dan surat penanggung jawab
         let suratIzin = "";
         let suratJalan = "";
+        let suratPenanggungJawab = "";
 
         if (item.surat_permohonan) {
           suratIzin = `
@@ -188,11 +190,21 @@ document.addEventListener("DOMContentLoaded", function () {
   `;
         }
 
-        dokumenLinks = suratIzin + suratJalan;
+        // Tambahkan surat penanggung jawab jika tersedia
+        if (item.surat_penanggung_jawab) {
+          suratPenanggungJawab = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_penanggung_jawab}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Penanggung Jawab
+    </a>
+  `;
+        }
+
+        dokumenLinks = suratIzin + suratJalan + suratPenanggungJawab;
       } else if (item.status === "selesai") {
         // Tambahkan kondisi khusus untuk status 'selesai'
         let suratPermohonan = "";
         let suratJalan = "";
+        let suratPenanggungJawab = "";
         let beritaAcara = "";
 
         if (item.surat_permohonan) {
@@ -211,6 +223,15 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
         }
 
+        // Tambahkan surat penanggung jawab jika tersedia
+        if (item.surat_penanggung_jawab) {
+          suratPenanggungJawab = `
+    <a href="${BASE_URL}/uploads/documents/${item.surat_penanggung_jawab}" target="_blank" class="btn btn-sm btn-outline-primary ms-1">
+      <i class="bi bi-file-earmark-pdf"></i> Surat Penanggung Jawab
+    </a>
+    `;
+        }
+
         // Tambahkan berita acara jika tersedia
         if (item.berita_acara_pengembalian) {
           beritaAcara = `
@@ -220,7 +241,8 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
         }
 
-        dokumenLinks = suratPermohonan + suratJalan + beritaAcara;
+        dokumenLinks =
+          suratPermohonan + suratJalan + suratPenanggungJawab + beritaAcara;
       } else {
         // Untuk status lainnya
         if (item.surat_permohonan) {
