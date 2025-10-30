@@ -1771,7 +1771,8 @@ public function generateSuratPenanggungJawabKdf()
     log_message('debug', '==== Hasil generateSuratPenanggungJawab: ' . $suratName . ' ====');
     
     // Update data peminjaman
-    $model->update($pinjamId, [
+    log_message('debug', '==== Mencoba update database dengan pinjam_id: ' . $pinjamId . ' ====');
+    log_message('debug', 'Data update: ' . json_encode([
         'surat_penanggung_jawab' => $suratName,
         'nomor_surat' => $nomorSurat,
         'tanggal_surat' => $tanggalSurat,
@@ -1779,7 +1780,38 @@ public function generateSuratPenanggungJawabKdf()
         'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
         'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
         'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
-    ]);
+    ]));
+    
+    try {
+        $result = $model->update($pinjamId, [
+            'surat_penanggung_jawab' => $suratName,
+            'nomor_surat' => $nomorSurat,
+            'tanggal_surat' => $tanggalSurat,
+            'tempat_surat' => $tempatSurat,
+            'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
+            'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
+            'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+            'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
+        ]);
+        
+        log_message('debug', '==== Hasil update database: ' . ($result !== false ? 'Berhasil' : 'Gagal') . ' ====');
+        
+        // Verifikasi data telah tersimpan
+        $updatedPinjam = $model->find($pinjamId);
+        log_message('debug', 'Data setelah update: ' . json_encode([
+            'surat_penanggung_jawab' => $updatedPinjam['surat_penanggung_jawab'] ?? null,
+            'nomor_surat' => $updatedPinjam['nomor_surat'] ?? null
+        ]));
+        
+        // Jika result false, tambahkan debug untuk error database
+        if ($result === false) {
+            log_message('error', 'Error Database: ' . print_r($model->errors(), true));
+            log_message('error', 'SQL terakhir: ' . $model->db->getLastQuery());
+        }
+    } catch (\Exception $e) {
+        log_message('error', 'Exception saat update database: ' . $e->getMessage());
+          log_message('debug', 'Kolom yang diizinkan dalam model: ' . json_encode($model->allowedFields));
+    }
     
     // Kembalikan response
     return $this->response->setJSON([

@@ -23,13 +23,17 @@ protected $allowedFields = [
     'kendaraan_id',
     'nama_penanggung_jawab',
     'nip_nrp',
-    'no_ktp',           // Tambahkan field ini
-    'alamat_rumah',     // Tambahkan field ini
+    'no_ktp',
+    'alamat_rumah',
     'pangkat_golongan',
     'jabatan',
     'unit_organisasi',
     'surat_permohonan',
     'surat_jalan_admin',
+    'surat_penanggung_jawab', // Tambahkan kolom ini
+    'nomor_surat', // Tambahkan kolom ini
+    'tanggal_surat', // Tambahkan kolom ini
+    'tempat_surat', // Tambahkan kolom ini
     'dokumen_tambahan',
     'pengemudi',
     'no_hp',
