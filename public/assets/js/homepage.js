@@ -1263,161 +1263,6 @@ function showFileUnsafeModal(message) {
     }
   });
 }
-// Di file homepage.js
-$(document).ready(function () {
-  // Tangani klik tombol setujui
-  $(".btn-setujui").on("click", function () {
-    const pinjamId = $(this).data("id");
-    showSetujuModal(pinjamId);
-  });
-
-  // Form buat otomatis
-  $("#formBuatOtomatis").on("submit", function (e) {
-    e.preventDefault();
-
-    // Show loading
-    const submitBtn = $(this).find('button[type="submit"]');
-    const originalText = submitBtn.html();
-    submitBtn.html(
-      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...'
-    );
-    submitBtn.prop("disabled", true);
-
-    // Ambil data form
-    const formData = new FormData(this);
-
-    // Kirim request AJAX
-    $.ajax({
-      url: "/admin/AsetKendaraan/generateSuratJalan",
-      type: "POST",
-      data: formData,
-      processData: false,
-      contentType: false,
-      success: function (response) {
-        // Reset button
-        submitBtn.html(originalText);
-        submitBtn.prop("disabled", false);
-
-        if (response.success) {
-          // Tutup modal
-          $("#modalSetuju").modal("hide");
-
-          // Tampilkan modal sukses
-          $("#modalSuccess").modal("show");
-
-          // Refresh halaman setelah 2 detik
-          setTimeout(function () {
-            location.reload();
-          }, 2000);
-        } else {
-          alert(
-            response.error || "Terjadi kesalahan saat memproses peminjaman"
-          );
-        }
-      },
-      error: function (xhr, status, error) {
-        // Reset button
-        submitBtn.html(originalText);
-        submitBtn.prop("disabled", false);
-
-        console.error(xhr.responseText);
-        alert("Terjadi kesalahan: " + error);
-      },
-    });
-  });
-});
-
-// Function untuk menampilkan modal setuju
-// Function untuk menampilkan modal setuju dengan dual tab dan checkbox
-function showSetujuModal(pinjamId) {
-  // Reset form
-  $(".surat-penanggung-field, .surat-jalan-field").removeClass("is-invalid");
-  $("#buatSuratPenanggungJawab, #buatSuratJalan").prop("checked", true);
-
-  // Set ID peminjaman
-  $("#pinjamId, #pinjamId2").val(pinjamId);
-
-  // Reset field data penandatangan (biarkan kosong)
-  $("#nama_penanggung_jawab_kendaraan, #nip_penanggung_jawab_kendaraan").val(
-    ""
-  );
-  $("#nama_kepala_satuan_kerja, #nip_kepala_satuan_kerja").val("");
-
-  // Set tanggal hari ini sebagai default
-  const today = new Date().toISOString().split("T")[0];
-  $("#tanggal_surat").val(today);
-  $("#tanggal_mulai").val(today);
-  $("#tanggal_selesai").val(today);
-
-  // Set jam default
-  $("#jam_mulai").val("08:00");
-  $("#jam_selesai").val("17:00");
-
-  // Ambil data peminjaman
-  $.ajax({
-    url: "/AsetKendaraan/getPeminjamanData",
-    type: "POST",
-    data: { pinjam_id: pinjamId },
-    dataType: "json",
-    success: function (data) {
-      if (data.success) {
-        // Isi data peminjam di tab 1
-        $("#nama_penanggung_jawab").val(data.pinjam.nama_penanggung_jawab);
-        $("#nip_nrp").val(data.pinjam.nip_nrp);
-        $("#pangkat_golongan").val(data.pinjam.pangkat_golongan);
-        $("#jabatan").val(data.pinjam.jabatan);
-        $("#kode_barang").val(data.pinjam.kode_barang);
-        $("#no_polisi").val(data.asset.no_polisi);
-
-        // Isi data peminjam di tab 2
-        $("#nama_penanggung_jawab2").val(data.pinjam.nama_penanggung_jawab);
-        $("#nip_nrp2").val(data.pinjam.nip_nrp);
-        $("#pangkat_golongan2").val(data.pinjam.pangkat_golongan);
-        $("#jabatan2").val(data.pinjam.jabatan);
-        $("#kode_barang2").val(data.pinjam.kode_barang);
-        $("#no_polisi2").val(data.asset.no_polisi);
-
-        // Isi tanggal dan data lainnya
-        $("#tanggal_mulai").val(
-          data.pinjam.tanggal_pinjam
-            ? data.pinjam.tanggal_pinjam.split("T")[0]
-            : today
-        );
-        $("#tanggal_selesai").val(
-          data.pinjam.tanggal_kembali
-            ? data.pinjam.tanggal_kembali.split("T")[0]
-            : today
-        );
-        $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan || "");
-
-        // Tampilkan modal
-        const modal = new bootstrap.Modal(
-          document.getElementById("modalSetuju")
-        );
-        modal.show();
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Gagal!",
-          text: data.error || "Gagal mengambil data peminjaman",
-          confirmButtonText: "Tutup",
-          confirmButtonColor: "#dc3545",
-        });
-      }
-    },
-    error: function () {
-      Swal.fire({
-        icon: "error",
-        title: "Gagal!",
-        text: "Terjadi kesalahan saat mengambil data peminjaman",
-        confirmButtonText: "Tutup",
-        confirmButtonColor: "#dc3545",
-      });
-    },
-  });
-}
-
-// Event handler untuk tombol submit utama
 $(document).ready(function () {
   // Menangani submit utama
   $("#btnSubmitAll").on("click", function () {
@@ -1438,12 +1283,34 @@ $(document).ready(function () {
       return;
     }
 
+    // Auto-fill field kepala satuan kerja jika kosong
+    if (buatSuratPenanggungJawab) {
+      if (!$("#nama_kepala_satuan_kerja").val()) {
+        $("#nama_kepala_satuan_kerja").val("Kepala Satuan");
+      }
+      if (!$("#nip_kepala_satuan_kerja").val()) {
+        $("#nip_kepala_satuan_kerja").val("123456");
+      }
+    }
+
     // Validasi field yang diperlukan untuk surat yang dipilih
     let isValid = true;
 
     if (buatSuratPenanggungJawab) {
       // Reset validasi terlebih dahulu
       $(".surat-penanggung-field").removeClass("is-invalid");
+
+      // Debug: log nilai field sebelum validasi
+      console.log(
+        "Nama PJ Kendaraan:",
+        $("#nama_penanggung_jawab_kendaraan").val()
+      );
+      console.log(
+        "NIP PJ Kendaraan:",
+        $("#nip_penanggung_jawab_kendaraan").val()
+      );
+      console.log("Nama Kepala:", $("#nama_kepala_satuan_kerja").val());
+      console.log("NIP Kepala:", $("#nip_kepala_satuan_kerja").val());
 
       // Cek field-field penting
       const fields = [
@@ -1468,6 +1335,7 @@ $(document).ready(function () {
         if (!value || value.trim() === "") {
           $("#" + field.id).addClass("is-invalid");
           missingFields.push(field.name);
+          console.log("Field kosong:", field.name, "ID:", field.id);
         }
       });
 
@@ -1650,3 +1518,103 @@ $(document).ready(function () {
     $(".surat-jalan-field").prop("required", isChecked);
   });
 });
+
+// Function untuk menampilkan modal setuju dengan dual tab dan checkbox
+function showSetujuModal(pinjamId) {
+  // Reset form
+  $(".surat-penanggung-field, .surat-jalan-field").removeClass("is-invalid");
+  $("#buatSuratPenanggungJawab, #buatSuratJalan").prop("checked", true);
+
+  // Set ID peminjaman
+  $("#pinjamId, #pinjamId2").val(pinjamId);
+
+  // Set tanggal hari ini sebagai default
+  const today = new Date().toISOString().split("T")[0];
+  $("#tanggal_surat").val(today);
+  $("#tanggal_mulai").val(today);
+  $("#tanggal_selesai").val(today);
+
+  // Set jam default
+  $("#jam_mulai").val("08:00");
+  $("#jam_selesai").val("17:00");
+
+  // Ambil data peminjaman
+  $.ajax({
+    url: "/AsetKendaraan/getPeminjamanData",
+    type: "POST",
+    data: { pinjam_id: pinjamId },
+    dataType: "json",
+    success: function (data) {
+      if (data.success) {
+        // Isi data peminjam di tab 1
+        $("#nama_penanggung_jawab").val(data.pinjam.nama_penanggung_jawab);
+        $("#nip_nrp").val(data.pinjam.nip_nrp);
+        $("#pangkat_golongan").val(data.pinjam.pangkat_golongan);
+        $("#jabatan").val(data.pinjam.jabatan);
+        $("#kode_barang").val(data.pinjam.kode_barang);
+        $("#no_polisi").val(data.asset.no_polisi);
+
+        // Isi data peminjam di tab 2
+        $("#nama_penanggung_jawab2").val(data.pinjam.nama_penanggung_jawab);
+        $("#nip_nrp2").val(data.pinjam.nip_nrp);
+        $("#pangkat_golongan2").val(data.pinjam.pangkat_golongan);
+        $("#jabatan2").val(data.pinjam.jabatan);
+        $("#kode_barang2").val(data.pinjam.kode_barang);
+        $("#no_polisi2").val(data.asset.no_polisi);
+
+        // Isi field data penandatangan dengan data peminjam
+        $("#nama_penanggung_jawab_kendaraan").val(
+          data.pinjam.nama_penanggung_jawab_kendaraan ||
+            data.pinjam.nama_penanggung_jawab
+        );
+        $("#nip_penanggung_jawab_kendaraan").val(
+          data.pinjam.nip_penanggung_jawab_kendaraan || data.pinjam.nip_nrp
+        );
+
+        // TAMBAHKAN: Set nilai default untuk field kepala satuan kerja
+        $("#nama_kepala_satuan_kerja").val(
+          data.pinjam.nama_kepala_satuan_kerja || "Kepala Satuan"
+        );
+        $("#nip_kepala_satuan_kerja").val(
+          data.pinjam.nip_kepala_satuan_kerja || "123456"
+        );
+
+        // Isi tanggal dan data lainnya
+        $("#tanggal_mulai").val(
+          data.pinjam.tanggal_pinjam
+            ? data.pinjam.tanggal_pinjam.split("T")[0]
+            : today
+        );
+        $("#tanggal_selesai").val(
+          data.pinjam.tanggal_kembali
+            ? data.pinjam.tanggal_kembali.split("T")[0]
+            : today
+        );
+        $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan || "");
+
+        // Tampilkan modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalSetuju")
+        );
+        modal.show();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: data.error || "Gagal mengambil data peminjaman",
+          confirmButtonText: "Tutup",
+          confirmButtonColor: "#dc3545",
+        });
+      }
+    },
+    error: function () {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat mengambil data peminjaman",
+        confirmButtonText: "Tutup",
+        confirmButtonColor: "#dc3545",
+      });
+    },
+  });
+}
