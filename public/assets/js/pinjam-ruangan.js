@@ -283,7 +283,7 @@ function generateTimeSlots() {
   // Mulai dari 07:30
   let current = new Date("2000-01-01T07:30:00");
   // Sampai 17:30
-  const end = new Date("2000-01-01T17:30:00");
+  const end = new Date("2000-01-01T21:30:00");
 
   while (current <= end) {
     const hour = current.getHours().toString().padStart(2, "0");
