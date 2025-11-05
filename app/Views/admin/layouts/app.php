@@ -73,7 +73,6 @@
     <script src="<?= base_url(); ?>/assets/js/homepage.js"></script>
     <script src="<?= base_url(); ?>/assets/js/laporan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/dashboard.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/penomeran.js"></script>
     <script src="<?= base_url(); ?>/assets/js/auth.js"></script>
     <script src="<?= base_url(); ?>/assets/js/pinjam-ruangan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>

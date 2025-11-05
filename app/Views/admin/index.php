@@ -1155,7 +1155,7 @@
                             <div class="col-md-4">
                                 <div class="form-group mb-2">
                                     <label for="tanggal_surat" class="form-label">Tanggal Surat</label>
-                                    <input type="date" class="form-control surat-penanggung-field" id="tanggal_surat" name="tanggal_surat">
+                                    <input type="date" class="form-control surat-penanggung-field" id="tanggal_surat" name="tanggal_surat" value="<?= date('Y-m-d') ?>">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -1190,13 +1190,13 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-2">
                                     <label for="nama_kepala_satuan_kerja" class="form-label">Nama Kepala Satuan Kerja</label>
-                                    <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja">
+                                    <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja" value="Udin">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-2">
                                     <label for="nip_kepala_satuan_kerja" class="form-label">NIP Kepala Satuan Kerja</label>
-                                    <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja">
+                                    <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja" value="083478">
                                 </div>
                             </div>
                         </div>
