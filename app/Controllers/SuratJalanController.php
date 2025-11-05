@@ -30,6 +30,10 @@ class SuratJalanController extends BaseController
         $tanggal_selesai = $this->request->getPost('tanggal_selesai');
         $jam_selesai = $this->request->getPost('jam_selesai');
         $urusan_kedinasan = $this->request->getPost('urusan_kedinasan');
+        
+        // Tambahkan pengambilan nilai dari form
+        $nama_pemegang_surat = $this->request->getPost('nama_pemegang_surat');
+        $nip_pemegang_surat = $this->request->getPost('nip_pemegang_surat');
 
         // Validasi field yang diperlukan
         if (!$pinjamId || !$tanggal_mulai || !$jam_mulai || !$tanggal_selesai || !$jam_selesai || !$urusan_kedinasan) {
@@ -55,7 +59,9 @@ class SuratJalanController extends BaseController
                 'jam_mulai' => $jam_mulai,
                 'tanggal_selesai' => $tanggal_selesai,
                 'jam_selesai' => $jam_selesai,
-                'urusan_kedinasan' => $urusan_kedinasan
+                'urusan_kedinasan' => $urusan_kedinasan,
+                'nama_pemegang_surat' => $nama_pemegang_surat,
+                'nip_pemegang_surat' => $nip_pemegang_surat
             ]);
 
             $options = new Options();
@@ -135,6 +141,10 @@ class SuratJalanController extends BaseController
         $kodeBarang = esc($kendaraan['kode_barang']);
         $noPolisi = esc($kendaraan['no_polisi']);
         $merk = esc($kendaraan['merk']);
+        
+        // Ambil nilai dari form atau gunakan default jika tidak ada
+        $namaPemegangSurat = esc($additionalData['nama_pemegang_surat'] ?? 'Pak Udin');
+        $nipPemegangSurat = esc($additionalData['nip_pemegang_surat'] ?? '12345678');
 
         // Template HTML untuk PDF
         return <<<HTML
@@ -192,11 +202,24 @@ class SuratJalanController extends BaseController
                     margin-bottom: 5px;
                 }
                 .signature {
-                    text-align: right;
-                    margin-top: 50px;
+                    width: 100%;
+                    margin-top: 40px;
+                    display: table;
                 }
-                .signature-space {
+                .signature-left {
+                    width: 50%;
+                    display: table-cell;
+                    text-align: center;
+                }
+                .signature-right {
+                    width: 50%;
+                    display: table-cell;
+                    text-align: center;
+                }
+                .signature-name {
                     margin-top: 60px;
+                    text-decoration: underline;
+                    font-weight: bold;
                 }
             </style>
         </head>
@@ -248,37 +271,41 @@ class SuratJalanController extends BaseController
                         <td>{$kodeBarang}</td>
                     </tr>
                     <tr>
-                        <td>NUP</td>
-                        <td>:</td>
-                        <td>{$kodeBarang}</td>
-                    </tr>
-                    <tr>
                         <td>Nomor Polisi</td>
                         <td>:</td>
                         <td>{$noPolisi}</td>
                     </tr>
                     <tr>
-                        <td>Merk/Type</td>
+                        <td>Merk / Type</td>
                         <td>:</td>
                         <td>{$merk}</td>
                     </tr>
                 </table>
-            </div>
-            
-            <div class="requirements">
-                <p><strong>Dengan ketentuan:</strong></p>
+                
+                <p>Dengan ketentuan:</p>
                 <ol>
                     <li>Pemakai bertanggung jawab atas keamanan kendaraan selama pemakaian;</li>
                     <li>Pemakai bertanggung jawab atas kehilangan, bersedia dikenakan Tuntutan Ganti Rugi sesuai dengan ketentuan peraturan perundang-undangan;</li>
-                    <li>Kendaraan Dinas Fungsional hanya untuk keperluan dinas/tugas, dan tidak dibenarkan untuk keperluan pribadi/keluarga;</li>
+                    <li>Kendaraan Dinas Fungsional hanya untuk keperluan dinas/tugas, dan tidak diperkenankan untuk keperluan pribadi/keluarga;</li>
                     <li>Pemakai bersedia mengembalikan Kendaraan Dinas kepada Satuan Kerja selaku Kuasa Pengguna Barang.</li>
                 </ol>
             </div>
             
+            <p style="text-align: right; margin-top: 20px;">Jakarta, {$currentDate}</p>
+            
             <div class="signature">
-                <p>{$currentDate}</p>
-                <div class="signature-space"></div>
-                <p>........................(17), ......................(18)...20xx</p>
+                <div class="signature-left">
+                    <div>Pemakai Kendaraan</div>
+                    <div>Dinas Fungsional</div>
+                    <div class="signature-name">{$nama}</div>
+                    <div>NIP: {$nip}</div>
+                </div>
+                <div class="signature-right">
+                    <div>Pemegang Surat</div>
+                    <div>Penanggung Jawab</div>
+                    <div class="signature-name">{$namaPemegangSurat}</div>
+                    <div>NIP: {$nipPemegangSurat}</div>
+                </div>
             </div>
         </body>
         </html>
@@ -287,7 +314,6 @@ class SuratJalanController extends BaseController
 
     protected function getUserData($userId)
     {
-        // Dapatkan data pengguna dari model pengguna Anda
         $userModel = model('UserModel');
         return $userModel->find($userId);
     }

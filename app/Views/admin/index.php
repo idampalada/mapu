@@ -1204,81 +1204,97 @@
                 </div>
                 
                 <!-- Tab 2: Buat Surat Jalan -->
-                <div class="tab-pane fade" id="suratJalanTab" role="tabpanel" aria-labelledby="surat-jalan-tab">
-                    <div class="modal-body">
-                        <input type="hidden" id="pinjamId2" name="pinjam_id">
-                        
-                        <!-- Checkbox untuk memilih surat -->
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="buatSuratJalan" name="buatSuratJalan" checked>
-                            <label class="form-check-label" for="buatSuratJalan">
-                                <strong>Buat Surat Jalan</strong>
-                            </label>
-                        </div>
-                        
-                        <!-- Data peminjam -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="nama_penanggung_jawab2" class="form-label">Nama Penanggung Jawab</label>
-                                    <input type="text" class="form-control" id="nama_penanggung_jawab2" name="nama_penanggung_jawab2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="nip_nrp2" class="form-label">NIP/NRP</label>
-                                    <input type="text" class="form-control" id="nip_nrp2" name="nip_nrp2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="pangkat_golongan2" class="form-label">Pangkat/Golongan</label>
-                                    <input type="text" class="form-control" id="pangkat_golongan2" name="pangkat_golongan2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="jabatan2" class="form-label">Jabatan</label>
-                                    <input type="text" class="form-control" id="jabatan2" name="jabatan2" readonly>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="no_polisi2" class="form-label">Nomor Polisi</label>
-                                    <input type="text" class="form-control" id="no_polisi2" name="no_polisi2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="kode_barang2" class="form-label">Kode Barang</label>
-                                    <input type="text" class="form-control" id="kode_barang2" name="kode_barang2" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tanggal dan jam -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
-                                    <input type="date" class="form-control surat-jalan-field" id="tanggal_mulai" name="tanggal_mulai">
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="jam_mulai" class="form-label">Jam Mulai</label>
-                                    <input type="time" class="form-control surat-jalan-field" id="jam_mulai" name="jam_mulai">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
-                                    <input type="date" class="form-control surat-jalan-field" id="tanggal_selesai" name="tanggal_selesai">
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="jam_selesai" class="form-label">Jam Selesai</label>
-                                    <input type="time" class="form-control surat-jalan-field" id="jam_selesai" name="jam_selesai">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
-                            <textarea class="form-control surat-jalan-field" id="urusan_kedinasan" name="urusan_kedinasan" rows="3"></textarea>
-                        </div>
-                    </div>
+<div class="tab-pane fade" id="suratJalanTab" role="tabpanel" aria-labelledby="surat-jalan-tab">
+    <div class="modal-body">
+        <input type="hidden" id="pinjamId2" name="pinjam_id">
+        
+        <!-- Checkbox untuk memilih surat -->
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="buatSuratJalan" name="buatSuratJalan" checked>
+            <label class="form-check-label" for="buatSuratJalan">
+                <strong>Buat Surat Jalan</strong>
+            </label>
+        </div>
+        
+        <!-- Data peminjam -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="nama_penanggung_jawab2" class="form-label">Nama Penanggung Jawab</label>
+                    <input type="text" class="form-control" id="nama_penanggung_jawab2" name="nama_penanggung_jawab2" readonly>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="nip_nrp2" class="form-label">NIP/NRP</label>
+                    <input type="text" class="form-control" id="nip_nrp2" name="nip_nrp2" readonly>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="pangkat_golongan2" class="form-label">Pangkat/Golongan</label>
+                    <input type="text" class="form-control" id="pangkat_golongan2" name="pangkat_golongan2" readonly>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="jabatan2" class="form-label">Jabatan</label>
+                    <input type="text" class="form-control" id="jabatan2" name="jabatan2" readonly>
                 </div>
             </div>
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="no_polisi2" class="form-label">Nomor Polisi</label>
+                    <input type="text" class="form-control" id="no_polisi2" name="no_polisi2" readonly>
+                </div>
+                <div class="form-group mb-2">
+                    <label for="kode_barang2" class="form-label">Kode Barang</label>
+                    <input type="text" class="form-control" id="kode_barang2" name="kode_barang2" readonly>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tanggal dan jam -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
+                    <input type="date" class="form-control surat-jalan-field" id="tanggal_mulai" name="tanggal_mulai">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="jam_mulai" class="form-label">Jam Mulai</label>
+                    <input type="time" class="form-control surat-jalan-field" id="jam_mulai" name="jam_mulai">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
+                    <input type="date" class="form-control surat-jalan-field" id="tanggal_selesai" name="tanggal_selesai">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="jam_selesai" class="form-label">Jam Selesai</label>
+                    <input type="time" class="form-control surat-jalan-field" id="jam_selesai" name="jam_selesai">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group mb-3">
+            <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
+            <textarea class="form-control surat-jalan-field" id="urusan_kedinasan" name="urusan_kedinasan" rows="3"></textarea>
+        </div>
+        
+        <!-- Bagian untuk Pemegang Surat Penanggung Jawab -->
+        <h5 class="mt-3 mb-2">Data Pemegang Surat Penanggung Jawab</h5>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="nama_pemegang_surat" class="form-label">Nama Pemegang Surat</label>
+                    <input type="text" class="form-control" id="nama_pemegang_surat" name="nama_pemegang_surat" value="Pak Udin">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-2">
+                    <label for="nip_pemegang_surat" class="form-label">NIP Pemegang Surat</label>
+                    <input type="text" class="form-control" id="nip_pemegang_surat" name="nip_pemegang_surat" value="12345678">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             
             <!-- Footer dengan tombol submit utama -->
             <div class="modal-footer">
