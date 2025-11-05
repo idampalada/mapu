@@ -1238,8 +1238,8 @@ function showEditSuratModal(pinjamId) {
   $("#tanggal_surat").val(today);
 
   // Nilai default untuk kepala satuan kerja
-  $("#nama_kepala_satuan_kerja").val(""); // Kosong untuk diisi user
-  $("#nip_kepala_satuan_kerja").val("");
+  $("#nama_kepala_satuan_kerja").val("Suherman"); // Kosong untuk diisi user
+  $("#nip_kepala_satuan_kerja").val("13579");
 
   // Tampilkan modal
   const modal = new bootstrap.Modal(document.getElementById("modalEditSurat"));
