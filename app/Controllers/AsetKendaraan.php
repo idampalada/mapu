@@ -127,7 +127,7 @@ class AsetKendaraan extends BaseController
     }
 }
 
-    public function edit($id)
+public function edit($id)
 {
     $model = new AsetModel();
     $aset = $model->find($id);
@@ -158,7 +158,9 @@ class AsetKendaraan extends BaseController
         'kondisi',
         'warna',        // Field baru
         'nomor_mesin',  // Field baru
-        'nup'           // Field baru
+        'nup',          // Field baru
+        'no_stnk',      // Field STNK baru
+        'no_bpkb'       // Field BPKB baru
     ];
 
     foreach ($fields as $field) {
@@ -700,22 +702,25 @@ public function getPeminjamanForKembali($kendaraanId = null)
         }
 
         $data = [
-    'user_id' => $userId,
-    'kategori_id' => $this->request->getPost('kategori_id'),
-    'kode_barang' => $this->request->getPost('kode_barang'),
-    'merk' => $this->request->getPost('merk'),
-    'warna' => $this->request->getPost('warna'),
-    'tahun_pembuatan' => $this->request->getPost('tahun_pembuatan'),
-    'kapasitas' => $this->request->getPost('kapasitas'),
-    'no_polisi' => $this->request->getPost('no_polisi'),
-    'nup' => $this->request->getPost('nup'),
-    'nomor_mesin' => $this->request->getPost('nomor_mesin'),
-    'no_rangka' => $this->request->getPost('no_rangka'),
-    'kondisi' => $this->request->getPost('kondisi'),
-    'status_pinjam' => 'Tersedia',
-    'created_at' => date('Y-m-d H:i:s'),
-    'gambar_mobil' => json_encode($fileNames)
-];
+            'user_id' => $userId,
+            'kategori_id' => $this->request->getPost('kategori_id'),
+            'kode_barang' => $this->request->getPost('kode_barang'),
+            'merk' => $this->request->getPost('merk'),
+            'warna' => $this->request->getPost('warna'),
+            'tahun_pembuatan' => $this->request->getPost('tahun_pembuatan'),
+            'kapasitas' => $this->request->getPost('kapasitas'),
+            'no_polisi' => $this->request->getPost('no_polisi'),
+            'nup' => $this->request->getPost('nup'),
+            'nomor_mesin' => $this->request->getPost('nomor_mesin'),
+            'no_rangka' => $this->request->getPost('no_rangka'),
+            'kondisi' => $this->request->getPost('kondisi'),
+            'status_pinjam' => 'Tersedia',
+            'created_at' => date('Y-m-d H:i:s'),
+            'gambar_mobil' => json_encode($fileNames),
+            // Tambahkan field no_stnk dan no_bpkb
+            'no_stnk' => $this->request->getPost('no_stnk'),
+            'no_bpkb' => $this->request->getPost('no_bpkb')
+        ];
 
         log_message('info', 'Menyimpan data aset dengan gambar: ' . json_encode($fileNames));
         $model->insert($data);

@@ -1366,6 +1366,11 @@
                                     <label for="kapasitas">Kapasitas</label>
                                     <input type="number" class="form-control" id="kapasitas" name="kapasitas">
                                 </div>
+                                <!-- Tambahkan field no_stnk di sini -->
+                                <div class="form-group">
+                                    <label for="no_stnk">Nomor STNK</label>
+                                    <input type="text" class="form-control" id="no_stnk" name="no_stnk" placeholder="Masukkan nomor STNK">
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -1392,6 +1397,11 @@
                                         <option value="Rusak Ringan">Rusak Ringan</option>
                                         <option value="Rusak Berat">Rusak Berat</option>
                                     </select>
+                                </div>
+                                <!-- Tambahkan field no_bpkb di sini -->
+                                <div class="form-group">
+                                    <label for="no_bpkb">Nomor BPKB</label>
+                                    <input type="text" class="form-control" id="no_bpkb" name="no_bpkb" placeholder="Masukkan nomor BPKB">
                                 </div>
                                 <div class="form-group">
                                     <label for="gambar_mobil">Gambar Mobil (JPG/PNG, max 5 foto)</label>

@@ -127,7 +127,7 @@
                         </div>
                         
                        <div class="card-body">
-    <!-- Primary Details -->
+<!-- Primary Details -->
     <div class="vehicle-details mb-3">
         <div class="row g-3">
             <!-- No Polisi -->
@@ -181,6 +181,17 @@
                     <div>
                         <small class="text-muted">Tipe</small>
                         <div class="fw-medium"><?= $item['kategori_id'] ?></div>
+                    </div>
+                </div>
+            </div>
+
+                        <!-- Warna -->
+            <div class="col-6">
+                <div class="d-flex align-items-center">
+                    <div class="me-2 text-danger fs-5"><i class="bi bi-palette"></i></div>
+                    <div>
+                        <small class="text-muted">Warna</small>
+                        <div class="fw-medium"><?= $item['warna'] ?? 'Tidak Diketahui' ?></div>
                     </div>
                 </div>
             </div>
@@ -772,6 +783,14 @@
                             <div class="form-group mb-3">
                                 <label for="edit_no_rangka" class="form-label">No Rangka</label>
                                 <input type="text" class="form-control" id="edit_no_rangka" name="no_rangka">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_no_stnk" class="form-label">Nomor STNK</label>
+                                <input type="text" class="form-control" id="edit_no_stnk" name="no_stnk" placeholder="Masukkan nomor STNK">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="edit_no_bpkb" class="form-label">Nomor BPKB</label>
+                                <input type="text" class="form-control" id="edit_no_bpkb" name="no_bpkb" placeholder="Masukkan nomor BPKB">
                             </div>
                             <div class="form-group mb-3">
                                 <label for="edit_kondisi" class="form-label">Kondisi</label>

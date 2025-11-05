@@ -504,6 +504,8 @@ function openEditModal(id) {
           "nomor_mesin", // Field baru
           "nup", // Field baru
           "kondisi",
+          "no_stnk", // Field STNK baru
+          "no_bpkb", // Field BPKB baru
         ];
 
         // Isi field yang ada saja, jangan periksa field yang tidak ada
