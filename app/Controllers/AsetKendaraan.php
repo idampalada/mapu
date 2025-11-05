@@ -353,29 +353,30 @@ public function generateSuratJalan()
     
     // Buat data untuk PDF
     $pdfData = [
-        'nomor_surat' => 'SURAT/JALAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjamId),
-        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
-        'nip_nrp' => $pinjam['nip_nrp'],
-        'pangkat_golongan' => $pinjam['pangkat_golongan'],
-        'jabatan' => $pinjam['jabatan'],
-        'unit_organisasi' => $pinjam['unit_organisasi'],
-        'urusan_kedinasan' => $urusanKedinasan,
-        'tanggal_mulai' => $tanggalMulai,
-        'jam_mulai' => $jamMulai,
-        'tanggal_selesai' => $tanggalSelesai,
-        'jam_selesai' => $jamSelesai,
-        'kode_barang' => $asset['kode_barang'],
-        'nup' => $asset['nup'] ?? '-',
-        'no_polisi' => $asset['no_polisi'],
-        'merk' => $asset['merk'],
-        'kategori' => $asset['kategori_id'],
-        'tanggal_terbit' => date('Y-m-d'),
-        'penanggung_jawab' => 'Pak Solihin',
-        'nip_penanggung_jawab' => '123123',
-        'pemegang_surat' => 'Pak Udin',
-        'nip_pemegang_surat' => '12345678',
-        'lokasi_terbit' => 'Jakarta'
-    ];
+    'nomor_surat' => 'SURAT/JALAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjamId),
+    'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+    'nip_nrp' => $pinjam['nip_nrp'],
+    'pangkat_golongan' => $pinjam['pangkat_golongan'],
+    'jabatan' => $pinjam['jabatan'],
+    'unit_organisasi' => $pinjam['unit_organisasi'],
+    'urusan_kedinasan' => $urusanKedinasan,
+    'tanggal_mulai' => $tanggalMulai,
+    'jam_mulai' => $jamMulai,
+    'tanggal_selesai' => $tanggalSelesai,
+    'jam_selesai' => $jamSelesai,
+    'kode_barang' => $asset['kode_barang'],
+    'nup' => $asset['nup'] ?? '-',
+    'no_polisi' => $asset['no_polisi'],
+    'merk' => $asset['merk'],
+    'kategori' => $asset['kategori_id'],
+    'tanggal_terbit' => date('Y-m-d'),
+    'penanggung_jawab' => 'Pak Solihin',
+    'nip_penanggung_jawab' => '123123',
+    // Ubah 2 baris berikut agar mengambil nilai dari form
+    'pemegang_surat' => $this->request->getPost('nama_pemegang_surat') ?? 'Pak Udin',
+    'nip_pemegang_surat' => $this->request->getPost('nip_pemegang_surat') ?? '12345678',
+    'lokasi_terbit' => 'Jakarta'
+];
     
     // Generate PDF surat jalan
     $suratJalanName = $this->generateSuratJalanPdf($pdfData);

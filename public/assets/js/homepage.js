@@ -1453,6 +1453,16 @@ $(document).ready(function () {
       suratJalanData.append("jam_selesai", $("#jam_selesai").val());
       suratJalanData.append("urusan_kedinasan", $("#urusan_kedinasan").val());
 
+      // TAMBAHKAN DUA BARIS INI:
+      suratJalanData.append(
+        "nama_pemegang_surat",
+        $("#nama_pemegang_surat").val()
+      );
+      suratJalanData.append(
+        "nip_pemegang_surat",
+        $("#nip_pemegang_surat").val()
+      );
+
       const suratJalanPromise = $.ajax({
         url: "/AsetKendaraan/generateSuratJalan",
         type: "POST",
