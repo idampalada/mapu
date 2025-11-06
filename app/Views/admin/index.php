@@ -1334,6 +1334,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <?php if (in_groups('admin')): ?>
     <div class="modal fade" id="modalTambahAset" tabindex="-1" aria-labelledby="modalTambahAsetLabel" aria-hidden="true">

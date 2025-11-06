@@ -1099,6 +1099,18 @@ function loadKendaraanPinjam() {
 }
 
 function openPengembalianModal(kendaraanId) {
+  // Tutup modal timeline terlebih dahulu
+  const modalTimeline = document.getElementById("modalTimeline");
+  if (modalTimeline) {
+    const timelineModal = bootstrap.Modal.getInstance(modalTimeline);
+    if (timelineModal) {
+      timelineModal.hide();
+    } else {
+      // Jika instance tidak ditemukan, gunakan jQuery fallback
+      $("#modalTimeline").modal("hide");
+    }
+  }
+
   const form = document.getElementById("formPengembalian");
   if (form) form.reset();
 

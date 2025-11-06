@@ -986,6 +986,11 @@ public function kembali()
     $nomor_sip = $this->request->getPost('nomor_sip');
     $alamat_rumah = $this->request->getPost('alamat_rumah');
     $no_ktp = $this->request->getPost('no_ktp');
+    
+    // Ambil data Pihak Kedua yang diedit dari form
+    $pihak_kedua_nama = $this->request->getPost('pihak_kedua_nama') ?? 'Pak Udin';
+    $pihak_kedua_nip = $this->request->getPost('pihak_kedua_nip') ?? '12345678';
+    $pihak_kedua_jabatan = $this->request->getPost('pihak_kedua_jabatan') ?? 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang';
 
     if (empty($kendaraan_id)) {
         return $this->response->setJSON([
@@ -1126,9 +1131,9 @@ public function kembali()
             'kondisi_kembali' => $kondisi_kembali,
             'foto_pengembalian' => $photoFileName,
             'nomor_sip' => $nomor_sip,
-            'pihak_kedua_nama' => 'Pak Udin',
-            'pihak_kedua_nip' => '12345678',
-            'pihak_kedua_jabatan' => 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang',
+            'pihak_kedua_nama' => $pihak_kedua_nama,
+            'pihak_kedua_nip' => $pihak_kedua_nip,
+            'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
             'no_stnk' => $asset['no_stnk'] ?? '',
             'no_bpkb' => $asset['no_bpkb'] ?? ''
         ];
@@ -1188,8 +1193,10 @@ public function kembali()
             'keterangan' => null,
             'created_at' => date('Y-m-d H:i:s'),
             'berita_acara_pengembalian' => $beritaAcaraPdfName,
-            'surat_pengembalian' => null
-            
+            'surat_pengembalian' => null,
+            'pihak_kedua_nama' => $pihak_kedua_nama,
+            'pihak_kedua_nip' => $pihak_kedua_nip,
+            'pihak_kedua_jabatan' => $pihak_kedua_jabatan
         ];
 
         $result = $model->insert($data);
@@ -1234,7 +1241,10 @@ public function kembali()
             'tanggal_kembali' => $tanggal_kembali ?? '',
             'berita_acara_pdf' => $beritaAcaraPdfName ?? '',
             'foto_pengembalian' => $photoFileName ?? '',
-            'created_at' => date('Y-m-d H:i:s')
+            'created_at' => date('Y-m-d H:i:s'),
+            'pihak_kedua_nama' => $pihak_kedua_nama,
+            'pihak_kedua_nip' => $pihak_kedua_nip,
+            'pihak_kedua_jabatan' => $pihak_kedua_jabatan
         ];
         
         if (function_exists('sendPengembalianNotification')) {
@@ -1269,6 +1279,7 @@ public function kembali()
         ]);
     }
 }
+
 
 private function generateBeritaAcara($data)
 {

@@ -435,22 +435,28 @@
                                 </div>
                             </div>
                             
-                            <!-- Tab 2: Detail Kendaraan dengan penambahan field STNK dan BPKB -->
+<!-- Tab 2: Detail Kendaraan dengan penambahan field yang dapat diedit untuk Pihak Kedua -->
 <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
     aria-labelledby="detail-kendaraan-tab">
     <div class="card p-3 mb-3">
-        <h6 class="card-title fw-bold">Pihak Kedua</h6>
+        <h6 class="card-title fw-bold">Pihak Kedua <small class="text-muted">(Dapat diedit)</small></h6>
         <div class="row mb-2">
             <div class="col-md-3">Nama</div>
-            <div class="col-md-9">: Pak Udin</div>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" value="Pak Udin">
+            </div>
         </div>
         <div class="row mb-2">
             <div class="col-md-3">NIP</div>
-            <div class="col-md-9">: 12345678</div>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" value="12345678">
+            </div>
         </div>
         <div class="row mb-2">
             <div class="col-md-3">Jabatan</div>
-            <div class="col-md-9">: Kepala Satuan Kerja Selaku Kuasa Pengguna Barang</div>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang">
+            </div>
         </div>
     </div>
     
@@ -518,15 +524,6 @@
             <div class="form-group mb-3">
                 <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
                 <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Dikembalikan</label>
-                <select class="form-control" id="kondisi_kembali" name="kondisi_kembali" required>
-                    <option value="Baik">Baik</option>
-                    <option value="Rusak Ringan">Rusak Ringan</option>
-                    <option value="Rusak Berat">Rusak Berat</option>
-                </select>
             </div>
         </div>
     </div>
