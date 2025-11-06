@@ -435,86 +435,107 @@
                                 </div>
                             </div>
                             
-                            <!-- Tab 2: Detail Kendaraan -->
-                            <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
-                                aria-labelledby="detail-kendaraan-tab">
-                                <div class="card p-3 mb-3">
-                                    <h6 class="card-title fw-bold">Pihak Kedua</h6>
-                                    <div class="row mb-2">
-                                        <div class="col-md-3">Nama</div>
-                                        <div class="col-md-9">: Pak Udin</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-3">NIP</div>
-                                        <div class="col-md-9">: 12345678</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-md-3">Jabatan</div>
-                                        <div class="col-md-9">: Kepala Satuan Kerja Selaku Kuasa Pengguna Barang</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group mb-3">
-    <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
-    <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
+                            <!-- Tab 2: Detail Kendaraan dengan penambahan field STNK dan BPKB -->
+<div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
+    aria-labelledby="detail-kendaraan-tab">
+    <div class="card p-3 mb-3">
+        <h6 class="card-title fw-bold">Pihak Kedua</h6>
+        <div class="row mb-2">
+            <div class="col-md-3">Nama</div>
+            <div class="col-md-9">: Pak Udin</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3">NIP</div>
+            <div class="col-md-9">: 12345678</div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-3">Jabatan</div>
+            <div class="col-md-9">: Kepala Satuan Kerja Selaku Kuasa Pengguna Barang</div>
+        </div>
+    </div>
+    
+    <div class="form-group mb-3">
+        <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
+        <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
+                <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
+                <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="kode_barang_detail" class="form-label">Kode Barang</label>
+                <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="nup_detail" class="form-label">NUP</label>
+                <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
+            </div>
+            
+            <!-- Tambahkan field STNK -->
+            <div class="form-group mb-3">
+                <label for="nomor_stnk" class="form-label">Nomor STNK</label>
+                <input type="text" class="form-control" id="nomor_stnk" name="nomor_stnk" readonly>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label for="merk_detail" class="form-label">Merk</label>
+                <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="warna" class="form-label">Warna</label>
+                <input type="text" class="form-control" id="warna" name="warna" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
+                <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
+                <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
+            </div>
+            
+            <!-- Tambahkan field BPKB -->
+            <div class="form-group mb-3">
+                <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
+                <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Dikembalikan</label>
+                <select class="form-control" id="kondisi_kembali" name="kondisi_kembali" required>
+                    <option value="Baik">Baik</option>
+                    <option value="Rusak Ringan">Rusak Ringan</option>
+                    <option value="Rusak Berat">Rusak Berat</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
+        <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
+    </div>
 </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
-                                            <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
-                                            <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="kode_barang_detail" class="form-label">Kode Barang</label>
-                                            <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="nup_detail" class="form-label">NUP</label>
-                                            <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
-                                            <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="merk_detail" class="form-label">Merk</label>
-                                            <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="warna" class="form-label">Warna</label>
-                                            <input type="text" class="form-control" id="warna" name="warna" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
-                                            <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
-                                        </div>
-                                        
-                                        <div class="form-group mb-3">
-                                            <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
-                                            <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
-                                    <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

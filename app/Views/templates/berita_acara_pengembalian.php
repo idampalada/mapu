@@ -165,47 +165,56 @@
         <p>PIHAK KESATU menyerahkan kepada PIHAK KEDUA dan PIHAK KEDUA menyatakan menerima dari PIHAK KESATU Kendaraan Dinas sebagai berikut :</p>
         
         <table class="detail-table">
-            <tr>
-                <td width="40%">Nomor SIP / Surat Penanggung Jawab</td>
-                <td><?= $nomor_sip ?></td>
-            </tr>
-            <tr>
-                <td>Jenis Kendaraan</td>
-                <td><?= $kategori_id ?></td>
-            </tr>
-            <tr>
-                <td>Nomor Polisi</td>
-                <td><?= $no_polisi ?></td>
-            </tr>
-            <tr>
-                <td>Kode Barang / NUP</td>
-                <td><?= $kode_barang ?> / <?= $nup ?? '-' ?></td>
-            </tr>
-            <tr>
-                <td>Tahun Pembuatan</td>
-                <td><?= $tahun_pembuatan ?? '-' ?></td>
-            </tr>
-            <tr>
-                <td>Merk / Type</td>
-                <td><?= $merk ?></td>
-            </tr>
-            <tr>
-                <td>Warna</td>
-                <td><?= $warna ?? '-' ?></td>
-            </tr>
-            <tr>
-                <td>Nomor Mesin</td>
-                <td><?= $nomor_mesin ?? '-' ?></td>
-            </tr>
-            <tr>
-                <td>Nomor Rangka</td>
-                <td><?= $nomor_rangka ?? '-' ?></td>
-            </tr>
-            <tr>
-                <td>Kondisi Kendaraan</td>
-                <td><?= $kondisi_kembali ?></td>
-            </tr>
-        </table>
+    <tr>
+        <td width="40%">Nomor SIP / Surat Penanggung Jawab</td>
+        <td><?= $nomor_sip ?></td>
+    </tr>
+    <tr>
+        <td>Jenis Kendaraan</td>
+        <td><?= $kategori_id ?></td>
+    </tr>
+    <tr>
+        <td>Nomor Polisi</td>
+        <td><?= $no_polisi ?></td>
+    </tr>
+    <tr>
+        <td>Kode Barang / NUP</td>
+        <td><?= $kode_barang ?> / <?= $nup ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Tahun Pembuatan</td>
+        <td><?= $tahun_pembuatan ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Merk / Type</td>
+        <td><?= $merk ?></td>
+    </tr>
+    <tr>
+        <td>Warna</td>
+        <td><?= $warna ?? '-' ?></td>
+    </tr>
+    <!-- Tambahkan baris untuk STNK dan BPKB -->
+    <tr>
+        <td>Nomor STNK</td>
+        <td><?= $no_stnk ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Nomor BPKB</td>
+        <td><?= $no_bpkb ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Nomor Mesin</td>
+        <td><?= $nomor_mesin ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Nomor Rangka</td>
+        <td><?= $no_rangka ?? '-' ?></td>
+    </tr>
+    <tr>
+        <td>Kondisi Kendaraan</td>
+        <td><?= $kondisi_kembali ?></td>
+    </tr>
+</table>
         
         <h3>Pasal 2</h3>
         <p>Penyerahan sebagaimana dimaksud dalam Pasal 1 berupa:</p>

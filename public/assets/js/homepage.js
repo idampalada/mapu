@@ -1112,12 +1112,19 @@ function openPengembalianModal(kendaraanId) {
       }
       return response.json();
     })
-    .then((data) => {
-      console.log("Data received:", data);
+    .then((response) => {
+      // Tambahkan log debug
+      console.log("Complete response received:", response);
 
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.success) {
+        throw new Error(response.error || "Data tidak valid");
       }
+
+      const data = response.data;
+      console.log("STNK dan BPKB data:", {
+        no_stnk: data.no_stnk,
+        no_bpkb: data.no_bpkb,
+      });
 
       // Set kendaraan ID
       document.getElementById("kendaraan_id_hidden").value = kendaraanId;
@@ -1171,6 +1178,15 @@ function openPengembalianModal(kendaraanId) {
       document.getElementById("warna").value = data.warna || "-";
       document.getElementById("nomor_mesin").value = data.nomor_mesin || "-";
       document.getElementById("nomor_rangka").value = data.nomor_rangka || "-";
+
+      // Tambahkan field STNK dan BPKB
+      if (document.getElementById("nomor_stnk")) {
+        document.getElementById("nomor_stnk").value = data.no_stnk || "";
+      }
+
+      if (document.getElementById("nomor_bpkb")) {
+        document.getElementById("nomor_bpkb").value = data.no_bpkb || "";
+      }
 
       // Tampilkan modal
       const modal = new bootstrap.Modal(

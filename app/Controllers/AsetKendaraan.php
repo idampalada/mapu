@@ -606,10 +606,16 @@ public function getPeminjamanForKembali($kendaraanId = null)
         'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
         'warna' => $asset['warna'] ?? '-',
         'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
-        'nomor_rangka' => $asset['no_rangka'] ?? '-'
+        'nomor_rangka' => $asset['no_rangka'] ?? '-',
+        // Tambahkan field STNK dan BPKB
+        'no_stnk' => $asset['no_stnk'] ?? '',
+        'no_bpkb' => $asset['no_bpkb'] ?? ''
     ]);
     
-    return $this->response->setJSON($response);
+    return $this->response->setJSON([
+        'success' => true,
+        'data' => $response
+    ]);
 }
 
     public function tambah()
@@ -1110,7 +1116,7 @@ public function kembali()
             'no_polisi' => $asset['no_polisi'],
             'merk' => $asset['merk'],
             'kode_barang' => $asset['kode_barang'],
-            'nomor_rangka' => $asset['no_rangka'] ?? '',
+            'no_rangka' => $asset['no_rangka'] ?? '',  // Gunakan no_rangka karena itu nama di DB
             'warna' => $asset['warna'] ?? '',
             'nomor_mesin' => $asset['nomor_mesin'] ?? '',
             'nup' => $asset['nup'] ?? '',
@@ -1122,8 +1128,17 @@ public function kembali()
             'nomor_sip' => $nomor_sip,
             'pihak_kedua_nama' => 'Pak Udin',
             'pihak_kedua_nip' => '12345678',
-            'pihak_kedua_jabatan' => 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang'
+            'pihak_kedua_jabatan' => 'Kepala Satuan Kerja Selaku Kuasa Pengguna Barang',
+            'no_stnk' => $asset['no_stnk'] ?? '',
+            'no_bpkb' => $asset['no_bpkb'] ?? ''
         ];
+
+        // Log data STNK, BPKB, dan Rangka untuk debugging
+        log_message('debug', 'Data kendaraan untuk PDF: ' . json_encode([
+            'no_stnk' => $asset['no_stnk'] ?? 'tidak ada',
+            'no_bpkb' => $asset['no_bpkb'] ?? 'tidak ada',
+            'no_rangka' => $asset['no_rangka'] ?? 'tidak ada'
+        ]));
 
         // Generate PDF
         helper('dompdf');
@@ -1266,6 +1281,15 @@ private function generateBeritaAcara($data)
     
     $dompdf = new \Dompdf\Dompdf($options);
     
+    // Pastikan data STNK dan BPKB tersedia untuk template
+    if (!isset($data['no_stnk'])) {
+        $data['no_stnk'] = '-';
+    }
+    
+    if (!isset($data['no_bpkb'])) {
+        $data['no_bpkb'] = '-';
+    }
+    
     // HTML template berita acara
     $html = view('templates/berita_acara_pengembalian', $data);
     
@@ -1292,7 +1316,7 @@ private function generateBeritaAcara($data)
     try {
         if (file_put_contents($filePath, $output)) {
             log_message('debug', 'Berita acara berhasil disimpan: ' . $fileName);
-            @chmod($filePath, 0644); // Set file permissions
+            @chmod($filePath, 0644); // Set izin file
             return $fileName;
         } else {
             log_message('error', 'Gagal menyimpan berita acara ke: ' . $filePath);
@@ -1303,6 +1327,7 @@ private function generateBeritaAcara($data)
         return null;
     }
 }
+
 
 private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
 {
