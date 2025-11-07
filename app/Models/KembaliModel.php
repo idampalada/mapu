@@ -41,6 +41,7 @@ class KembaliModel extends Model
     'kondisi_kembali', // Pastikan ini juga ada
     'foto_pengembalian', // Pastikan ini juga ada
     'alamat_rumah', // Pastikan ini juga ada
+    'rating_pengguna',
     'no_ktp' // Pastikan ini juga ada
 ];
 

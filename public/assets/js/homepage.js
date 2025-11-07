@@ -180,6 +180,21 @@ document.addEventListener("DOMContentLoaded", function () {
   if (formEditAset) {
     formEditAset.addEventListener("submit", handleEditAsetSubmit);
   }
+
+  // Inisialisasi rating bintang
+  const ratingInputs = document.querySelectorAll(
+    'input[name="rating_pengguna"]'
+  );
+  const ratingText = document.querySelector(".rating-text");
+
+  if (ratingInputs.length > 0 && ratingText) {
+    ratingInputs.forEach((input) => {
+      input.addEventListener("change", function () {
+        const value = this.value;
+        ratingText.textContent = `${value}/5`;
+      });
+    });
+  }
 });
 
 const jabatanMapping = {
@@ -354,6 +369,21 @@ function handlePengembalianSubmit(e) {
     return;
   }
 
+  // Validasi rating
+  const rating = document.querySelector(
+    'input[name="rating_pengguna"]:checked'
+  );
+  if (!rating) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Rating penggunaan kendaraan harus dipilih",
+      confirmButtonText: "Tutup",
+      confirmButtonColor: "#dc3545",
+    });
+    return;
+  }
+
   // Ubah daftar field yang wajib diisi - HAPUS berita_acara_pengembalian dari daftar
   const requiredFields = [
     "nama_penanggung_jawab",
@@ -396,6 +426,7 @@ function handlePengembalianSubmit(e) {
   console.log("Submitting form data:", {
     kendaraanId: kendaraanId,
     photoData: photoData ? "Photo data exists" : "No photo data",
+    rating: rating.value, // Tambahkan log nilai rating
     formValues: Object.fromEntries(formData),
   });
 

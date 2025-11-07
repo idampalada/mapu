@@ -360,6 +360,35 @@
                                             <label for="no_ktp" class="form-label">No. KTP</label>
                                             <input type="text" class="form-control" id="no_ktp" name="no_ktp" readonly>
                                         </div>
+                                        
+                                        <!-- Tambahan fitur Rating Penggunaan -->
+                                        <div class="form-group mb-3">
+                                            <label for="rating_pengguna" class="form-label">Rating Penggunaan Kendaraan <span class="text-danger">*</span></label>
+                                            <div class="rating-container">
+                                                <div class="star-rating d-flex align-items-center">
+                                                    <div class="rating-stars">
+                                                        <input type="radio" id="star5" name="rating_pengguna" value="5" required />
+                                                        <label for="star5" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
+                                                        
+                                                        <input type="radio" id="star4" name="rating_pengguna" value="4" />
+                                                        <label for="star4" title="Baik"><i class="bi bi-star-fill"></i></label>
+                                                        
+                                                        <input type="radio" id="star3" name="rating_pengguna" value="3" />
+                                                        <label for="star3" title="Cukup"><i class="bi bi-star-fill"></i></label>
+                                                        
+                                                        <input type="radio" id="star2" name="rating_pengguna" value="2" />
+                                                        <label for="star2" title="Kurang"><i class="bi bi-star-fill"></i></label>
+                                                        
+                                                        <input type="radio" id="star1" name="rating_pengguna" value="1" />
+                                                        <label for="star1" title="Sangat Kurang"><i class="bi bi-star-fill"></i></label>
+                                                    </div>
+                                                    <span class="ms-3 rating-text">0/5</span>
+                                                </div>
+                                                <div class="form-text">
+                                                    <small><i class="bi bi-info-circle"></i> Berikan rating penggunaan kendaraan (1-5)</small>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="col-md-6">
@@ -435,104 +464,104 @@
                                 </div>
                             </div>
                             
-<!-- Tab 2: Detail Kendaraan dengan penambahan field yang dapat diedit untuk Pihak Kedua -->
-<div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
-    aria-labelledby="detail-kendaraan-tab">
-    <div class="card p-3 mb-3">
-        <h6 class="card-title fw-bold">Pihak Kedua <small class="text-muted">(Dapat diedit)</small></h6>
-        <div class="row mb-2">
-            <div class="col-md-3">Nama</div>
-            <div class="col-md-9">
-                <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" value="Pak Udin">
-            </div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-3">NIP</div>
-            <div class="col-md-9">
-                <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" value="12345678">
-            </div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-3">Jabatan</div>
-            <div class="col-md-9">
-                <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang">
-            </div>
-        </div>
-    </div>
-    
-    <div class="form-group mb-3">
-        <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
-        <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
-    </div>
-    
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group mb-3">
-                <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
-                <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
-                <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="kode_barang_detail" class="form-label">Kode Barang</label>
-                <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="nup_detail" class="form-label">NUP</label>
-                <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
-                <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
-            </div>
-            
-            <!-- Tambahkan field STNK -->
-            <div class="form-group mb-3">
-                <label for="nomor_stnk" class="form-label">Nomor STNK</label>
-                <input type="text" class="form-control" id="nomor_stnk" name="nomor_stnk" readonly>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="form-group mb-3">
-                <label for="merk_detail" class="form-label">Merk</label>
-                <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="warna" class="form-label">Warna</label>
-                <input type="text" class="form-control" id="warna" name="warna" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
-                <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
-                <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
-            </div>
-            
-            <!-- Tambahkan field BPKB -->
-            <div class="form-group mb-3">
-                <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
-                <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
-            </div>
-        </div>
-    </div>
-    
-    <div class="d-flex justify-content-between">
-        <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
-        <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
-    </div>
-</div>
+                            <!-- Tab 2: Detail Kendaraan dengan penambahan field yang dapat diedit untuk Pihak Kedua -->
+                            <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
+                                aria-labelledby="detail-kendaraan-tab">
+                                <div class="card p-3 mb-3">
+                                    <h6 class="card-title fw-bold">Pihak Kedua <small class="text-muted">(Dapat diedit)</small></h6>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">Nama</div>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" value="Pak Udin">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">NIP</div>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" value="12345678">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-3">Jabatan</div>
+                                        <div class="col-md-9">
+                                            <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
+                                    <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
+                                            <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
+                                            <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="kode_barang_detail" class="form-label">Kode Barang</label>
+                                            <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nup_detail" class="form-label">NUP</label>
+                                            <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                                            <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
+                                        </div>
+                                        
+                                        <!-- Tambahkan field STNK -->
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_stnk" class="form-label">Nomor STNK</label>
+                                            <input type="text" class="form-control" id="nomor_stnk" name="nomor_stnk" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="merk_detail" class="form-label">Merk</label>
+                                            <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="warna" class="form-label">Warna</label>
+                                            <input type="text" class="form-control" id="warna" name="warna" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
+                                            <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
+                                            <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
+                                        </div>
+                                        
+                                        <!-- Tambahkan field BPKB -->
+                                        <div class="form-group mb-3">
+                                            <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
+                                            <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -541,10 +570,45 @@
                     <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
+
+<style>
+/* CSS untuk rating stars */
+.rating-stars {
+    direction: rtl;
+    display: inline-block;
+}
+
+.rating-stars input[type="radio"] {
+    display: none;
+}
+
+.rating-stars label {
+    color: #bbb;
+    font-size: 1.5rem;
+    padding: 0;
+    cursor: pointer;
+    margin: 0 2px;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label,
+.rating-stars input[type="radio"]:checked ~ label {
+    color: #ffb700;
+}
+
+.rating-text {
+    font-size: 1rem;
+    align-self: center;
+}
+
+/* Pastikan style tidak rusak */
+.rating-container {
+    margin-bottom: 10px;
+}
+</style>
 
 <div class="modal fade" id="modalPeminjaman" tabindex="-1" aria-labelledby="modalPeminjamanLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
