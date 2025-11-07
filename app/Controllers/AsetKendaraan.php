@@ -1496,6 +1496,16 @@ public function verifikasiPengembalian()
     $keterangan = $this->request->getPost('keterangan');
     $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
 
+    // Validasi alasan penolakan jika status ditolak
+    if ($status === 'ditolak' && empty($keterangan)) {
+        return $this->response->setJSON(['error' => 'Alasan penolakan harus diisi']);
+    }
+
+    // TAMBAHKAN VALIDASI INI: Periksa apakah dokumen tambahan disediakan saat penolakan
+    if ($status === 'ditolak' && (!$dokumenTambahan || !$dokumenTambahan->isValid())) {
+        return $this->response->setJSON(['error' => 'Dokumen tambahan harus diupload untuk menolak pengembalian']);
+    }
+
     $model = new KembaliModel();
     $pinjamModel = new PinjamModel();
     $asetModel = new AsetModel();
@@ -1516,8 +1526,12 @@ public function verifikasiPengembalian()
     ];
 
     if ($dokumenTambahan && $dokumenTambahan->isValid()) {
-        if ($dokumenTambahan->getClientMimeType() !== 'application/pdf') {
-            return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF']);
+        // Mendukung format PDF, JPG, dan PNG
+        $validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+        $fileType = $dokumenTambahan->getClientMimeType();
+        
+        if (!in_array($fileType, $validTypes)) {
+            return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF, JPG, atau PNG']);
         }
 
         if ($dokumenTambahan->getSize() > 2 * 1024 * 1024) {
@@ -1533,7 +1547,8 @@ public function verifikasiPengembalian()
         $updateData['dokumen_tambahan'] = $newName;
     }
 
-    // Cari peminjaman yang terkait
+    // SOLUSI: Perbaiki kondisi pencarian peminjaman - Cari peminjaman yang mungkin sudah berubah statusnya
+    // Gunakan pinjam_id yang ada di data pengembalian, bukan mencari dengan kondisi lain
     $pinjam = $pinjamModel->find($kembali['pinjam_id']);
 
     if (!$pinjam) {
@@ -1543,11 +1558,9 @@ public function verifikasiPengembalian()
     $db->transStart();
 
     try {
-        // Update status pengembalian
         $model->update($kembaliId, $updateData);
 
         if ($status === 'disetujui') {
-            // Jika disetujui, perbarui status kendaraan dan peminjaman
             $asetModel->update($kembali['kendaraan_id'], [
                 'status_pinjam' => 'Tersedia'
             ]);
@@ -1558,28 +1571,16 @@ public function verifikasiPengembalian()
             ]);
 
         } else if ($status === 'ditolak') {
-            // Jika ditolak, perbarui status kendaraan dan peminjaman
             $asetModel->update($kembali['kendaraan_id'], [
                 'status_pinjam' => 'Dipinjam'
             ]);
 
-            // Tambahan untuk menyimpan histori penolakan
             $pinjamModel->update($pinjam['id'], [
                 'is_returned' => false,
-                'has_rejected_return' => true, // Field baru untuk menandai pernah ditolak
+                'has_rejected_return' => true, // Tambahkan field untuk menandai penolakan
                 'rejected_return_reason' => $keterangan, // Simpan alasan penolakan
                 'rejected_return_date' => date('Y-m-d H:i:s') // Simpan tanggal penolakan
             ]);
-            
-            // Jika perlu, buat tabel dan model PengembalianHistoriModel untuk menyimpan histori lebih detail
-            // $pengembalianHistoriModel = new \App\Models\PengembalianHistoriModel();
-            // $pengembalianHistoriModel->insert([
-            //     'kembali_id' => $kembaliId,
-            //     'pinjam_id' => $pinjam['id'],
-            //     'status' => 'ditolak',
-            //     'keterangan' => $keterangan,
-            //     'created_at' => date('Y-m-d H:i:s')
-            // ]);
         }
 
         $db->transComplete();
@@ -2300,5 +2301,6 @@ public function getPenolakanHistory($kendaraanId)
                              ->setJSON(['error' => 'Terjadi kesalahan saat mengambil data']);
     }
 }
+
 
 }
