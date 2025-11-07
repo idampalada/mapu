@@ -1603,12 +1603,12 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="dokumen_tambahan" class="form-label">Dokumen PDF Tambahan (Opsional)</label>
+                        <label for="dokumen_tambahan" class="form-label">Dokumen Tambahan <span class="text-danger">*</span></label>
                         <input type="file" class="form-control" id="dokumen_tambahan" name="dokumen_tambahan" 
-                               accept="application/pdf">
+                               accept="application/pdf,image/jpeg,image/jpg,image/png" required>
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i> 
-                            Upload dokumen pendukung jika diperlukan. Max 2MB, format PDF.
+                            Upload dokumen pendukung. Max 2MB, format PDF, JPG, atau PNG.
                         </div>
                     </div>
                     

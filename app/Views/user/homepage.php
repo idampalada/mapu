@@ -940,42 +940,70 @@
                     </div>
                     
                     <!-- Pengembalian Pending -->
-                    <div class="tab-pane fade" id="pengembalian" role="tabpanel" aria-labelledby="pengembalian-tab">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Tanggal</th>
-                                        <th>Penanggung Jawab</th>
-                                        <th>Kendaraan</th>
-                                        <th>Urusan Kedinasan</th>
-                                        <th>Status</th>
-                                        <th>Dokumen</th>
-                                        <th>Tanggal Pinjam</th>
-                                        <th>Tanggal Kembali</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pengembalianPendingTable">
-                                    <tr>
-                                        <td colspan="9" class="text-center py-4">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <p class="mt-3">Memuat data pengembalian...</p>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+<div class="tab-pane fade" id="pengembalian" role="tabpanel" aria-labelledby="pengembalian-tab">
+    <div class="table-responsive">
+        <h5 class="mb-3">Pengembalian Pending</h5>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Penanggung Jawab</th>
+                    <th>Kendaraan</th>
+                    <th>Urusan Kedinasan</th>
+                    <th>Status</th>
+                    <th>Dokumen</th>
+                    <th>Tanggal Pinjam</th>
+                    <th>Tanggal Kembali</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="pengembalianPendingTable">
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
+                        <p class="mt-3">Memuat data pengembalian...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Histori Penolakan dalam tab yang sama -->
+        <h5 class="mt-4 mb-3">Histori Penolakan Pengembalian</h5>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Penanggung Jawab</th>
+                    <th>Kendaraan</th>
+                    <th>Status</th>
+                    <th>Alasan Penolakan</th>
+                    <th>Dokumen</th>
+                    <th>Tanggal Pinjam</th>
+                    <th>Tanggal Kembali</th>
+                </tr>
+            </thead>
+            <tbody id="penolakanHistoryTable">
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3">Memuat histori penolakan...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+</div>
+</div>
+</div>
 </div>
 
 

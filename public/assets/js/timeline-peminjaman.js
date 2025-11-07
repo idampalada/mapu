@@ -31,6 +31,17 @@ document.addEventListener("DOMContentLoaded", function () {
     </tr>
   `;
 
+    document.getElementById("penolakanHistoryTable").innerHTML = `
+    <tr>
+      <td colspan="8" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Memuat histori penolakan...</p>
+      </td>
+    </tr>
+  `;
+
     // Reset counters
     document.getElementById("peminjamanPendingCount").textContent = "0";
     document.getElementById("pengembalianPendingCount").textContent = "0";
@@ -102,6 +113,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Render pengembalian table dengan data yang sudah dikelompokkan
     renderPengembalianPendingTable(uniquePengembalian);
+
+    // Render penolakan history table
+    if (data.penolakan && Array.isArray(data.penolakan)) {
+      renderPenolakanHistoryTable(data.penolakan);
+    } else {
+      document.getElementById("penolakanHistoryTable").innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-4">
+            <div class="text-muted">
+              <i class="bi bi-info-circle text-info fs-4"></i>
+              <p class="mt-2">Tidak ada data histori penolakan</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
   }
 
   // Render peminjaman pending table
@@ -387,6 +414,70 @@ document.addEventListener("DOMContentLoaded", function () {
     tableBody.innerHTML = html;
   }
 
+  // Fungsi baru untuk menampilkan histori penolakan
+  function renderPenolakanHistoryTable(penolakan) {
+    const tableBody = document.getElementById("penolakanHistoryTable");
+
+    if (!tableBody) {
+      console.error("Element penolakanHistoryTable tidak ditemukan");
+      return;
+    }
+
+    if (penolakan.length === 0) {
+      tableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <div class="text-muted">
+            <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+            <p class="mt-2">Tidak ada histori penolakan</p>
+          </div>
+        </td>
+      </tr>
+      `;
+      return;
+    }
+
+    let html = "";
+
+    penolakan.forEach((item) => {
+      // Dokumen links untuk histori penolakan
+      let dokumenLinks = "-";
+
+      if (item.berita_acara_pengembalian) {
+        dokumenLinks = `
+        <a href="${BASE_URL}/uploads/documents/${item.berita_acara_pengembalian}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-file-earmark-pdf"></i> Berita Acara
+        </a>
+        `;
+      }
+
+      html += `
+      <tr>
+        <td>${item.tanggal_formatted}</td>
+        <td>${item.nama_penanggung_jawab}</td>
+        <td>${item.kendaraan_nama} <br><small class="text-muted">${
+        item.no_polisi || "-"
+      }</small></td>
+        <td>
+          <span class="badge bg-danger">
+            <i class="bi bi-x-circle me-1"></i> Ditolak
+          </span>
+        </td>
+        <td>
+          <div class="text-danger">
+            ${item.keterangan || "Tidak ada keterangan"}
+          </div>
+        </td>
+        <td>${dokumenLinks}</td>
+        <td>${item.tanggal_pinjam_formatted}</td>
+        <td>${item.tanggal_kembali_formatted}</td>
+      </tr>
+      `;
+    });
+
+    tableBody.innerHTML = html;
+  }
+
   // Function to show error
   function showError(message) {
     document.getElementById("peminjamanPendingTable").innerHTML = `
@@ -403,6 +494,17 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("pengembalianPendingTable").innerHTML = `
             <tr>
                 <td colspan="9" class="text-center py-4">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        ${message}
+                    </div>
+                </td>
+            </tr>
+        `;
+
+    document.getElementById("penolakanHistoryTable").innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
                     <div class="alert alert-danger">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         ${message}

@@ -1485,7 +1485,7 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
         }
     }
 
-    public function verifikasiPengembalian()
+public function verifikasiPengembalian()
 {
     if (!in_groups(['admin', 'admin_gedungutama'])) {
         return $this->response->setJSON(['error' => 'Unauthorized Access']);
@@ -1533,8 +1533,7 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
         $updateData['dokumen_tambahan'] = $newName;
     }
 
-    // SOLUSI: Perbaiki kondisi pencarian peminjaman - Cari peminjaman yang mungkin sudah berubah statusnya
-    // Gunakan pinjam_id yang ada di data pengembalian, bukan mencari dengan kondisi lain
+    // Cari peminjaman yang terkait
     $pinjam = $pinjamModel->find($kembali['pinjam_id']);
 
     if (!$pinjam) {
@@ -1544,12 +1543,11 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
     $db->transStart();
 
     try {
-        $model->update($kembaliId, [
-            'status' => $status,
-            'keterangan' => $keterangan
-        ]);
+        // Update status pengembalian
+        $model->update($kembaliId, $updateData);
 
         if ($status === 'disetujui') {
+            // Jika disetujui, perbarui status kendaraan dan peminjaman
             $asetModel->update($kembali['kendaraan_id'], [
                 'status_pinjam' => 'Tersedia'
             ]);
@@ -1560,13 +1558,28 @@ private function cleanupFiles($suratPengembalian = null, $beritaAcara = null)
             ]);
 
         } else if ($status === 'ditolak') {
+            // Jika ditolak, perbarui status kendaraan dan peminjaman
             $asetModel->update($kembali['kendaraan_id'], [
                 'status_pinjam' => 'Dipinjam'
             ]);
 
+            // Tambahan untuk menyimpan histori penolakan
             $pinjamModel->update($pinjam['id'], [
-                'is_returned' => false
+                'is_returned' => false,
+                'has_rejected_return' => true, // Field baru untuk menandai pernah ditolak
+                'rejected_return_reason' => $keterangan, // Simpan alasan penolakan
+                'rejected_return_date' => date('Y-m-d H:i:s') // Simpan tanggal penolakan
             ]);
+            
+            // Jika perlu, buat tabel dan model PengembalianHistoriModel untuk menyimpan histori lebih detail
+            // $pengembalianHistoriModel = new \App\Models\PengembalianHistoriModel();
+            // $pengembalianHistoriModel->insert([
+            //     'kembali_id' => $kembaliId,
+            //     'pinjam_id' => $pinjam['id'],
+            //     'status' => 'ditolak',
+            //     'keterangan' => $keterangan,
+            //     'created_at' => date('Y-m-d H:i:s')
+            // ]);
         }
 
         $db->transComplete();
@@ -2105,8 +2118,40 @@ public function getTimelineData($kendaraan_id = null)
             ->get()
             ->getResultArray();
         
+        // Get all penolakan pengembalian for this specific vehicle ID only
+        $penolakanBuilder = $kembaliModel->builder()
+            ->select('
+                kembali.*,
+                users.username, 
+                users.fullname,
+                pinjam.nama_penanggung_jawab,
+                pinjam.urusan_kedinasan,
+                pinjam.tanggal_pinjam,
+                pinjam.tanggal_kembali,
+                pinjam.surat_permohonan,
+                pinjam.surat_jalan_admin,
+                pinjam.surat_penanggung_jawab,
+                assets.merk as kendaraan_nama,
+                assets.no_polisi
+            ')
+            ->join('users', 'users.id = kembali.user_id', 'left')
+            ->join('pinjam', 'pinjam.id = kembali.pinjam_id', 'left')
+            ->join('assets', 'assets.id = kembali.kendaraan_id', 'left')
+            ->where('kembali.kendaraan_id', $kendaraan_id)
+            ->where('kembali.status', 'ditolak')
+            ->where('kembali.deleted_at IS NULL');
+        
+        // Jika bukan admin, filter berdasarkan user_id
+        if (!$isAdmin) {
+            $penolakanBuilder->where('kembali.user_id', $userId);
+        }
+        
+        $penolakan = $penolakanBuilder->orderBy('kembali.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+        
         // Log jumlah data yang ditemukan
-        log_message('info', 'Found ' . count($peminjaman) . ' peminjaman and ' . count($pengembalian) . ' pengembalian for kendaraan ID: ' . $kendaraan_id);
+        log_message('info', 'Found ' . count($peminjaman) . ' peminjaman, ' . count($pengembalian) . ' pengembalian, and ' . count($penolakan) . ' penolakan for kendaraan ID: ' . $kendaraan_id);
         
         // Format peminjaman data
         $formattedPeminjaman = [];
@@ -2167,13 +2212,43 @@ public function getTimelineData($kendaraan_id = null)
             ];
         }
         
+        // Format penolakan data
+        $formattedPenolakan = [];
+        foreach ($penolakan as $item) {
+            $formattedPenolakan[] = [
+                'id' => $item['id'],
+                'pinjam_id' => $item['pinjam_id'],
+                'user_id' => $item['user_id'] ?? null,
+                'username' => $item['username'] ?? '',
+                'fullname' => $item['fullname'] ?? '',
+                'nama_penanggung_jawab' => $item['nama_penanggung_jawab'] ?? 'Tidak Ada Nama',
+                'tanggal' => $item['created_at'],
+                'tanggal_formatted' => date('d/m/Y', strtotime($item['created_at'])),
+                'tanggal_pinjam' => $item['tanggal_pinjam'],
+                'tanggal_pinjam_formatted' => date('d/m/Y', strtotime($item['tanggal_pinjam'])),
+                'tanggal_kembali' => $item['tanggal_kembali'],
+                'tanggal_kembali_formatted' => date('d/m/Y', strtotime($item['tanggal_kembali'])),
+                'status' => $item['status'],
+                'keterangan' => $item['keterangan'] ?? 'Tidak ada keterangan',
+                'urusan_kedinasan' => $item['urusan_kedinasan'] ?? '',
+                'surat_pengembalian' => $item['surat_pengembalian'] ?? '',
+                'berita_acara_pengembalian' => $item['berita_acara_pengembalian'] ?? '',
+                'dokumen_tambahan' => $item['dokumen_tambahan'] ?? '',
+                'kondisi_kembali' => $item['kondisi_kembali'] ?? '',
+                'kendaraan_nama' => $item['kendaraan_nama'] ?? $asset['merk'] ?? 'Tidak Diketahui',
+                'kendaraan_id' => $item['kendaraan_id'],
+                'no_polisi' => $item['no_polisi'] ?? ''
+            ];
+        }
+        
         // Return formatted data
         return $this->response->setJSON([
             'success' => true,
             'asset' => $asset,
             'kendaraan_id' => $kendaraan_id, // Tambahkan ID kendaraan yang diminta
             'peminjaman' => $formattedPeminjaman,
-            'pengembalian' => $formattedPengembalian
+            'pengembalian' => $formattedPengembalian,
+            'penolakan' => $formattedPenolakan // Tambahkan data penolakan
         ]);
     } catch (\Exception $e) {
         log_message('error', 'Error in getTimelineData: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
@@ -2182,6 +2257,47 @@ public function getTimelineData($kendaraan_id = null)
             'success' => false,
             'error' => 'Terjadi kesalahan: ' . $e->getMessage()
         ]);
+    }
+}
+public function getPenolakanHistory($kendaraanId)
+{
+    // Validasi input
+    if (!is_numeric($kendaraanId) || $kendaraanId <= 0) {
+        return $this->response->setStatusCode(400)->setJSON(['error' => 'ID kendaraan tidak valid']);
+    }
+
+    try {
+        $model = new KembaliModel();
+        
+        // Ambil data pengembalian yang ditolak
+        $penolakan = $model->select('
+                kembali.*, 
+                pinjam.has_rejected_return, 
+                pinjam.rejected_return_reason,
+                pinjam.rejected_return_date,
+                assets.merk, 
+                assets.no_polisi
+            ')
+            ->join('pinjam', 'pinjam.id = kembali.pinjam_id')
+            ->join('assets', 'assets.id = kembali.kendaraan_id')
+            ->where([
+                'kembali.kendaraan_id' => $kendaraanId,
+                'kembali.status' => 'ditolak'
+            ])
+            ->orderBy('kembali.created_at', 'DESC')
+            ->findAll();
+        
+        // Jika tidak ada data, kembalikan array kosong
+        if (empty($penolakan)) {
+            return $this->response->setJSON([]);
+        }
+        
+        return $this->response->setJSON($penolakan);
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Error in getPenolakanHistory: ' . $e->getMessage());
+        return $this->response->setStatusCode(500)
+                             ->setJSON(['error' => 'Terjadi kesalahan saat mengambil data']);
     }
 }
 

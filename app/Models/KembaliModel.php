@@ -119,4 +119,24 @@ class KembaliModel extends Model
         return $builder->orderBy('kembali.created_at', 'DESC')
             ->findAll();
     }
+    public function getPenolakanHistory($kendaraanId)
+{
+    return $this->select('
+            kembali.*, 
+            assets.merk, 
+            assets.no_polisi,
+            pinjam.urusan_kedinasan,
+            pinjam.rejected_return_reason,
+            pinjam.rejected_return_date
+        ')
+        ->join('assets', 'assets.id = kembali.kendaraan_id')
+        ->join('pinjam', 'pinjam.id = kembali.pinjam_id')
+        ->where([
+            'kembali.kendaraan_id' => $kendaraanId,
+            'kembali.status' => self::STATUS_DITOLAK,
+            'kembali.deleted_at' => null
+        ])
+        ->orderBy('kembali.created_at', 'DESC')
+        ->findAll();
+}
 }
