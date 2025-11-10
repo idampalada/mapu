@@ -986,6 +986,7 @@ public function kembali()
     $nomor_sip = $this->request->getPost('nomor_sip');
     $alamat_rumah = $this->request->getPost('alamat_rumah');
     $no_ktp = $this->request->getPost('no_ktp');
+    $rating_pengguna = $this->request->getPost('rating_pengguna');
     
     // Ambil data Pihak Kedua yang diedit dari form
     $pihak_kedua_nama = $this->request->getPost('pihak_kedua_nama') ?? 'Pak Udin';
@@ -1001,6 +1002,12 @@ public function kembali()
     if (empty($nomor_sip)) {
         return $this->response->setJSON([
             'error' => 'Nomor SIP / Surat Penanggung Jawab harus diisi'
+        ]);
+    }
+    
+    if (empty($rating_pengguna)) {
+        return $this->response->setJSON([
+            'error' => 'Rating penggunaan kendaraan harus dipilih'
         ]);
     }
 
@@ -1021,6 +1028,7 @@ public function kembali()
     log_message('debug', 'User login ID        : ' . $userId);
     log_message('debug', 'Kendaraan ID (request): ' . $kendaraan_id);
     log_message('debug', 'Hasil query pinjam    : ' . json_encode($pinjam));
+    log_message('debug', 'Rating pengguna      : ' . $rating_pengguna);
 
     if (!$pinjam) {
         log_message('debug', '🚫 Tidak ditemukan peminjaman aktif dengan kondisi: kendaraan_id = ' . $kendaraan_id);
@@ -1080,7 +1088,8 @@ public function kembali()
         'tanggal_pinjam' => $tanggal_pinjam,
         'tanggal_kembali' => $tanggal_kembali,
         'kondisi_kembali' => $kondisi_kembali,
-        'nomor_sip' => $nomor_sip
+        'nomor_sip' => $nomor_sip,
+        'rating_pengguna' => $rating_pengguna
     ];
 
     foreach ($requiredFields as $field => $value) {
@@ -1135,14 +1144,16 @@ public function kembali()
             'pihak_kedua_nip' => $pihak_kedua_nip,
             'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
             'no_stnk' => $asset['no_stnk'] ?? '',
-            'no_bpkb' => $asset['no_bpkb'] ?? ''
+            'no_bpkb' => $asset['no_bpkb'] ?? '',
+            'rating_pengguna' => $rating_pengguna
         ];
 
         // Log data STNK, BPKB, dan Rangka untuk debugging
         log_message('debug', 'Data kendaraan untuk PDF: ' . json_encode([
             'no_stnk' => $asset['no_stnk'] ?? 'tidak ada',
             'no_bpkb' => $asset['no_bpkb'] ?? 'tidak ada',
-            'no_rangka' => $asset['no_rangka'] ?? 'tidak ada'
+            'no_rangka' => $asset['no_rangka'] ?? 'tidak ada',
+            'rating_pengguna' => $rating_pengguna
         ]));
 
         // Generate PDF
@@ -1196,7 +1207,8 @@ public function kembali()
             'surat_pengembalian' => null,
             'pihak_kedua_nama' => $pihak_kedua_nama,
             'pihak_kedua_nip' => $pihak_kedua_nip,
-            'pihak_kedua_jabatan' => $pihak_kedua_jabatan
+            'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
+            'rating_pengguna' => $rating_pengguna
         ];
 
         $result = $model->insert($data);
@@ -1244,7 +1256,8 @@ public function kembali()
             'created_at' => date('Y-m-d H:i:s'),
             'pihak_kedua_nama' => $pihak_kedua_nama,
             'pihak_kedua_nip' => $pihak_kedua_nip,
-            'pihak_kedua_jabatan' => $pihak_kedua_jabatan
+            'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
+            'rating_pengguna' => $rating_pengguna
         ];
         
         if (function_exists('sendPengembalianNotification')) {
