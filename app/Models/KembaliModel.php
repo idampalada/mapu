@@ -43,7 +43,9 @@ class KembaliModel extends Model
     'alamat_rumah', // Pastikan ini juga ada
     'rating_pengguna',
     'rating_admin',
-    'no_ktp' // Pastikan ini juga ada
+    'no_ktp', // Pastikan ini juga ada
+        'alasan_keterlambatan', // Field baru
+    'foto_keterlambatan'    // Field baru
 ];
 
     protected $useTimestamps = true;

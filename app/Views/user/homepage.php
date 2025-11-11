@@ -302,6 +302,9 @@
                 <div class="modal-body p-4">
                     <div class="row">
                         <input type="hidden" id="kendaraan_id_hidden" name="kendaraan_id" value="">
+                        <!-- Hidden fields untuk keterlambatan -->
+                        <input type="hidden" id="is_late_return" name="is_late_return" value="false">
+                        <input type="hidden" id="days_late" name="days_late" value="0">
 
                         <!-- Tab navigation for halaman 1 dan 2 -->
                         <ul class="nav nav-tabs mb-3" id="pengembalianTab" role="tablist">
@@ -429,6 +432,75 @@
                                                 <option value="Rusak Ringan">Rusak Ringan</option>
                                                 <option value="Rusak Berat">Rusak Berat</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Section keterlambatan -->
+                                <div id="late_return_section" class="col-12 mb-3 d-none">
+                                    <div class="card border-warning">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h5 class="mb-0">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                Keterlambatan Pengembalian
+                                            </h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="alert alert-warning" role="alert">
+                                                <p><strong>Perhatian:</strong> Anda terlambat mengembalikan kendaraan selama <span id="late_days_display">0</span> hari.</p>
+                                                <p class="mb-0">Mohon berikan alasan keterlambatan untuk melanjutkan proses pengembalian.</p>
+                                            </div>
+                                            
+                                            <div class="form-group mb-3">
+                                                <label for="alasan_keterlambatan" class="form-label">Alasan Keterlambatan <span class="text-danger">*</span></label>
+                                                <textarea class="form-control" id="alasan_keterlambatan" name="alasan_keterlambatan" rows="3" placeholder="Jelaskan alasan keterlambatan pengembalian kendaraan"></textarea>
+                                                <div class="invalid-feedback">Alasan keterlambatan wajib diisi untuk pengembalian yang terlambat.</div>
+                                            </div>
+                                            
+                                            <div class="form-group mb-3">
+                                                <label for="foto_keterlambatan" class="form-label">Dokumentasi Keterlambatan (Opsional)</label>
+                                                <input type="file" class="form-control" id="foto_keterlambatan" name="foto_keterlambatan" accept="image/*">
+                                                <small class="form-text text-muted">Unggah foto atau dokumen pendukung terkait keterlambatan (jika ada).</small>
+                                            </div>
+                                            
+                                            <!-- Camera capture option for late return documentation -->
+                                            <div class="mt-2">
+                                                <button type="button" id="btn-camera-late-doc" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-camera"></i> Ambil Foto dengan Kamera
+                                                </button>
+                                            </div>
+                                            
+                                            <div id="camera-container-late" class="mt-3 d-none">
+                                                <div class="card">
+                                                    <div class="card-body p-2">
+                                                        <video id="camera-feed-late" autoplay playsinline style="width: 100%; border-radius: 4px;"></video>
+                                                        <div class="d-flex justify-content-between mt-2">
+                                                            <button type="button" id="btn-take-photo-late" class="btn btn-sm btn-success">
+                                                                <i class="bi bi-camera"></i> Ambil Foto
+                                                            </button>
+                                                            <button type="button" id="btn-cancel-camera-late" class="btn btn-sm btn-secondary">
+                                                                <i class="bi bi-x"></i> Tutup Kamera
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="photo-preview-late" class="mt-2 d-none">
+                                                    <div class="card">
+                                                        <div class="card-body p-2">
+                                                            <canvas id="photo-canvas-late" style="width: 100%; border-radius: 4px;"></canvas>
+                                                            <div class="d-flex justify-content-between mt-2">
+                                                                <button type="button" id="btn-use-photo-late" class="btn btn-sm btn-primary">
+                                                                    <i class="bi bi-check"></i> Gunakan Foto
+                                                                </button>
+                                                                <button type="button" id="btn-retake-photo-late" class="btn btn-sm btn-secondary">
+                                                                    <i class="bi bi-arrow-repeat"></i> Ambil Ulang
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
