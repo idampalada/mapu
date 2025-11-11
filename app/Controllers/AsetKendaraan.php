@@ -1507,6 +1507,7 @@ public function verifikasiPengembalian()
     $kembaliId = $this->request->getPost('kembali_id');
     $status = $this->request->getPost('status');
     $keterangan = $this->request->getPost('keterangan');
+    $rating_admin = $this->request->getPost('rating_admin'); // Ambil rating admin
     $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
 
     // Validasi alasan penolakan jika status ditolak
@@ -1514,7 +1515,12 @@ public function verifikasiPengembalian()
         return $this->response->setJSON(['error' => 'Alasan penolakan harus diisi']);
     }
 
-    // TAMBAHKAN VALIDASI INI: Periksa apakah dokumen tambahan disediakan saat penolakan
+    // Validasi rating admin jika status disetujui
+    if ($status === 'disetujui' && empty($rating_admin)) {
+        return $this->response->setJSON(['error' => 'Rating admin harus diisi']);
+    }
+
+    // Validasi dokumen tambahan saat penolakan
     if ($status === 'ditolak' && (!$dokumenTambahan || !$dokumenTambahan->isValid())) {
         return $this->response->setJSON(['error' => 'Dokumen tambahan harus diupload untuk menolak pengembalian']);
     }
@@ -1538,6 +1544,11 @@ public function verifikasiPengembalian()
         'keterangan' => $keterangan
     ];
 
+    // Tambahkan rating admin jika disetujui
+    if ($status === 'disetujui') {
+        $updateData['rating_admin'] = $rating_admin;
+    }
+
     if ($dokumenTambahan && $dokumenTambahan->isValid()) {
         // Mendukung format PDF, JPG, dan PNG
         $validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
@@ -1560,8 +1571,7 @@ public function verifikasiPengembalian()
         $updateData['dokumen_tambahan'] = $newName;
     }
 
-    // SOLUSI: Perbaiki kondisi pencarian peminjaman - Cari peminjaman yang mungkin sudah berubah statusnya
-    // Gunakan pinjam_id yang ada di data pengembalian, bukan mencari dengan kondisi lain
+    // Cari data peminjaman terkait
     $pinjam = $pinjamModel->find($kembali['pinjam_id']);
 
     if (!$pinjam) {
@@ -1590,9 +1600,9 @@ public function verifikasiPengembalian()
 
             $pinjamModel->update($pinjam['id'], [
                 'is_returned' => false,
-                'has_rejected_return' => true, // Tambahkan field untuk menandai penolakan
-                'rejected_return_reason' => $keterangan, // Simpan alasan penolakan
-                'rejected_return_date' => date('Y-m-d H:i:s') // Simpan tanggal penolakan
+                'has_rejected_return' => true,
+                'rejected_return_reason' => $keterangan,
+                'rejected_return_date' => date('Y-m-d H:i:s')
             ]);
         }
 
@@ -1618,7 +1628,9 @@ public function verifikasiPengembalian()
             'tanggal_kembali' => $kembali['tanggal_kembali'] ?? '',
             'surat_pengembalian' => $kembali['surat_pengembalian'] ?? '',
             'berita_acara_pengembalian' => $kembali['berita_acara_pengembalian'] ?? '',
-            'dokumen_tambahan' => $kembali['dokumen_tambahan'] ?? ''
+            'dokumen_tambahan' => $kembali['dokumen_tambahan'] ?? '',
+            'rating_pengguna' => $kembali['rating_pengguna'] ?? '',
+            'rating_admin' => $rating_admin ?? ''
         ];
         sendPengembalianNotification($notifData, 'verified');
 

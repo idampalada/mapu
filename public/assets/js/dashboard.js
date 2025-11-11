@@ -2589,3 +2589,133 @@ document.addEventListener("DOMContentLoaded", function () {
     tanggalBarang.addEventListener("change", refreshChartBarang);
   }
 });
+
+// Fungsi untuk menampilkan modal rating admin
+function showRatingModal(kembaliId) {
+  // Reset form dan rating
+  document.getElementById("formRatingAdmin").reset();
+  document.getElementById("kembali_id_rating").value = kembaliId;
+  document.querySelector(".rating-text-admin").textContent = "0/5";
+
+  // Tampilkan modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("modalRatingAdmin")
+  );
+  modal.show();
+}
+
+// Ganti fungsi verifikasiPengembalian untuk menggunakan modal rating
+function verifikasiPengembalian(id, status) {
+  // Jika status disetujui, tampilkan modal rating
+  if (status === "disetujui") {
+    showRatingModal(id);
+    return;
+  }
+
+  // Jika status ditolak, gunakan fungsi showTolakModal
+  if (status === "ditolak") {
+    showTolakModal("pengembalian", id);
+    return;
+  }
+}
+
+// Event listener untuk inisialisasi rating admin
+document.addEventListener("DOMContentLoaded", function () {
+  // Inisialisasi rating bintang admin
+  const ratingInputsAdmin = document.querySelectorAll(
+    'input[name="rating_admin"]'
+  );
+  const ratingTextAdmin = document.querySelector(".rating-text-admin");
+
+  if (ratingInputsAdmin.length > 0 && ratingTextAdmin) {
+    ratingInputsAdmin.forEach((input) => {
+      input.addEventListener("change", function () {
+        const value = this.value;
+        ratingTextAdmin.textContent = `${value}/5`;
+      });
+    });
+  }
+
+  // Handler untuk tombol submit rating
+  const btnSubmitRating = document.getElementById("btnSubmitRating");
+  if (btnSubmitRating) {
+    btnSubmitRating.addEventListener("click", function () {
+      const form = document.getElementById("formRatingAdmin");
+      const kembaliId = document.getElementById("kembali_id_rating").value;
+      const rating = form.querySelector('input[name="rating_admin"]:checked');
+      const keterangan = document.getElementById("keterangan").value;
+
+      // Validasi rating
+      if (!rating) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Rating kondisi kendaraan harus dipilih",
+          confirmButtonText: "Tutup",
+          confirmButtonColor: "#dc3545",
+        });
+        return;
+      }
+
+      // Tampilkan loading
+      Swal.fire({
+        title: "Mohon Tunggu",
+        text: "Sedang memproses persetujuan...",
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Siapkan data
+      const formData = new FormData();
+      formData.append("kembali_id", kembaliId);
+      formData.append("status", "disetujui");
+      formData.append("rating_admin", rating.value);
+      formData.append("keterangan", keterangan);
+
+      // Kirim request
+      fetch(`${BASE_URL}/AsetKendaraan/verifikasiPengembalian`, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Berhasil!",
+              text: data.message || "Pengembalian kendaraan berhasil disetujui",
+              confirmButtonText: "OK",
+              confirmButtonColor: "#198754",
+            }).then(() => {
+              // Tutup modal
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("modalRatingAdmin")
+              );
+              if (modal) modal.hide();
+
+              // Reload halaman
+              window.location.reload();
+            });
+          } else {
+            throw new Error(
+              data.error || "Terjadi kesalahan saat memproses persetujuan"
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Gagal!",
+            text:
+              error.message || "Terjadi kesalahan saat memproses persetujuan",
+            confirmButtonText: "Tutup",
+            confirmButtonColor: "#dc3545",
+          });
+        });
+    });
+  }
+});

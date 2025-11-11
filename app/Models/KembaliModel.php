@@ -42,6 +42,7 @@ class KembaliModel extends Model
     'foto_pengembalian', // Pastikan ini juga ada
     'alamat_rumah', // Pastikan ini juga ada
     'rating_pengguna',
+    'rating_admin',
     'no_ktp' // Pastikan ini juga ada
 ];
 

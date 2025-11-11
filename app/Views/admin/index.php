@@ -741,45 +741,43 @@
                                                             <span class="badge bg-warning">Pending</span>
                                                         </td>
                                                         <td>
-    <td>
-    <?php if (!empty($pinjam['surat_permohonan'])): ?>
-        <?php
-        // Deteksi tipe file berdasarkan prefix yang tersimpan di database
-        $isFinal = strpos($pinjam['surat_permohonan'], 'surat_permohonan_') === 0;
-        $buttonText = $isFinal ? 'Surat Permohonan' : 'Draft Surat';
-        $buttonClass = $isFinal ? 'btn-primary' : 'btn-outline-primary';
-        
-        // PENTING: Gunakan nama file LANGSUNG dari database
-        $filePath = base_url('/uploads/documents/' . $pinjam['surat_permohonan']);
-        
-        // Debug log
-        log_message('debug', 'Link PDF: ' . $filePath . ' | Nama file asli: ' . $pinjam['surat_permohonan']);
-        ?>
-        
-        <a href="<?= $filePath ?>" target="_blank" class="btn btn-sm <?= $buttonClass ?> mb-1">
-            <i class="bi bi-file-earmark-pdf"></i> <?= $buttonText ?>
-        </a>
-    <?php endif; ?>
-</td>
-<td><?= $pinjam['tanggal_pinjam'] ?></td>
-<td><?= $pinjam['tanggal_kembali'] ?></td>
-<td>
-    <button class="btn btn-sm btn-success"
-        onclick="showSetujuModal(<?= $pinjam['id'] ?>)">
-        Setujui
-    </button>
-    <button class="btn btn-sm btn-danger"
-        data-tipe="kendaraan" 
-        data-id="<?= $pinjam['id'] ?>"
-        onclick="showTolakModal('kendaraan', <?= $pinjam['id'] ?>)">
-        Tolak
-    </button>
-    <!-- Tambah tombol edit surat -->
-    <button class="btn btn-sm btn-info"
-        onclick="showEditSuratModal(<?= $pinjam['id'] ?>)">
-        Penomoran Surat
-    </button>
-</td>
+                                                        <?php if (!empty($pinjam['surat_permohonan'])): ?>
+                                                            <?php
+                                                            // Deteksi tipe file berdasarkan prefix yang tersimpan di database
+                                                            $isFinal = strpos($pinjam['surat_permohonan'], 'surat_permohonan_') === 0;
+                                                            $buttonText = $isFinal ? 'Surat Permohonan' : 'Draft Surat';
+                                                            $buttonClass = $isFinal ? 'btn-primary' : 'btn-outline-primary';
+                                                            
+                                                            // PENTING: Gunakan nama file LANGSUNG dari database
+                                                            $filePath = base_url('/uploads/documents/' . $pinjam['surat_permohonan']);
+                                                            
+                                                            // Debug log
+                                                            log_message('debug', 'Link PDF: ' . $filePath . ' | Nama file asli: ' . $pinjam['surat_permohonan']);
+                                                            ?>
+                                                            
+                                                            <a href="<?= $filePath ?>" target="_blank" class="btn btn-sm <?= $buttonClass ?> mb-1">
+                                                                <i class="bi bi-file-earmark-pdf"></i> <?= $buttonText ?>
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        </td>
+                                                        <td><?= $pinjam['tanggal_pinjam'] ?></td>
+                                                        <td><?= $pinjam['tanggal_kembali'] ?></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-success"
+                                                                onclick="showSetujuModal(<?= $pinjam['id'] ?>)">
+                                                                Setujui
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger"
+                                                                data-tipe="kendaraan" 
+                                                                data-id="<?= $pinjam['id'] ?>"
+                                                                onclick="showTolakModal('kendaraan', <?= $pinjam['id'] ?>)">
+                                                                Tolak
+                                                            </button>
+                                                            <!-- Tambah tombol edit surat -->
+                                                            <button class="btn btn-sm btn-info"
+                                                                onclick="showEditSuratModal(<?= $pinjam['id'] ?>)">
+                                                                Penomoran Surat
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -803,6 +801,7 @@
                                                     <th>Penanggung Jawab</th>
                                                     <th>Kendaraan</th>
                                                     <th>Status</th>
+                                                    <th>Rating User</th>
                                                     <th>Dokumen</th>
                                                     <th>Tanggal Pinjam</th>
                                                     <th>Tanggal Kembali</th>
@@ -819,38 +818,54 @@
                                                             <span class="badge bg-warning">Pending</span>
                                                         </td>
                                                         <td>
-<?php if (!empty($kembali['surat_pengembalian'])): ?>
-    <a href="<?= base_url('/uploads/documents/' . $kembali['surat_pengembalian']) ?>"
-        target="_blank" class="btn btn-sm btn-outline-primary mb-1">
-        <i class="bi bi-file-earmark-pdf"></i> Berita Acara Pengembalian
-    </a>
-<?php endif; ?>
+                                                            <?php if (!empty($kembali['rating_pengguna'])): ?>
+                                                                <div class="d-flex align-items-center">
+                                                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                                        <?php if ($i <= $kembali['rating_pengguna']): ?>
+                                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                                        <?php else: ?>
+                                                                            <i class="bi bi-star text-muted"></i>
+                                                                        <?php endif; ?>
+                                                                    <?php endfor; ?>
+                                                                    <span class="ms-1"><?= $kembali['rating_pengguna'] ?>/5</span>
+                                                                </div>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">-</span>
+                                                            <?php endif; ?>
+                                                        </td>
+                                                        <td>
+                                                            <?php if (!empty($kembali['berita_acara_pengembalian'])): ?>
+                                                                <a href="<?= base_url('/uploads/documents/' . $kembali['berita_acara_pengembalian']) ?>"
+                                                                    target="_blank" class="btn btn-sm btn-outline-primary mb-1">
+                                                                    <i class="bi bi-file-earmark-pdf"></i> Berita Acara
+                                                                </a>
+                                                            <?php endif; ?>
 
-<?php if (!empty($kembali['berita_acara_pengembalian'])): ?>
-    <a href="<?= base_url('/uploads/images/' . $kembali['foto_pengembalian']) ?>"
-        target="_blank" class="btn btn-sm btn-outline-primary mb-1">
-        <i class="bi bi-image"></i> Foto Pengembalian Kendaraan
-    </a>
-<?php endif; ?>
+                                                            <?php if (!empty($kembali['foto_pengembalian'])): ?>
+                                                                <a href="<?= base_url('/uploads/images/' . $kembali['foto_pengembalian']) ?>"
+                                                                    target="_blank" class="btn btn-sm btn-outline-primary mb-1">
+                                                                    <i class="bi bi-image"></i> Foto Kendaraan
+                                                                </a>
+                                                            <?php endif; ?>
                                                         </td>
                                                         <td><?= $kembali['tanggal_pinjam'] ?></td>
                                                         <td>
-       <?= !empty($kembali['tanggal_kembali']) ? date('d/m/Y', strtotime($kembali['tanggal_kembali'])) : '-' ?>
-       <div class="small text-muted">
-           <?= date('H:i:s', strtotime($kembali['created_at'])) ?>
-       </div>
-   </td>
+                                                            <?= !empty($kembali['tanggal_kembali']) ? date('d/m/Y', strtotime($kembali['tanggal_kembali'])) : '-' ?>
+                                                            <div class="small text-muted">
+                                                                <?= date('H:i:s', strtotime($kembali['created_at'])) ?>
+                                                            </div>
+                                                        </td>
                                                         <td>
                                                             <button class="btn btn-sm btn-success"
-                                                                onclick="verifikasiPengembalian(<?= $kembali['id'] ?>, 'disetujui')">
+                                                                onclick="showRatingModal(<?= $kembali['id'] ?>)">
                                                                 Setujui
                                                             </button>
                                                             <button class="btn btn-sm btn-danger"
-        data-tipe="pengembalian" 
-        data-id="<?= $kembali['id'] ?>"
-        onclick="showTolakModal('pengembalian', <?= $kembali['id'] ?>)">
-    Tolak
-</button>
+                                                                data-tipe="pengembalian" 
+                                                                data-id="<?= $kembali['id'] ?>"
+                                                                onclick="showTolakModal('pengembalian', <?= $kembali['id'] ?>)">
+                                                                Tolak
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -864,6 +879,62 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Rating Admin -->
+    <div class="modal fade" id="modalRatingAdmin" tabindex="-1" aria-labelledby="modalRatingAdminLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRatingAdminLabel">Rating Pengembalian Kendaraan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formRatingAdmin">
+                        <input type="hidden" id="kembali_id_rating" name="kembali_id">
+                        <input type="hidden" name="status" value="disetujui">
+                        
+                        <div class="form-group mb-3">
+                            <label class="form-label">Rating Kondisi Kendaraan <span class="text-danger">*</span></label>
+                            <div class="rating-container">
+                                <div class="star-rating d-flex align-items-center">
+                                    <div class="rating-stars">
+                                        <input type="radio" id="admin_star5" name="rating_admin" value="5" required />
+                                        <label for="admin_star5" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
+                                        
+                                        <input type="radio" id="admin_star4" name="rating_admin" value="4" />
+                                        <label for="admin_star4" title="Baik"><i class="bi bi-star-fill"></i></label>
+                                        
+                                        <input type="radio" id="admin_star3" name="rating_admin" value="3" />
+                                        <label for="admin_star3" title="Cukup"><i class="bi bi-star-fill"></i></label>
+                                        
+                                        <input type="radio" id="admin_star2" name="rating_admin" value="2" />
+                                        <label for="admin_star2" title="Kurang"><i class="bi bi-star-fill"></i></label>
+                                        
+                                        <input type="radio" id="admin_star1" name="rating_admin" value="1" />
+                                        <label for="admin_star1" title="Sangat Kurang"><i class="bi bi-star-fill"></i></label>
+                                    </div>
+                                    <span class="ms-3 rating-text-admin">0/5</span>
+                                </div>
+                                <div class="form-text">
+                                    <small><i class="bi bi-info-circle"></i> Berikan rating kondisi kendaraan saat pengembalian (1-5)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="keterangan" class="form-label">Catatan (opsional)</label>
+                            <textarea class="form-control" id="keterangan" name="keterangan" rows="3" 
+                                placeholder="Catatan tambahan tentang kondisi kendaraan"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitRating">Konfirmasi Persetujuan</button>
                 </div>
             </div>
         </div>
@@ -1898,6 +1969,40 @@
 
 <!-- Baru setelah itu load JS -->
 <script src="/assets/js/dashboard.js"></script>
+<style>
+    /* CSS untuk rating stars admin */
+.rating-stars {
+    direction: rtl;
+    display: inline-block;
+}
+
+.rating-stars input[type="radio"] {
+    display: none;
+}
+
+.rating-stars label {
+    color: #bbb;
+    font-size: 1.5rem;
+    padding: 0;
+    cursor: pointer;
+    margin: 0 2px;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label,
+.rating-stars input[type="radio"]:checked ~ label {
+    color: #ffb700;
+}
+
+.rating-text-admin {
+    font-size: 1rem;
+    align-self: center;
+}
+
+.rating-container {
+    margin-bottom: 10px;
+}
+</style>
 
 
 <?= $this->endSection() ?>
