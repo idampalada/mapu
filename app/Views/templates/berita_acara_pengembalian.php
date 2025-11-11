@@ -165,56 +165,56 @@
         <p>PIHAK KESATU menyerahkan kepada PIHAK KEDUA dan PIHAK KEDUA menyatakan menerima dari PIHAK KESATU Kendaraan Dinas sebagai berikut :</p>
         
         <table class="detail-table">
-    <tr>
-        <td width="40%">Nomor SIP / Surat Penanggung Jawab</td>
-        <td><?= $nomor_sip ?></td>
-    </tr>
-    <tr>
-        <td>Jenis Kendaraan</td>
-        <td><?= $kategori_id ?></td>
-    </tr>
-    <tr>
-        <td>Nomor Polisi</td>
-        <td><?= $no_polisi ?></td>
-    </tr>
-    <tr>
-        <td>Kode Barang / NUP</td>
-        <td><?= $kode_barang ?> / <?= $nup ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Tahun Pembuatan</td>
-        <td><?= $tahun_pembuatan ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Merk / Type</td>
-        <td><?= $merk ?></td>
-    </tr>
-    <tr>
-        <td>Warna</td>
-        <td><?= $warna ?? '-' ?></td>
-    </tr>
-    <!-- Tambahkan baris untuk STNK dan BPKB -->
-    <tr>
-        <td>Nomor STNK</td>
-        <td><?= $no_stnk ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Nomor BPKB</td>
-        <td><?= $no_bpkb ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Nomor Mesin</td>
-        <td><?= $nomor_mesin ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Nomor Rangka</td>
-        <td><?= $no_rangka ?? '-' ?></td>
-    </tr>
-    <tr>
-        <td>Kondisi Kendaraan</td>
-        <td><?= $kondisi_kembali ?></td>
-    </tr>
-</table>
+            <tr>
+                <td width="40%">Nomor SIP / Surat Penanggung Jawab</td>
+                <td><?= $nomor_sip ?></td>
+            </tr>
+            <tr>
+                <td>Jenis Kendaraan</td>
+                <td><?= $kategori_id ?></td>
+            </tr>
+            <tr>
+                <td>Nomor Polisi</td>
+                <td><?= $no_polisi ?></td>
+            </tr>
+            <tr>
+                <td>Kode Barang / NUP</td>
+                <td><?= $kode_barang ?> / <?= $nup ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Tahun Pembuatan</td>
+                <td><?= $tahun_pembuatan ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Merk / Type</td>
+                <td><?= $merk ?></td>
+            </tr>
+            <tr>
+                <td>Warna</td>
+                <td><?= $warna ?? '-' ?></td>
+            </tr>
+            <!-- Tambahkan baris untuk STNK dan BPKB -->
+            <tr>
+                <td>Nomor STNK</td>
+                <td><?= $no_stnk ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Nomor BPKB</td>
+                <td><?= $no_bpkb ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Nomor Mesin</td>
+                <td><?= $nomor_mesin ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Nomor Rangka</td>
+                <td><?= $no_rangka ?? '-' ?></td>
+            </tr>
+            <tr>
+                <td>Kondisi Kendaraan</td>
+                <td><?= $kondisi_kembali ?></td>
+            </tr>
+        </table>
         
         <h3>Pasal 2</h3>
         <p>Penyerahan sebagaimana dimaksud dalam Pasal 1 berupa:</p>
@@ -234,6 +234,31 @@
             <?php endif; ?>
             <div class="timestamp">Timestamp: <?= date('d/m/Y H:i:s') ?></div>
         </div>
+        
+        <!-- Bagian Keterlambatan - Hanya tampil jika terlambat -->
+        <?php if (!empty($alasan_keterlambatan)): ?>
+        <div style="margin-top: 20px; border: 1px solid #000; padding: 10px;">
+            <h3>KETERLAMBATAN PENGEMBALIAN</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 30%; padding: 5px;">Jumlah Hari Terlambat</td>
+                    <td style="width: 70%; padding: 5px;">: <?= $daysLate ?? '-' ?> hari</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px;">Alasan Keterlambatan</td>
+                    <td style="padding: 5px;">: <?= $alasan_keterlambatan ?></td>
+                </tr>
+            </table>
+            
+            <?php if (!empty($foto_keterlambatan)): ?>
+            <div style="margin-top: 10px;">
+                <p><strong>Dokumentasi Keterlambatan:</strong></p>
+                <img src="<?= 'data:image/jpeg;base64,' . base64_encode(@file_get_contents(ROOTPATH . 'public/uploads/images/' . $foto_keterlambatan)) ?>" 
+                    style="max-width: 100%; max-height: 300px; display: block; margin: 0 auto; border: 1px solid #ddd;">
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
         
         <p>Dengan adanya Serah Terima ini maka selanjutnya tanggung jawab Kendaraan Dinas tersebut beralih dari PIHAK KESATU kepada PIHAK KEDUA.</p>
         
