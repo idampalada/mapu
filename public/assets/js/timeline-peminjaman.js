@@ -542,6 +542,46 @@ $(document).ready(function () {
       document.getElementById("days_late").value = diffDays;
       document.getElementById("late_days_display").textContent = diffDays;
       document.getElementById("late_return_section").classList.remove("d-none");
+
+      // Tambahkan section Hitungan Telat jika belum ada
+      if (!document.getElementById("hitungan_telat_section")) {
+        const hitunganTelatSection = document.createElement("div");
+        hitunganTelatSection.id = "hitungan_telat_section";
+        hitunganTelatSection.className = "alert alert-danger mb-3";
+
+        const tanggalKembaliFormatted = formatTanggal(tanggalKembali);
+        const todayFormatted = formatTanggal(today);
+
+        hitunganTelatSection.innerHTML = `
+          <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-circle-fill me-2" style="font-size: 1.5rem; color: #dc3545;"></i>
+            <div>
+              <h5 class="mb-1">Hitungan Telat: <span class="fw-bold">${diffDays} Hari</span></h5>
+              <div>Tanggal kembali seharusnya: <strong>${tanggalKembaliFormatted}</strong></div>
+              <div>Tanggal pengembalian aktual: <strong>${todayFormatted}</strong></div>
+            </div>
+          </div>
+        `;
+
+        // Tambahkan section di awal card body
+        const cardBody = document.querySelector(
+          "#late_return_section .card-body"
+        );
+        const alertWarning = cardBody.querySelector(".alert-warning");
+        cardBody.insertBefore(hitunganTelatSection, alertWarning);
+      }
+
+      // Jadikan field tanggal kembali readonly dan tambahkan styling
+      tanggalKembaliInput.setAttribute("readonly", "readonly");
+      tanggalKembaliInput.style.backgroundColor = "#ffeeee";
+      tanggalKembaliInput.style.borderColor = "#dc3545";
+      tanggalKembaliInput.style.color = "#dc3545";
+      tanggalKembaliInput.style.fontWeight = "bold";
+
+      // Hapus atribut min karena sudah readonly
+      tanggalKembaliInput.removeAttribute("min");
+
+      // Alasan keterlambatan wajib diisi
       document
         .getElementById("alasan_keterlambatan")
         .setAttribute("required", "required");
@@ -550,10 +590,44 @@ $(document).ready(function () {
       document.getElementById("is_late_return").value = "false";
       document.getElementById("days_late").value = "0";
       document.getElementById("late_return_section").classList.add("d-none");
+
+      // Hapus readonly dari field tanggal kembali
+      tanggalKembaliInput.removeAttribute("readonly");
+      tanggalKembaliInput.style.backgroundColor = "";
+      tanggalKembaliInput.style.borderColor = "";
+      tanggalKembaliInput.style.color = "";
+      tanggalKembaliInput.style.fontWeight = "";
+      tanggalKembaliInput.setAttribute("min", formatDateValue(new Date()));
+
+      // Alasan keterlambatan tidak wajib diisi
       document
         .getElementById("alasan_keterlambatan")
         .removeAttribute("required");
+
+      // Hapus section Hitungan Telat jika ada
+      const hitunganTelatSection = document.getElementById(
+        "hitungan_telat_section"
+      );
+      if (hitunganTelatSection) {
+        hitunganTelatSection.remove();
+      }
     }
+  }
+
+  // Helper function untuk format tanggal (DD/MM/YYYY)
+  function formatTanggal(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  // Helper function untuk format tanggal (YYYY-MM-DD)
+  function formatDateValue(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
   }
 
   // Panggil function checkLateReturn saat modal dibuka

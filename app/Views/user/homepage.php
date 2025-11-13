@@ -419,9 +419,12 @@
                                         </div>
 
                                         <div class="form-group mb-3">
-                                            <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
+                                            <label for="tanggal_kembali" class="form-label">Tanggal Kembali <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
                                                 required min="<?= date('Y-m-d') ?>">
+                                            <small class="form-text text-muted">
+                                                Tanggal kembali yang telah ditetapkan pada saat peminjaman.
+                                            </small>
                                         </div>
                                         
                                         <div class="form-group mb-3">
@@ -438,8 +441,8 @@
                                 
                                 <!-- Section keterlambatan -->
                                 <div id="late_return_section" class="col-12 mb-3 d-none">
-                                    <div class="card border-warning">
-                                        <div class="card-header bg-warning text-dark">
+                                    <div class="card border-danger">
+                                        <div class="card-header bg-danger text-white">
                                             <h5 class="mb-0">
                                                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                                 Keterlambatan Pengembalian
@@ -447,7 +450,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="alert alert-warning" role="alert">
-                                                <p><strong>Perhatian:</strong> Anda terlambat mengembalikan kendaraan selama <span id="late_days_display">0</span> hari.</p>
+                                                <p><strong>Perhatian:</strong> Anda terlambat mengembalikan kendaraan selama <span id="late_days_display" class="fw-bold">0</span> hari.</p>
                                                 <p class="mb-0">Mohon berikan alasan keterlambatan untuk melanjutkan proses pengembalian.</p>
                                             </div>
                                             
@@ -646,6 +649,52 @@
     </div>
 </div>
 
+/* CSS untuk styling inline keterlambatan pengembalian */
+<style>
+/* Bisa ditambahkan ke file CSS utama atau di head template */
+.keterlambatan-readonly {
+  background-color: #ffeeee !important;
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+  font-weight: bold !important;
+}
+
+.hitungan-telat-section {
+  background-color: #f8d7da;
+  border-left: 4px solid #dc3545;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+}
+
+.hitungan-telat-section .value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #dc3545;
+}
+
+.icon-telat {
+  font-size: 2rem;
+  color: #dc3545;
+  margin-right: 10px;
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 5px rgba(220, 53, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+}
+
+.pulse-animation {
+  animation: pulse-border 1.5s infinite;
+}
+</style>
 <style>
 /* CSS untuk rating stars */
 .rating-stars {
