@@ -988,6 +988,12 @@ public function kembali()
     $no_ktp = $this->request->getPost('no_ktp');
     $rating_pengguna = $this->request->getPost('rating_pengguna');
     
+    // Data keterlambatan
+    $is_late_return = $this->request->getPost('is_late_return') === 'true';
+    $days_late = (int)$this->request->getPost('days_late');
+    $alasan_keterlambatan = $is_late_return ? $this->request->getPost('alasan_keterlambatan') : null;
+    $late_photo_data = $this->request->getPost('late_photo_data');
+    
     // Ambil data Pihak Kedua yang diedit dari form
     $pihak_kedua_nama = $this->request->getPost('pihak_kedua_nama') ?? 'Pak Udin';
     $pihak_kedua_nip = $this->request->getPost('pihak_kedua_nip') ?? '12345678';
@@ -1011,6 +1017,13 @@ public function kembali()
         ]);
     }
 
+    // Validasi data keterlambatan jika terlambat
+    if ($is_late_return && empty($alasan_keterlambatan)) {
+        return $this->response->setJSON([
+            'error' => 'Alasan keterlambatan wajib diisi untuk pengembalian yang terlambat'
+        ]);
+    }
+
     $asset = $asetModel->find($kendaraan_id);
     if (!$asset) {
         return $this->response->setJSON(['error' => 'Kendaraan tidak ditemukan dalam database.']);
@@ -1029,6 +1042,10 @@ public function kembali()
     log_message('debug', 'Kendaraan ID (request): ' . $kendaraan_id);
     log_message('debug', 'Hasil query pinjam    : ' . json_encode($pinjam));
     log_message('debug', 'Rating pengguna      : ' . $rating_pengguna);
+    if ($is_late_return) {
+        log_message('debug', 'Keterlambatan: Ya, ' . $days_late . ' hari');
+        log_message('debug', 'Alasan keterlambatan: ' . $alasan_keterlambatan);
+    }
 
     if (!$pinjam) {
         log_message('debug', '🚫 Tidak ditemukan peminjaman aktif dengan kondisi: kendaraan_id = ' . $kendaraan_id);
@@ -1076,6 +1093,42 @@ public function kembali()
         return $this->response->setJSON(['error' => 'Foto kendaraan diperlukan untuk pengembalian']);
     }
 
+    // Proses foto keterlambatan jika ada
+    $fotoKeterlambatanFileName = null;
+    if ($is_late_return) {
+        // Cek apakah ada file upload
+        $file = $this->request->getFile('foto_keterlambatan');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            log_message('debug', '📷 Memproses file foto keterlambatan...');
+            $fotoKeterlambatanFileName = 'foto_keterlambatan_' . time() . '.' . $file->getExtension();
+            try {
+                $file->move(ROOTPATH . 'public/uploads/images/', $fotoKeterlambatanFileName);
+                chmod(ROOTPATH . 'public/uploads/images/' . $fotoKeterlambatanFileName, 0644);
+                log_message('debug', '✅ Foto keterlambatan berhasil diupload: ' . $fotoKeterlambatanFileName);
+            } catch (\Exception $e) {
+                log_message('error', '❌ Gagal upload foto keterlambatan: ' . $e->getMessage());
+            }
+        } 
+        // Cek apakah ada foto dari kamera
+        else if (!empty($late_photo_data)) {
+            log_message('debug', '📷 Memproses foto keterlambatan dari kamera...');
+            $late_photo_data = str_replace('data:image/jpeg;base64,', '', $late_photo_data);
+            $late_photo_data = str_replace(' ', '+', $late_photo_data);
+            $lateImageData = base64_decode($late_photo_data);
+            $fotoKeterlambatanFileName = 'foto_keterlambatan_' . time() . '.jpg';
+            $lateFilePath = ROOTPATH . 'public/uploads/images/' . $fotoKeterlambatanFileName;
+            
+            try {
+                file_put_contents($lateFilePath, $lateImageData);
+                chmod($lateFilePath, 0644);
+                log_message('debug', '✅ Foto keterlambatan dari kamera berhasil disimpan: ' . $fotoKeterlambatanFileName);
+            } catch (\Exception $e) {
+                log_message('error', '❌ Gagal menyimpan foto keterlambatan: ' . $e->getMessage());
+                // Tidak return error karena foto keterlambatan opsional
+            }
+        }
+    }
+
     log_message('debug', '✅ Upload file selesai, lanjut validasi field...');
 
     $requiredFields = [
@@ -1097,6 +1150,9 @@ public function kembali()
             log_message('debug', '❌ Field kosong: ' . $field);
             if ($photoFileName) {
                 @unlink(ROOTPATH . 'public/uploads/images/' . $photoFileName);
+            }
+            if ($fotoKeterlambatanFileName) {
+                @unlink(ROOTPATH . 'public/uploads/images/' . $fotoKeterlambatanFileName);
             }
             return $this->response->setJSON(['error' => ucwords(str_replace('_', ' ', $field)) . ' harus diisi.']);
         }
@@ -1145,7 +1201,11 @@ public function kembali()
             'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
             'no_stnk' => $asset['no_stnk'] ?? '',
             'no_bpkb' => $asset['no_bpkb'] ?? '',
-            'rating_pengguna' => $rating_pengguna
+            'rating_pengguna' => $rating_pengguna,
+            // Data keterlambatan
+            'alasan_keterlambatan' => $alasan_keterlambatan,
+            'foto_keterlambatan' => $fotoKeterlambatanFileName,
+            'daysLate' => $days_late
         ];
 
         // Log data STNK, BPKB, dan Rangka untuk debugging
@@ -1155,6 +1215,14 @@ public function kembali()
             'no_rangka' => $asset['no_rangka'] ?? 'tidak ada',
             'rating_pengguna' => $rating_pengguna
         ]));
+
+        if ($is_late_return) {
+            log_message('debug', 'Data keterlambatan untuk PDF: ' . json_encode([
+                'alasan_keterlambatan' => $alasan_keterlambatan,
+                'foto_keterlambatan' => $fotoKeterlambatanFileName,
+                'days_late' => $days_late
+            ]));
+        }
 
         // Generate PDF
         helper('dompdf');
@@ -1208,7 +1276,10 @@ public function kembali()
             'pihak_kedua_nama' => $pihak_kedua_nama,
             'pihak_kedua_nip' => $pihak_kedua_nip,
             'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
-            'rating_pengguna' => $rating_pengguna
+            'rating_pengguna' => $rating_pengguna,
+            // Data keterlambatan
+            'alasan_keterlambatan' => $alasan_keterlambatan,
+            'foto_keterlambatan' => $fotoKeterlambatanFileName
         ];
 
         $result = $model->insert($data);
@@ -1257,7 +1328,12 @@ public function kembali()
             'pihak_kedua_nama' => $pihak_kedua_nama,
             'pihak_kedua_nip' => $pihak_kedua_nip,
             'pihak_kedua_jabatan' => $pihak_kedua_jabatan,
-            'rating_pengguna' => $rating_pengguna
+            'rating_pengguna' => $rating_pengguna,
+            // Data keterlambatan untuk notifikasi
+            'is_late_return' => $is_late_return,
+            'days_late' => $days_late,
+            'alasan_keterlambatan' => $alasan_keterlambatan,
+            'foto_keterlambatan' => $fotoKeterlambatanFileName
         ];
         
         if (function_exists('sendPengembalianNotification')) {
@@ -1278,6 +1354,9 @@ public function kembali()
         }
         if (isset($photoFileName) && !empty($photoFileName)) {
             @unlink(ROOTPATH . 'public/uploads/images/' . $photoFileName);
+        }
+        if (isset($fotoKeterlambatanFileName) && !empty($fotoKeterlambatanFileName)) {
+            @unlink(ROOTPATH . 'public/uploads/images/' . $fotoKeterlambatanFileName);
         }
         // Hapus juga file berita acara jika ada error
         if (isset($beritaAcaraPdfName) && !empty($beritaAcaraPdfName)) {
