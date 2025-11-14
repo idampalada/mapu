@@ -228,6 +228,8 @@ function sendPengembalianNotification($data, $type = 'new')
 
     if ($type === 'new') {
         $subject = 'Pengajuan Pengembalian Kendaraan';
+        
+        // Konten dasar
         $content = "
             <p>Selamat {$sapaan},</p>
             
@@ -239,11 +241,34 @@ function sendPengembalianNotification($data, $type = 'new')
                     <li>Penanggung Jawab: {$data['nama_penanggung_jawab']}</li>
                     <li>NIP/NRP: {$data['nip_nrp']}</li>
                     <li>Tanggal Pinjam: " . date('d/m/Y', strtotime($data['tanggal_pinjam'])) . "</li>
-                    <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . " <span class='text-muted'>(Pukul: " . date('H:i:s', strtotime($data['created_at'])) . ")</span></li>
-                    <li>Durasi Penggunaan: " . countDays($data['tanggal_pinjam'], $data['tanggal_kembali']) . " hari</li>
-                </ul>
-            </div>
+                    <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
+                    <li>Durasi Penggunaan: " . countDays($data['tanggal_pinjam'], $data['tanggal_kembali']) . " hari</li>";
         
+        // Tambahkan informasi keterlambatan jika ada
+        if (isset($data['is_late_return']) && $data['is_late_return']) {
+            $content .= "
+                    <li style='color: #dc3545; font-weight: bold;'>Status: Terlambat " . ($data['days_late'] ?? '0') . " hari</li>";
+        }
+        
+        $content .= "
+                </ul>
+            </div>";
+        
+        // Tambahkan section khusus keterlambatan jika ada
+        if (isset($data['is_late_return']) && $data['is_late_return']) {
+            $content .= "
+            <div style='background-color: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #dc3545;'>
+                <strong style='color: #dc3545;'>Informasi Keterlambatan:</strong>
+                <ul style='margin: 10px 0; padding-left: 20px;'>
+                    <li>Jumlah Hari Terlambat: <strong>" . ($data['days_late'] ?? '0') . " hari</strong></li>
+                    <li>Tanggal Kembali Seharusnya: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
+                    <li>Tanggal Pengembalian Aktual: " . date('d/m/Y') . " (Pukul: " . date('H:i:s') . ")</li>
+                    <li>Alasan Keterlambatan: " . ($data['alasan_keterlambatan'] ?? '-') . "</li>
+                </ul>
+            </div>";
+        }
+        
+        $content .= "
             <p style='text-align: center; margin: 30px 0;'>
                 <a href='http://manajemenaset.pu.go.id/admin/dashboard' 
                 style='display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;'>
@@ -278,10 +303,34 @@ function sendPengembalianNotification($data, $type = 'new')
                     <ul style='margin: 10px 0; padding-left: 20px;'>
                         <li>Tanggal Pinjam: " . date('d/m/Y', strtotime($data['tanggal_pinjam'])) . "</li>
                         <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
-                        <li>Kondisi Kendaraan: {$data['kondisi_kembali']}</li>
+                        <li>Kondisi Kendaraan: {$data['kondisi_kembali']}</li>";
+            
+            // Tambahkan informasi keterlambatan jika ada
+            if (isset($data['is_late_return']) && $data['is_late_return']) {
+                $content .= "
+                        <li style='color: #dc3545;'>Status: Terlambat " . ($data['days_late'] ?? '0') . " hari</li>";
+            }
+            
+            $content .= "
                     </ul>
-                </div>
+                </div>";
                 
+            // Tambahkan section khusus keterlambatan jika ada
+            if (isset($data['is_late_return']) && $data['is_late_return']) {
+                $content .= "
+                <div style='background-color: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #dc3545;'>
+                    <strong style='color: #dc3545;'>Informasi Keterlambatan:</strong>
+                    <ul style='margin: 10px 0; padding-left: 20px;'>
+                        <li>Jumlah Hari Terlambat: <strong>" . ($data['days_late'] ?? '0') . " hari</strong></li>
+                        <li>Tanggal Kembali Seharusnya: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
+                        <li>Tanggal Pengembalian Aktual: " . date('d/m/Y') . " (Pukul: " . date('H:i:s') . ")</li>
+                        <li>Alasan Keterlambatan: <em>" . ($data['alasan_keterlambatan'] ?? '-') . "</em></li>
+                    </ul>
+                    <p>Mohon untuk selalu memperhatikan jadwal pengembalian kendaraan untuk peminjaman berikutnya.</p>
+                </div>";
+            }
+            
+            $content .= "
                 <p>Jika ada pertanyaan lebih lanjut, mohon hubungi nomor dibawah ini:<p>
                 <p>081578732756 - <strong>Domenico Adi Nugroho</strong></p>
             ";
@@ -308,10 +357,33 @@ function sendPengembalianNotification($data, $type = 'new')
                     <ul style='margin: 10px 0; padding-left: 20px;'>
                         <li>Tanggal Pinjam: " . date('d/m/Y', strtotime($data['tanggal_pinjam'])) . "</li>
                         <li>Tanggal Kembali: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
-                        <li>Kondisi Kendaraan: {$data['kondisi_kembali']}</li>
+                        <li>Kondisi Kendaraan: {$data['kondisi_kembali']}</li>";
+                
+                // Tambahkan informasi keterlambatan jika ada
+                if (isset($data['is_late_return']) && $data['is_late_return']) {
+                    $content .= "
+                        <li style='color: #dc3545;'>Status: Terlambat " . ($data['days_late'] ?? '0') . " hari</li>";
+                }
+                
+                $content .= "
                     </ul>
-                </div>
+                </div>";
+                
+                // Tambahkan section khusus keterlambatan jika ada
+                if (isset($data['is_late_return']) && $data['is_late_return']) {
+                    $content .= "
+                    <div style='background-color: #f8d7da; padding: 15px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #dc3545;'>
+                        <strong style='color: #dc3545;'>Informasi Keterlambatan:</strong>
+                        <ul style='margin: 10px 0; padding-left: 20px;'>
+                            <li>Jumlah Hari Terlambat: <strong>" . ($data['days_late'] ?? '0') . " hari</strong></li>
+                            <li>Tanggal Kembali Seharusnya: " . date('d/m/Y', strtotime($data['tanggal_kembali'])) . "</li>
+                            <li>Tanggal Pengembalian Aktual: " . date('d/m/Y') . " (Pukul: " . date('H:i:s') . ")</li>
+                            <li>Alasan Keterlambatan: <em>" . ($data['alasan_keterlambatan'] ?? '-') . "</em></li>
+                        </ul>
+                    </div>";
+                }
     
+                $content .= "
                 <div style='background-color: #fff3cd; padding: 15px; border-radius: 4px; margin: 20px 0;'>
                     <strong>Alasan Penolakan:</strong>
                     <p style='margin: 10px 0;'>{$data['keterangan']}</p>
