@@ -14,6 +14,7 @@ class RuanganModel extends Model
         'nama_ruangan',
         'lokasi',
         'kapasitas',
+        'luas_ruangan',  // TAMBAHKAN FIELD INI - INI YANG MENYEBABKAN ERROR!
         'fasilitas',
         'foto_ruangan',
         'is_active',
@@ -32,7 +33,7 @@ class RuanganModel extends Model
         'nama_ruangan' => 'required',
         'lokasi' => 'required',
         'kapasitas' => 'required|numeric',
-        
+        'luas_ruangan' => 'permit_empty|numeric',  // TAMBAHKAN VALIDASI UNTUK LUAS RUANGAN
     ];
 
     protected $validationMessages = [
@@ -45,7 +46,10 @@ class RuanganModel extends Model
         'kapasitas' => [
             'required' => 'Kapasitas harus diisi',
             'numeric' => 'Kapasitas harus berupa angka'
-            ],
+        ],
+        'luas_ruangan' => [
+            'numeric' => 'Luas ruangan harus berupa angka'
+        ],
     ];
 
     protected $skipValidation = false;
@@ -179,5 +183,3 @@ class RuanganModel extends Model
         return $ruangan['is_active'] == true;
     }
 }
-    
-

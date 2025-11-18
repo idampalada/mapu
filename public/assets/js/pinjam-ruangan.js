@@ -1285,6 +1285,12 @@ function openEditRuangan(id) {
           ruangan.kapasitas
         );
 
+        // TAMBAH HANDLING LUAS RUANGAN - INI YANG BARU!
+        const luasRuanganInput = document.getElementById("edit_luas_ruangan");
+        if (luasRuanganInput) {
+          luasRuanganInput.value = ruangan.luas_ruangan || "";
+        }
+
         const checkboxes = document.querySelectorAll(
           'input[name="fasilitas[]"]'
         );
@@ -1301,9 +1307,35 @@ function openEditRuangan(id) {
 
         document.getElementById("edit_keterangan").value = keteranganExisting;
 
+        // TAMBAH HANDLING IS_ACTIVE CHECKBOX - FITUR BARU!
+        const isActiveCheckbox = document.getElementById("edit_is_active");
+        const statusLabel = document.getElementById("status_label");
+
+        if (isActiveCheckbox) {
+          if (
+            ruangan.is_active == true ||
+            ruangan.is_active == "t" ||
+            ruangan.is_active == "1" ||
+            ruangan.is_active === true
+          ) {
+            isActiveCheckbox.checked = true;
+            if (statusLabel) statusLabel.textContent = "Aktif (Dapat dipinjam)";
+          } else {
+            isActiveCheckbox.checked = false;
+            if (statusLabel)
+              statusLabel.textContent = "Non-aktif (Maintenance)";
+          }
+        }
+
         form.onsubmit = function (e) {
           e.preventDefault();
           const formData = new FormData(this);
+
+          // DEBUG: Log form data yang dikirim
+          console.log("Form data being sent:");
+          for (let [key, value] of formData.entries()) {
+            console.log(key, value);
+          }
 
           Swal.fire({
             title: "Mohon Tunggu",
@@ -1326,6 +1358,7 @@ function openEditRuangan(id) {
           })
             .then((response) => response.json())
             .then((result) => {
+              console.log("Server response:", result); // DEBUG
               if (result.success === true || result.success === "true") {
                 Swal.fire({
                   icon: "success",
@@ -1372,6 +1405,22 @@ function openEditRuangan(id) {
       });
     });
 }
+
+// TAMBAH EVENT LISTENER UNTUK IS_ACTIVE CHECKBOX
+document.addEventListener("DOMContentLoaded", function () {
+  const isActiveCheckbox = document.getElementById("edit_is_active");
+  const statusLabel = document.getElementById("status_label");
+
+  if (isActiveCheckbox && statusLabel) {
+    isActiveCheckbox.addEventListener("change", function () {
+      if (this.checked) {
+        statusLabel.textContent = "Aktif (Dapat dipinjam)";
+      } else {
+        statusLabel.textContent = "Non-aktif (Maintenance)";
+      }
+    });
+  }
+});
 
 function deleteRuangan(id) {
   const cleanId = parseInt(id);

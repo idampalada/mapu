@@ -138,6 +138,12 @@ use App\Models\PinjamRuanganModel;
                                         <small class="text-muted">Kapasitas:</small>
                                         <?= $ruangan['kapasitas'] ?> orang
                                     </p>
+                                                                        <?php if (!empty($ruangan['luas_ruangan'])): ?>
+                                        <p class="mb-1">
+                                            <small class="text-muted">Luas Ruangan:</small>
+                                            <?= $ruangan['luas_ruangan'] ?> m²
+                                        </p>
+                                    <?php endif; ?>
                                     <?php if (!empty($ruangan['fasilitas'])): ?>
                                         <p class="mb-1">
                                             <small class="text-muted">Fasilitas & Keterangan:</small>
@@ -323,6 +329,12 @@ use App\Models\PinjamRuanganModel;
                                         <small class="text-muted">Kapasitas:</small>
                                         <?= $ruangan['kapasitas'] ?> orang
                                     </p>
+                                                                        <?php if (!empty($ruangan['luas_ruangan'])): ?>
+                                        <p class="mb-1">
+                                            <small class="text-muted">Luas Ruangan:</small>
+                                            <?= $ruangan['luas_ruangan'] ?> m²
+                                        </p>
+                                    <?php endif; ?>
                                     <?php if (!empty($ruangan['fasilitas'])): ?>
                                         <p class="mb-1">
                                             <small class="text-muted">Fasilitas & Keterangan:</small>
@@ -448,6 +460,15 @@ use App\Models\PinjamRuanganModel;
                             <div class="mb-3">
                                 <label class="form-label">Kapasitas</label>
                                 <input type="number" class="form-control" name="kapasitas" id="edit_kapasitas" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Luas Ruangan</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" name="luas_ruangan" id="edit_luas_ruangan" placeholder="Masukkan luas ruangan">
+                                    <span class="input-group-text">m²</span>
+                                </div>
+                                <small class="text-muted">Masukkan angka luas ruangan dalam meter persegi</small>
                             </div>
 
                             <!-- STATUS AKTIF - HANYA SATU INI SAJA -->

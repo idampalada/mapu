@@ -358,8 +358,8 @@ public function edit($id)
         $validation->setRules([
             'nama_ruangan' => 'required',
             'lokasi' => 'required',
-            'kapasitas' => 'required|numeric'
-            // HAPUS validasi is_active dulu untuk debug
+            'kapasitas' => 'required|numeric',
+            'luas_ruangan' => 'permit_empty|numeric'  // TAMBAH VALIDASI LUAS RUANGAN
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -428,11 +428,17 @@ public function edit($id)
         $isActiveValue = ($isActive === '1' || $isActive === 'on') ? true : false;
         log_message('debug', 'is_active converted to: ' . var_export($isActiveValue, true));
 
+        // HANDLE LUAS RUANGAN - TAMBAHAN INI
+        $luasRuangan = $this->request->getPost('luas_ruangan');
+        $luasRuanganValue = !empty($luasRuangan) ? (float)$luasRuangan : null;
+        log_message('debug', 'luas_ruangan value: ' . var_export($luasRuanganValue, true));
+
         // Prepare data untuk update
         $data = [
             'nama_ruangan' => $this->request->getPost('nama_ruangan'),
             'lokasi' => $lokasiRuangan,
             'kapasitas' => $this->request->getPost('kapasitas'),
+            'luas_ruangan' => $luasRuanganValue,  // TAMBAH FIELD INI
             'fasilitas' => $fasilitasGabungan,
             'foto_ruangan' => json_encode($paths),
             'is_active' => $isActiveValue,
@@ -473,6 +479,8 @@ public function edit($id)
             'debug' => [
                 'is_active_received' => $isActive,
                 'is_active_converted' => $isActiveValue,
+                'luas_ruangan_received' => $luasRuangan,
+                'luas_ruangan_converted' => $luasRuanganValue,
                 'updated_data' => $updatedData
             ]
         ]);
