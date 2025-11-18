@@ -205,7 +205,7 @@ class Ruangan extends BaseController {
     ]);
 }
 
-             public function tambah()
+public function tambah()
 {
     try {
         // ===== TAMBAHKAN PENGECEKAN PERMISSION BERDASARKAN GEDUNG =====
@@ -236,6 +236,7 @@ class Ruangan extends BaseController {
             'nama_ruangan' => 'required',
             'lokasi' => 'required',
             'kapasitas' => 'required|numeric',
+            'luas_ruangan' => 'permit_empty|numeric', // Tambahkan validasi untuk luas_ruangan
             'foto_ruangan' => [
                 'rules' => 'uploaded[foto_ruangan]|max_size[foto_ruangan,2048]|is_image[foto_ruangan]',
                 'errors' => [
@@ -297,6 +298,7 @@ class Ruangan extends BaseController {
             'nama_ruangan' => $this->request->getPost('nama_ruangan'),
             'lokasi' => $lokasiRuangan, // Gunakan variable yang sudah di-validate
             'kapasitas' => $this->request->getPost('kapasitas'),
+            'luas_ruangan' => $this->request->getPost('luas_ruangan') ?? null, // Tambahkan luas_ruangan
             'fasilitas' => $fasilitasGabungan, // Gabungan checkbox + keterangan
             'foto_ruangan' => json_encode($paths),
             'status' => 'Tersedia'

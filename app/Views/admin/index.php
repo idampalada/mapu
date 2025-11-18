@@ -1068,6 +1068,15 @@
                                     <input type="number" class="form-control" id="kapasitas" name="kapasitas" required>
                                 </div>
                             </div>
+                            <!-- Tambahkan field Luas Ruangan -->
+<div class="form-group mb-3">
+    <label for="luas_ruangan">Luas Ruangan</label>
+    <div class="input-group">
+        <input type="number" class="form-control" id="luas_ruangan" name="luas_ruangan" placeholder="Masukkan luas ruangan">
+        <span class="input-group-text">m²</span>
+    </div>
+    <small class="text-muted">Masukkan angka luas ruangan dalam meter persegi</small>
+</div>
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="fasilitas">Fasilitas</label>
