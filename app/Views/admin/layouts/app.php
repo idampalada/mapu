@@ -75,8 +75,10 @@
     <script src="<?= base_url(); ?>/assets/js/dashboard.js"></script>
     <script src="<?= base_url(); ?>/assets/js/auth.js"></script>
     <script src="<?= base_url(); ?>/assets/js/pinjam-ruangan.js"></script>
+    <script src="<?= base_url(); ?>/assets/js/booking-ruangan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>
     <script src="<?= base_url(); ?>/assets/js/mainpage.js"></script>
+
     <script src="<?= base_url('assets/js/pinjam-barang.js') ?>"></script>
 
 

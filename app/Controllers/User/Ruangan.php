@@ -1391,26 +1391,118 @@ public function checkTimeConflict($ruanganId, $tanggal, $waktuMulai, $waktuSeles
 // }
 public function getBookingPublik()
 {
-    $model = new \App\Models\PinjamRuanganModel();
-
     try {
-        $bookings = $model->select('pinjam_ruangan.*, ruangan.nama_ruangan')
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+        
+        // Gabungkan data dari booking langsung dan pinjam yang disetujui
+        $bookings = $bookingModel->getBookingPublik(5);
+        $pinjams = $pinjamModel->select('pinjam_ruangan.*, ruangan.nama_ruangan, "confirm" as type')
             ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
-            ->whereIn('pinjam_ruangan.status', ['disetujui', 'dipinjam']) // hanya yang aktif
+            ->where('pinjam_ruangan.status', 'disetujui')
+            ->where('pinjam_ruangan.tanggal >=', date('Y-m-d'))
+            ->where('pinjam_ruangan.deleted_at', null)
             ->orderBy('pinjam_ruangan.tanggal', 'ASC')
-            ->orderBy('pinjam_ruangan.waktu_mulai', 'ASC')
+            ->limit(5)
             ->findAll();
 
+        // Tambahkan type identifier
+        foreach ($bookings as &$booking) {
+            $booking['type'] = 'booking';
+        }
+
+        // Gabungkan dan sort
+        $allData = array_merge($bookings, $pinjams);
+        
+        // Sort by date and time
+        usort($allData, function($a, $b) {
+            $dateA = $a['tanggal'] . ' ' . $a['waktu_mulai'];
+            $dateB = $b['tanggal'] . ' ' . $b['waktu_mulai'];
+            return strtotime($dateA) - strtotime($dateB);
+        });
+
         return $this->response->setJSON([
-            'success' => true,
-            'data' => $bookings
+            'status' => 'success',
+            'data' => array_slice($allData, 0, 10)
         ]);
+
     } catch (\Exception $e) {
-        log_message('error', 'Error getBookingPublik: ' . $e->getMessage());
         return $this->response->setJSON([
-            'success' => false,
-            'error' => 'Gagal memuat data booking'
+            'status' => 'error',
+            'message' => $e->getMessage()
         ]);
+    }
+}
+
+/**
+ * Check availability untuk booking langsung  
+ */
+public function checkBookingAvailability()
+{
+    $ruanganId = $this->request->getGet('ruangan_id');
+    $tanggal = $this->request->getGet('tanggal');
+    $waktuMulai = $this->request->getGet('waktu_mulai');
+    $waktuSelesai = $this->request->getGet('waktu_selesai');
+
+    if (!$ruanganId || !$tanggal || !$waktuMulai || !$waktuSelesai) {
+        return $this->response->setJSON([
+            'status' => 'error',
+            'message' => 'Parameter tidak lengkap'
+        ]);
+    }
+
+    try {
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        $conflict = $bookingModel->checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSelesai);
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'available' => !$conflict,
+            'conflict' => $conflict
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Riwayat booking user
+ */
+public function myBookings()
+{
+    $bookingModel = new \App\Models\BookingRuanganModel();
+    $bookings = $bookingModel->getUserBookings(user_id());
+
+    $data = [
+        'title' => 'Riwayat Booking Saya',
+        'bookings' => $bookings
+    ];
+
+    return view('user/ruangan/my_bookings', $data);
+}
+
+/**
+ * Cancel booking
+ */
+public function cancelBooking($bookingId)
+{
+    try {
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        
+        $result = $bookingModel->cancelBooking($bookingId, user_id());
+        
+        if ($result) {
+            return redirect()->back()->with('success', 'Booking berhasil dibatalkan');
+        } else {
+            return redirect()->back()->with('error', 'Booking tidak dapat dibatalkan. Pastikan booking milik Anda dan belum melewati batas waktu pembatalan');
+        }
+
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
 }
 public function toggleActive($id)
@@ -1450,7 +1542,62 @@ public function toggleActive($id)
         ]);
     }
 }
+public function bookingLangsung()
+{
+    $validation = \Config\Services::validation();
+    
+    $validation->setRules([
+        'ruangan_id' => 'required|integer',
+        'tanggal' => 'required|valid_date',
+        'waktu_mulai' => 'required',
+        'waktu_selesai' => 'required', 
+        'keperluan' => 'required|min_length[5]',
+        'nama_penanggung_jawab' => 'required|min_length[3]',
+        'unit_organisasi' => 'required|min_length[3]',
+        'jumlah_peserta' => 'required|integer|greater_than[0]'
+    ]);
 
+    if (!$validation->withRequest($this->request)->run()) {
+        return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+    }
+
+    try {
+        // Model untuk booking langsung
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        
+        // Cek availability - simple check tanpa blocking
+        $existingBooking = $bookingModel->checkAvailability(
+            $this->request->getPost('ruangan_id'),
+            $this->request->getPost('tanggal'),
+            $this->request->getPost('waktu_mulai'),
+            $this->request->getPost('waktu_selesai')
+        );
+
+        if ($existingBooking) {
+            return redirect()->back()->withInput()->with('error', 'Ruangan sudah dibooking pada waktu tersebut');
+        }
+
+        $data = [
+            'ruangan_id' => $this->request->getPost('ruangan_id'),
+            'user_id' => user_id(),
+            'tanggal' => $this->request->getPost('tanggal'), 
+            'waktu_mulai' => $this->request->getPost('waktu_mulai'),
+            'waktu_selesai' => $this->request->getPost('waktu_selesai'),
+            'keperluan' => $this->request->getPost('keperluan'),
+            'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
+            'unit_organisasi' => $this->request->getPost('unit_organisasi'),
+            'jumlah_peserta' => $this->request->getPost('jumlah_peserta'),
+            'status' => 'aktif'
+        ];
+
+        $bookingModel->insert($data);
+        
+        return redirect()->back()->with('success', 'Booking ruangan berhasil! Ruangan langsung dapat digunakan.');
+        
+    } catch (\Exception $e) {
+        return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+    }
+}
 
 
 }

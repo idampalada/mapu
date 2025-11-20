@@ -111,6 +111,15 @@ $routes->post('admin/User/Barang/verifikasiPeminjaman', 'User\Barang::verifikasi
 $routes->post('user/barang/kembalikanById', 'User\Barang::kembalikanById');
 
     $routes->group('user/ruangan', function($routes) {
+            // Booking langsung routes
+    $routes->post('bookingLangsung', 'User\Ruangan::bookingLangsung');
+    $routes->get('myBookings', 'User\Ruangan::myBookings'); // Riwayat booking user
+    $routes->post('cancelBooking/(:num)', 'User\Ruangan::cancelBooking/$1'); // Cancel booking
+    
+    // API routes untuk booking langsung
+    $routes->get('getBookingPublik', 'User\Ruangan::getBookingPublik'); // Untuk notifikasi
+    $routes->get('checkBookingAvailability', 'User\Ruangan::checkBookingAvailability'); // Cek availability
+    
     // API routes HARUS DI ATAS (:segment)
     $routes->get('getBookingByDate', 'User\Ruangan::getBookingByDate');
     $routes->post('getBookingByDate', 'User\Ruangan::getBookingByDate');
@@ -125,7 +134,14 @@ $routes->post('user/barang/kembalikanById', 'User\Barang::kembalikanById');
     // HARUS TERAKHIR - catch all
     $routes->get('(:segment)', 'User\Ruangan::detail/$1');
 });
+// Route untuk admin manage booking langsung
+$routes->group('admin/ruangan', ['filter' => 'role:admin,admin_gedungutama,admin_pusdatin,admin_binamarga,admin_ciptakarya,admin_sda,admin_gedungg,admin_heritage,admin_auditorium'], function($routes) {
+    $routes->get('bookings', 'Admin\Ruangan::viewBookings'); // Lihat semua booking langsung
+    $routes->post('cancelBooking/(:num)', 'Admin\Ruangan::adminCancelBooking/$1'); // Admin cancel booking
+});
 
+
+//KENDARAAN
     $routes->group('AsetKendaraan', ['filter' => 'login'], function($routes) {
         $routes->get('getKendaraan', 'AsetKendaraan::getKendaraan');
         $routes->get('getKendaraanDipinjam', 'AsetKendaraan::getKendaraanDipinjam');

@@ -1269,6 +1269,5 @@ const baseUrl = '<?= base_url() ?>';
 
 <!-- Load JavaScript files -->
 <script src="<?= base_url('assets/js/pinjam-ruangan.js') ?>"></script>
-<script src="<?= base_url('assets/js/booking-ruangan.js') ?>"></script>
 
 <?= $this->endSection() ?>
