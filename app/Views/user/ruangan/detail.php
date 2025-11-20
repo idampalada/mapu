@@ -175,7 +175,24 @@ use App\Models\PinjamRuanganModel;
                                     </div>
 
                                     <?php 
-                                    $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+                                    // PERBAIKAN: Logika is_active yang fleksibel
+                                    $isRuanganActive = true; // Default active jika field tidak ada
+                                    
+                                    if (isset($ruangan['is_active'])) {
+                                        // Cek berbagai format is_active dari database
+                                        $isActiveValue = $ruangan['is_active'];
+                                        
+                                        // False conditions (maintenance)
+                                        if ($isActiveValue === false || 
+                                            $isActiveValue === 'f' || 
+                                            $isActiveValue === '0' || 
+                                            $isActiveValue === 0 ||
+                                            $isActiveValue === 'false' ||
+                                            $isActiveValue === null) {
+                                            $isRuanganActive = false;
+                                        }
+                                    }
+                                    
                                     $cleanRuanganName = htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES);
                                     $cleanFasilitas = htmlspecialchars($ruangan['fasilitas'] ?? '', ENT_QUOTES);
                                     ?>
@@ -342,7 +359,22 @@ use App\Models\PinjamRuanganModel;
                                     </div>
 
                                     <?php 
-                                    $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+                                    // PERBAIKAN: Logika is_active yang sama seperti di tab booking
+                                    $isRuanganActive = true;
+                                    
+                                    if (isset($ruangan['is_active'])) {
+                                        $isActiveValue = $ruangan['is_active'];
+                                        
+                                        if ($isActiveValue === false || 
+                                            $isActiveValue === 'f' || 
+                                            $isActiveValue === '0' || 
+                                            $isActiveValue === 0 ||
+                                            $isActiveValue === 'false' ||
+                                            $isActiveValue === null) {
+                                            $isRuanganActive = false;
+                                        }
+                                    }
+                                    
                                     $cleanRuanganName = htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES);
                                     $cleanFasilitas = htmlspecialchars($ruangan['fasilitas'] ?? '', ENT_QUOTES);
                                     ?>
@@ -523,8 +555,21 @@ use App\Models\PinjamRuanganModel;
                                         $cleanFasilitas = str_replace(["\r\n", "\n", "\r"], ' ', $cleanFasilitas);
                                         $cleanFasilitas = str_replace(["'", '"'], ["\\'", '\\"'], $cleanFasilitas);
                                         
-                                        // Cek status aktif untuk PostgreSQL (support 't', 'f', true, false) - PERSIS SEPERTI ASLI
-                                        $isRuanganActive = ($ruangan['is_active'] === true || $ruangan['is_active'] === 't' || $ruangan['is_active'] === '1' || $ruangan['is_active'] === 1);
+                                        // PERBAIKAN: Logika is_active yang sama dengan tab lain
+                                        $isRuanganActive = true;
+                                        
+                                        if (isset($ruangan['is_active'])) {
+                                            $isActiveValue = $ruangan['is_active'];
+                                            
+                                            if ($isActiveValue === false || 
+                                                $isActiveValue === 'f' || 
+                                                $isActiveValue === '0' || 
+                                                $isActiveValue === 0 ||
+                                                $isActiveValue === 'false' ||
+                                                $isActiveValue === null) {
+                                                $isRuanganActive = false;
+                                            }
+                                        }
                                         ?>
 
                                         <?php if ($isRuanganActive): ?>
@@ -876,6 +921,10 @@ use App\Models\PinjamRuanganModel;
 <div class="modal fade" id="modalPinjamRuangan" tabindex="-1" aria-labelledby="modalPinjamRuanganLabel" aria-hidden="true">
 </div>
 
+<!-- Modal Booking Ruangan - PENTING: TAMBAHKAN INI -->
+<div class="modal fade" id="modalBookingRuangan" tabindex="-1" aria-labelledby="modalBookingRuanganLabel" aria-hidden="true">
+</div>
+
 <!-- Modal Edit Ruangan -->
 <div class="modal fade" id="modalEditRuangan" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -1132,7 +1181,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const ruanganKapasitas = button.getAttribute('data-ruangan-kapasitas');
             const ruanganFasilitas = button.getAttribute('data-ruangan-fasilitas');
             
-            bukaBookingModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+            // Function akan di-handle oleh booking-ruangan.js
+            if (typeof bukaBookingModal === 'function') {
+                bukaBookingModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+            } else {
+                console.error('bukaBookingModal function not found in booking-ruangan.js');
+                // Fallback jika function belum loaded
+                setTimeout(() => {
+                    if (typeof bukaBookingModal === 'function') {
+                        bukaBookingModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+                    }
+                }, 100);
+            }
         }
     });
     
@@ -1145,7 +1205,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const ruanganKapasitas = button.getAttribute('data-ruangan-kapasitas');
             const ruanganFasilitas = button.getAttribute('data-ruangan-fasilitas');
             
-            bukaPinjamModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+            // Function akan di-handle oleh pinjam-ruangan.js
+            if (typeof bukaPinjamModal === 'function') {
+                bukaPinjamModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+            } else {
+                console.error('bukaPinjamModal function not found in pinjam-ruangan.js');
+                // Fallback jika function belum loaded
+                setTimeout(() => {
+                    if (typeof bukaPinjamModal === 'function') {
+                        bukaPinjamModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas);
+                    }
+                }, 100);
+            }
         }
     });
     
@@ -1156,17 +1227,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFilters();
 });
 
-// Fungsi untuk booking langsung
-function bukaBookingModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas) {
-    console.log('Booking langsung untuk ruangan:', ruanganNama);
-    alert('Booking langsung untuk ruangan: ' + ruanganNama + ' (function khusus booking)');
-}
-
-// Fungsi untuk pinjam dengan confirm (existing)
-function bukaPinjamModal(ruanganId, ruanganNama, ruanganKapasitas, ruanganFasilitas) {
-    console.log('Request confirm untuk ruangan:', ruanganNama);
-    alert('Request confirm untuk ruangan: ' + ruanganNama + ' (function asli pinjam)');
-}
+// HAPUS function placeholder - biarkan JS file yang handle
+// Function bukaBookingModal() dan bukaPinjamModal() akan di-handle oleh file JS eksternal
 
 function initializeFilters() {
     console.log('Filters initialized');

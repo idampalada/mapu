@@ -1392,29 +1392,45 @@ public function checkTimeConflict($ruanganId, $tanggal, $waktuMulai, $waktuSeles
 public function getBookingPublik()
 {
     try {
+        // Model untuk booking langsung
         $bookingModel = new \App\Models\BookingRuanganModel();
-        $pinjamModel = new \App\Models\PinjamRuanganModel();
         
-        // Gabungkan data dari booking langsung dan pinjam yang disetujui
-        $bookings = $bookingModel->getBookingPublik(5);
-        $pinjams = $pinjamModel->select('pinjam_ruangan.*, ruangan.nama_ruangan, "confirm" as type')
+        // Model untuk confirm/pinjam yang sudah disetujui
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+
+        // PERBAIKAN: Ambil data dari kedua tabel dengan query yang benar
+        
+        // 1. Ambil booking langsung (yang aktif)
+        $bookingLangsung = $bookingModel->select('
+                booking_ruangan.*, 
+                ruangan.nama_ruangan,
+                \'booking\' as type
+            ')
+            ->join('ruangan', 'ruangan.id = booking_ruangan.ruangan_id')
+            ->where('booking_ruangan.status', 'aktif')
+            ->where('booking_ruangan.tanggal >=', date('Y-m-d'))
+            ->orderBy('booking_ruangan.tanggal', 'ASC')
+            ->orderBy('booking_ruangan.waktu_mulai', 'ASC')
+            ->findAll();
+
+        // 2. Ambil confirm/pinjam yang sudah disetujui
+        $confirmDisetujui = $pinjamModel->select('
+                pinjam_ruangan.*, 
+                ruangan.nama_ruangan,
+                \'confirm\' as type
+            ')
             ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
             ->where('pinjam_ruangan.status', 'disetujui')
             ->where('pinjam_ruangan.tanggal >=', date('Y-m-d'))
             ->where('pinjam_ruangan.deleted_at', null)
             ->orderBy('pinjam_ruangan.tanggal', 'ASC')
-            ->limit(5)
+            ->orderBy('pinjam_ruangan.waktu_mulai', 'ASC')
             ->findAll();
 
-        // Tambahkan type identifier
-        foreach ($bookings as &$booking) {
-            $booking['type'] = 'booking';
-        }
-
-        // Gabungkan dan sort
-        $allData = array_merge($bookings, $pinjams);
+        // Gabungkan dan sort berdasarkan tanggal + waktu
+        $allData = array_merge($bookingLangsung, $confirmDisetujui);
         
-        // Sort by date and time
+        // Sort kombinasi berdasarkan tanggal dan waktu
         usort($allData, function($a, $b) {
             $dateA = $a['tanggal'] . ' ' . $a['waktu_mulai'];
             $dateB = $b['tanggal'] . ' ' . $b['waktu_mulai'];
@@ -1423,7 +1439,7 @@ public function getBookingPublik()
 
         return $this->response->setJSON([
             'status' => 'success',
-            'data' => array_slice($allData, 0, 10)
+            'data' => array_slice($allData, 0, 5) // Limit 5 untuk notifikasi
         ]);
 
     } catch (\Exception $e) {
@@ -1544,24 +1560,31 @@ public function toggleActive($id)
 }
 public function bookingLangsung()
 {
-    $validation = \Config\Services::validation();
+    // Force JSON response untuk AJAX requests
+    $this->response->setContentType('application/json');
     
-    $validation->setRules([
-        'ruangan_id' => 'required|integer',
-        'tanggal' => 'required|valid_date',
-        'waktu_mulai' => 'required',
-        'waktu_selesai' => 'required', 
-        'keperluan' => 'required|min_length[5]',
-        'nama_penanggung_jawab' => 'required|min_length[3]',
-        'unit_organisasi' => 'required|min_length[3]',
-        'jumlah_peserta' => 'required|integer|greater_than[0]'
-    ]);
-
-    if (!$validation->withRequest($this->request)->run()) {
-        return redirect()->back()->withInput()->with('errors', $validation->getErrors());
-    }
-
     try {
+        $validation = \Config\Services::validation();
+        
+        $validation->setRules([
+            'ruangan_id' => 'required|integer',
+            'tanggal' => 'required|valid_date',
+            'waktu_mulai' => 'required',
+            'waktu_selesai' => 'required', 
+            'keperluan' => 'required|min_length[5]',
+            'nama_penanggung_jawab' => 'required|min_length[3]',
+            'unit_organisasi' => 'required|min_length[3]',
+            'jumlah_peserta' => 'required|integer|greater_than[0]'
+        ]);
+
+        if (!$validation->withRequest($this->request)->run()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Validasi gagal',
+                'validation_errors' => $validation->getErrors()
+            ]);
+        }
+
         // Model untuk booking langsung
         $bookingModel = new \App\Models\BookingRuanganModel();
         
@@ -1574,7 +1597,18 @@ public function bookingLangsung()
         );
 
         if ($existingBooking) {
-            return redirect()->back()->withInput()->with('error', 'Ruangan sudah dibooking pada waktu tersebut');
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Ruangan sudah dibooking pada waktu tersebut'
+            ]);
+        }
+
+        // Validasi tambahan - cek apakah user sudah login
+        if (!user_id()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'User belum login'
+            ]);
         }
 
         $data = [
@@ -1590,12 +1624,37 @@ public function bookingLangsung()
             'status' => 'aktif'
         ];
 
-        $bookingModel->insert($data);
+        log_message('debug', 'Attempting to insert booking data: ' . json_encode($data));
+
+        $insertResult = $bookingModel->insert($data);
         
-        return redirect()->back()->with('success', 'Booking ruangan berhasil! Ruangan langsung dapat digunakan.');
+        if (!$insertResult) {
+            $errors = $bookingModel->errors();
+            log_message('error', 'Failed to insert booking: ' . json_encode($errors));
+            
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal menyimpan booking',
+                'database_errors' => $errors
+            ]);
+        }
+
+        log_message('info', 'Booking successful for user ' . user_id() . ' - Ruangan ID: ' . $data['ruangan_id']);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Booking ruangan berhasil! Ruangan langsung dapat digunakan.',
+            'booking_id' => $insertResult
+        ]);
         
     } catch (\Exception $e) {
-        return redirect()->back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        log_message('error', 'Error in bookingLangsung: ' . $e->getMessage());
+        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+        ]);
     }
 }
 
