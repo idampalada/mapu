@@ -1,5 +1,5 @@
 <?php
-// App/Models/BookingRuanganModel.php
+// App/Models/BookingRuanganModel.php - FIXED VERSION
 
 namespace App\Models;
 
@@ -71,54 +71,76 @@ class BookingRuanganModel extends Model
     ];
 
     /**
-     * Cek availability ruangan untuk booking langsung
-     * Simple check tanpa complex time blocking
+     * FIXED: Cek availability ruangan untuk booking langsung
+     * Perbaikan struktur query untuk mencegah false positive
      */
     public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSelesai)
     {
-        // Cek di tabel booking_ruangan (booking langsung)
+        // Log untuk debugging
+        log_message('debug', "checkAvailability called - Ruangan: {$ruanganId}, Tanggal: {$tanggal}, Waktu: {$waktuMulai}-{$waktuSelesai}");
+        
+        // Cek di tabel booking_ruangan (booking langsung) - FIXED QUERY
         $existingBooking = $this->where('ruangan_id', $ruanganId)
             ->where('tanggal', $tanggal)
             ->where('status', 'aktif')
             ->groupStart()
-                ->where('waktu_mulai <=', $waktuMulai)
-                ->where('waktu_selesai >', $waktuMulai)
-            ->groupEnd()
-            ->orGroupStart()
-                ->where('waktu_mulai <', $waktuSelesai)
-                ->where('waktu_selesai >=', $waktuSelesai)
-            ->groupEnd()
-            ->orGroupStart()
-                ->where('waktu_mulai >=', $waktuMulai)
-                ->where('waktu_selesai <=', $waktuSelesai)
+                // PROPER GROUPING: Semua kondisi konflik dalam satu grup
+                ->groupStart()
+                    // Kondisi 1: Waktu mulai baru berada dalam range booking yang ada
+                    ->where('waktu_mulai <=', $waktuMulai)
+                    ->where('waktu_selesai >', $waktuMulai)
+                ->groupEnd()
+                ->orGroupStart()
+                    // Kondisi 2: Waktu selesai baru berada dalam range booking yang ada
+                    ->where('waktu_mulai <', $waktuSelesai) 
+                    ->where('waktu_selesai >=', $waktuSelesai)
+                ->groupEnd()
+                ->orGroupStart()
+                    // Kondisi 3: Booking baru menutupi booking yang ada sepenuhnya
+                    ->where('waktu_mulai >=', $waktuMulai)
+                    ->where('waktu_selesai <=', $waktuSelesai)
+                ->groupEnd()
             ->groupEnd()
             ->first();
 
         if ($existingBooking) {
+            log_message('debug', 'Found conflict in booking_ruangan: ' . json_encode($existingBooking));
             return $existingBooking;
         }
 
-        // Cek juga di tabel pinjam_ruangan (request confirm yang disetujui)
+        // Cek juga di tabel pinjam_ruangan (request confirm yang disetujui) - FIXED QUERY
         $pinjamModel = new \App\Models\PinjamRuanganModel();
         $existingPinjam = $pinjamModel->where('ruangan_id', $ruanganId)
             ->where('tanggal', $tanggal)
             ->where('status', 'disetujui')
             ->where('deleted_at', null)
             ->groupStart()
-                ->where('waktu_mulai <=', $waktuMulai)
-                ->where('waktu_selesai >', $waktuMulai)
-            ->groupEnd()
-            ->orGroupStart()
-                ->where('waktu_mulai <', $waktuSelesai)
-                ->where('waktu_selesai >=', $waktuSelesai)
-            ->groupEnd()
-            ->orGroupStart()
-                ->where('waktu_mulai >=', $waktuMulai)
-                ->where('waktu_selesai <=', $waktuSelesai)
+                // PROPER GROUPING: Semua kondisi konflik dalam satu grup
+                ->groupStart()
+                    // Kondisi 1: Waktu mulai baru berada dalam range booking yang ada
+                    ->where('waktu_mulai <=', $waktuMulai)
+                    ->where('waktu_selesai >', $waktuMulai)
+                ->groupEnd()
+                ->orGroupStart()
+                    // Kondisi 2: Waktu selesai baru berada dalam range booking yang ada
+                    ->where('waktu_mulai <', $waktuSelesai)
+                    ->where('waktu_selesai >=', $waktuSelesai)
+                ->groupEnd()
+                ->orGroupStart()
+                    // Kondisi 3: Booking baru menutupi booking yang ada sepenuhnya
+                    ->where('waktu_mulai >=', $waktuMulai)
+                    ->where('waktu_selesai <=', $waktuSelesai)
+                ->groupEnd()
             ->groupEnd()
             ->first();
 
-        return $existingPinjam;
+        if ($existingPinjam) {
+            log_message('debug', 'Found conflict in pinjam_ruangan: ' . json_encode($existingPinjam));
+            return $existingPinjam;
+        }
+
+        log_message('debug', 'No conflicts found - booking available');
+        return null; // Tidak ada konflik
     }
 
     /**
@@ -158,7 +180,7 @@ class BookingRuanganModel extends Model
      */
     public function getUserBookings($userId, $limit = 20)
     {
-        return $this->select('booking_ruangan.*, ruangan.nama_ruangan, ruangan.lokasi')
+        return $this->select('booking_ruangan.*, ruangan.nama_ruangan')
             ->join('ruangan', 'ruangan.id = booking_ruangan.ruangan_id')
             ->where('booking_ruangan.user_id', $userId)
             ->orderBy('booking_ruangan.created_at', 'DESC')
@@ -167,21 +189,28 @@ class BookingRuanganModel extends Model
     }
 
     /**
-     * Cancel booking
+     * Cancel booking (hanya bisa dilakukan oleh user sendiri atau admin)
      */
-    public function cancelBooking($bookingId, $userId)
+    public function cancelBooking($bookingId, $userId = null)
     {
-        $booking = $this->where('id', $bookingId)
-            ->where('user_id', $userId)
-            ->where('status', 'aktif')
-            ->first();
-
+        $booking = $this->find($bookingId);
+        
         if (!$booking) {
             return false;
         }
 
-        // Tidak bisa cancel jika hari H sudah lewat
-        if (strtotime($booking['tanggal']) < strtotime(date('Y-m-d'))) {
+        // Hanya user yang booking atau admin yang bisa cancel
+        if ($userId && $booking['user_id'] != $userId) {
+            return false;
+        }
+
+        // Cek apakah booking masih bisa dibatalkan (misalnya H-1)
+        $tanggalBooking = strtotime($booking['tanggal']);
+        $sekarang = time();
+        $selisihHari = ($tanggalBooking - $sekarang) / (24 * 60 * 60);
+        
+        // Batasi pembatalan minimal H-1
+        if ($selisihHari < 1) {
             return false;
         }
 
@@ -189,9 +218,57 @@ class BookingRuanganModel extends Model
     }
 
     /**
-     * Mark booking as completed (untuk cleanup otomatis)
+     * Get booking untuk range tanggal tertentu
      */
-    public function markExpiredBookings()
+    public function getBookingByDateRange($startDate, $endDate, $ruanganId = null)
+    {
+        $builder = $this->select('booking_ruangan.*, ruangan.nama_ruangan')
+            ->join('ruangan', 'ruangan.id = booking_ruangan.ruangan_id')
+            ->where('booking_ruangan.tanggal >=', $startDate)
+            ->where('booking_ruangan.tanggal <=', $endDate)
+            ->where('booking_ruangan.status', 'aktif');
+
+        if ($ruanganId) {
+            $builder->where('booking_ruangan.ruangan_id', $ruanganId);
+        }
+
+        return $builder->orderBy('booking_ruangan.tanggal', 'ASC')
+            ->orderBy('booking_ruangan.waktu_mulai', 'ASC')
+            ->findAll();
+    }
+
+    /**
+     * Get statistik booking untuk dashboard
+     */
+    public function getBookingStats($startDate = null, $endDate = null)
+    {
+        $startDate = $startDate ?? date('Y-m-01'); // Awal bulan
+        $endDate = $endDate ?? date('Y-m-t'); // Akhir bulan
+        
+        return [
+            'total_booking' => $this->where('tanggal >=', $startDate)
+                ->where('tanggal <=', $endDate)
+                ->countAllResults(),
+            'booking_aktif' => $this->where('tanggal >=', $startDate)
+                ->where('tanggal <=', $endDate)
+                ->where('status', 'aktif')
+                ->countAllResults(),
+            'booking_selesai' => $this->where('tanggal >=', $startDate)
+                ->where('tanggal <=', $endDate)
+                ->where('status', 'selesai')
+                ->countAllResults(),
+            'booking_dibatalkan' => $this->where('tanggal >=', $startDate)
+                ->where('tanggal <=', $endDate)
+                ->where('status', 'dibatalkan')
+                ->countAllResults()
+        ];
+    }
+
+    /**
+     * Update status booking otomatis (untuk cron job)
+     * Update status menjadi 'selesai' jika tanggal booking sudah lewat
+     */
+    public function updateExpiredBookings()
     {
         $yesterday = date('Y-m-d', strtotime('-1 day'));
         
@@ -201,4 +278,3 @@ class BookingRuanganModel extends Model
             ->update();
     }
 }
-?>

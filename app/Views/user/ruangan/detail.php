@@ -169,7 +169,7 @@ use App\Models\PinjamRuanganModel;
                                         <!-- Badge Booking Type -->
                                         <div class="position-absolute top-0 start-0 p-2">
                                             <span class="badge bg-success booking-type-badge">
-                                                <i class="bi bi-lightning-fill"></i> BOOKING
+                                                 BOOKING
                                             </span>
                                         </div>
                                     </div>
@@ -229,7 +229,7 @@ use App\Models\PinjamRuanganModel;
                                                         data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
                                                         data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
                                                         data-booking-type="booking">
-                                                    <i class="bi bi-lightning-fill"></i>
+                                                    
                                                     <span>Booking Sekarang</span>
                                                 </button>
                                             <?php else: ?>
@@ -353,7 +353,7 @@ use App\Models\PinjamRuanganModel;
                                         <!-- Badge Confirm Type -->
                                         <div class="position-absolute top-0 start-0 p-2">
                                             <span class="badge bg-warning confirm-type-badge text-dark">
-                                                <i class="bi bi-check-circle"></i> CONFIRM
+                                                 CONFIRM
                                             </span>
                                         </div>
                                     </div>
@@ -411,7 +411,7 @@ use App\Models\PinjamRuanganModel;
                                                         data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
                                                         data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
                                                         data-booking-type="confirm">
-                                                    <i class="bi bi-check-circle"></i>
+                                                    
                                                     <span>Request Confirm</span>
                                                 </button>
                                             <?php else: ?>
