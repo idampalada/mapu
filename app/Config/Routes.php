@@ -124,6 +124,10 @@ $routes->post('user/barang/kembalikanById', 'User\Barang::kembalikanById');
     $routes->get('getBookingByDate', 'User\Ruangan::getBookingByDate');
     $routes->post('getBookingByDate', 'User\Ruangan::getBookingByDate');
     $routes->get('checkAvailability', 'User\Ruangan::checkAvailability');
+
+    // 👇 TAMBAHKAN ROUTE AUTO-FILL DI SINI 👇
+    $routes->get('getUserLatestBookingData', 'User\Ruangan::getUserLatestBookingData');
+    
     
     // Form routes
     $routes->post('pinjam', 'User\Ruangan::pinjam');
@@ -1466,3 +1470,4 @@ $routes->post('/AsetKendaraan/generateSuratPenanggungJawabKdf', 'AsetKendaraan::
 
 //Route Untuk TIMELINE PEMINJAMAN
 $routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');
+

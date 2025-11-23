@@ -1657,6 +1657,140 @@ public function bookingLangsung()
         ]);
     }
 }
+public function getUserLatestBookingData()
+{
+    try {
+        $userId = user_id();
+        if (!$userId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // PENTING: Ambil ruangan_id dari request untuk filter
+        $ruanganId = $this->request->getGet('ruangan_id');
+        
+        if (!$ruanganId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Ruangan ID is required'
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Query dengan filter ruangan_id yang spesifik + INCLUDE TANGGAL
+        $latestBooking = $db->table('booking_ruangan')
+            ->select('nama_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->where('user_id', $userId)
+            ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
+            ->where('status', 'aktif')
+            ->orderBy('created_at', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRowArray();
+
+        if ($latestBooking) {
+            log_message('debug', "Auto-fill: Found booking for user {$userId} at ruangan {$ruanganId}");
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => [
+                    'nama_penanggung_jawab' => $latestBooking['nama_penanggung_jawab'],
+                    'unit_organisasi' => $latestBooking['unit_organisasi'],
+                    'keperluan' => $latestBooking['keperluan'],
+                    'jumlah_peserta' => $latestBooking['jumlah_peserta'],
+                    'waktu_mulai' => $latestBooking['waktu_mulai'],
+                    'waktu_selesai' => $latestBooking['waktu_selesai'],
+                    'tanggal' => $latestBooking['tanggal'], // TAMBAHAN BARU!
+                    'source_type' => 'booking',
+                    'ruangan_id' => $latestBooking['ruangan_id'],
+                    'note' => "Data diambil dari booking terakhir di ruangan ini",
+                    'created_at' => $latestBooking['created_at']
+                ],
+                'message' => 'Data booking untuk ruangan ini ditemukan'
+            ]);
+        }
+
+        // Fallback: Cari di tabel pinjam_ruangan untuk ruangan yang sama
+        $latestPinjam = $db->table('pinjam_ruangan')
+            ->select('nama_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->where('user_id', $userId)
+            ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
+            ->where('deleted_at IS NULL')
+            ->whereIn('status', ['disetujui', 'dipinjam'])
+            ->orderBy('created_at', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRowArray();
+
+        if ($latestPinjam) {
+            log_message('debug', "Auto-fill: Found pinjam for user {$userId} at ruangan {$ruanganId}");
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => [
+                    'nama_penanggung_jawab' => $latestPinjam['nama_penanggung_jawab'],
+                    'unit_organisasi' => $latestPinjam['unit_organisasi'],
+                    'keperluan' => $latestPinjam['keperluan'],
+                    'jumlah_peserta' => $latestPinjam['jumlah_peserta'],
+                    'waktu_mulai' => $latestPinjam['waktu_mulai'],
+                    'waktu_selesai' => $latestPinjam['waktu_selesai'],
+                    'tanggal' => $latestPinjam['tanggal'], // TAMBAHAN BARU!
+                    'source_type' => 'confirm',
+                    'ruangan_id' => $latestPinjam['ruangan_id'],
+                    'note' => "Data diambil dari confirm request terakhir di ruangan ini",
+                    'created_at' => $latestPinjam['created_at']
+                ],
+                'message' => 'Data confirm request untuk ruangan ini ditemukan'
+            ]);
+        }
+
+        log_message('debug', "Auto-fill: No previous data found for user {$userId} at ruangan {$ruanganId}");
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => "No previous booking data found for this room",
+            'ruangan_id' => $ruanganId,
+            'user_id' => $userId,
+            'note' => "Tidak ada data booking/confirm sebelumnya untuk ruangan ini"
+        ]);
+
+    } catch (\Exception $e) {
+        log_message('error', 'Error in getUserLatestBookingData: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Server error: ' . $e->getMessage(),
+            'error_details' => [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]
+        ]);
+    }
+}   
+public function getPinjamModal($ruanganId)
+{
+    if (!logged_in()) {
+        return $this->response->setStatusCode(401)->setBody('Unauthorized');
+    }
+
+    // Get ruangan data
+    $ruanganModel = new \App\Models\RuanganModel();
+    $ruangan = $ruanganModel->find($ruanganId);
+    
+    if (!$ruangan) {
+        return $this->response->setStatusCode(404)->setBody('Ruangan not found');
+    }
+
+    // Load modal view
+    $data = [
+        'ruangan' => $ruangan
+    ];
+    
+    return view('user/ruangan/modal_pinjam', $data);
+}
 
 
 }

@@ -967,258 +967,6 @@ function showToast(message, type = "info", duration = 3000) {
 }
 
 // MAIN MODAL FUNCTION
-function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
-  const baseUrl =
-    document.querySelector("base")?.href || window.location.origin;
-
-  const cleanNamaRuangan = escapeHtml(namaRuangan);
-  const cleanKeterangan = escapeHtml(keterangan);
-  const cleanRuanganId = parseInt(ruanganId);
-  const cleanKapasitas = parseInt(kapasitas);
-
-  if (!cleanRuanganId || !cleanNamaRuangan || !cleanKapasitas) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Data ruangan tidak valid",
-    });
-    return;
-  }
-
-  const keteranganSection = cleanKeterangan
-    ? `
-        <div class="alert alert-info mb-3">
-            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Informasi Fasilitas</h6>
-            <p class="mb-0">${cleanKeterangan}</p>
-        </div>
-    `
-    : "";
-
-  const modalContent = `
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Pinjam Ruangan: ${cleanNamaRuangan}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form id="formPinjamRuanganModal" action="${baseUrl}/user/ruangan/pinjam" method="POST" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <input type="hidden" name="ruangan_id" value="${cleanRuanganId}">
-                        
-                        ${keteranganSection}
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
-                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" required>
-                                </div>
-                                
-                                <div class="mb-3">
-    <label for="nomor_hp_penanggung_jawab" class="form-label">Nomor HP Penanggung Jawab</label>
-    <input type="tel" class="form-control" id="nomor_hp_penanggung_jawab" name="nomor_hp_penanggung_jawab" required>
-</div>
-
-                                <div class="form-group mb-3">
-                                    <label for="unit_organisasi">Unit Organisasi</label>
-                                    <select class="form-control" name="unit_organisasi" required>
-                                        <option value="" class="text-muted" disabled selected>Pilih</option>
-                                        <option value="Setjen">Sekretariat Jenderal</option>
-                                        <option value="Itjen">Inspektorat Jenderal</option>
-                                        <option value="Ditjen Sumber Daya Air">Direktorat Jenderal Sumber Daya Air</option>
-                                        <option value="Ditjen Bina Marga">Direktorat Jenderal Bina Marga</option>
-                                        <option value="Ditjen Cipta Karya">Direktorat Jenderal Cipta Karya</option>
-                                        <option value="Ditjen Perumahan">Direktorat Jenderal Perumahan</option>
-                                        <option value="Ditjen Bina Konstruksi">Direktorat Jenderal Bina Konstruksi</option>
-                                        <option value="Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan">Direktorat Jenderal Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan</option>
-                                        <option value="BPIW">Badan Pengembangan Infrastruktur Wilayah</option>
-                                        <option value="BPSDM">Badan Pengembangan Sumber Daya Manusia</option>
-                                        <option value="BPJT">Badan Pengatur Jalan Tol</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="tanggal" class="form-label">Tanggal Peminjaman</label>
-                                    <input type="date" class="form-control" id="tanggal" name="tanggal" required
-                                           min="${
-                                             new Date()
-                                               .toISOString()
-                                               .split("T")[0]
-                                           }">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="jumlah_peserta" class="form-label">Jumlah Peserta</label>
-                                    <input type="number" class="form-control" id="jumlah_peserta" name="jumlah_peserta" 
-                                           required min="1" max="${cleanKapasitas}">
-                                    <div class="form-text">Maksimal ${cleanKapasitas} orang</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="keperluan" class="form-label">Keperluan</label>
-                                    <textarea class="form-control" id="keperluan" name="keperluan" 
-                                              rows="3" required></textarea>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="surat_permohonan" class="form-label">Surat Permohonan (PDF)</label>
-                                    <input type="file" class="form-control" id="surat_permohonan" name="surat_permohonan" 
-                                           accept=".pdf" required>
-                                    <div class="form-text">Upload file dalam format PDF. Max 2MB</div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <input type="hidden" id="waktu_mulai" name="waktu_mulai" required>
-                                <input type="hidden" id="waktu_selesai" name="waktu_selesai" required>
-                                
-                                <div id="existing_bookings" class="existing-bookings mb-3" style="display: none;">
-                                    <h6><i class="bi bi-info-circle"></i> Booking yang Sudah Ada:</h6>
-                                    <div id="booking_list"></div>
-                                </div>
-
-                                <div class="time-picker-container">
-                                    <h6 class="text-center mb-3">
-                                        <i class="bi bi-clock"></i>
-                                        Pilih Waktu Booking
-                                    </h6>
-                                    
-                                    <div class="legend mb-3">
-                                        <div class="legend-item">
-                                            <div class="legend-color available"></div>
-                                            <span>Tersedia</span>
-                                        </div>
-                                        <div class="legend-item">
-                                            <div class="legend-color booked"></div>
-                                            <span>Dibooking</span>
-                                        </div>
-                                        <div class="legend-item">
-                                            <div class="legend-color selected-start"></div>
-                                            <span>Mulai</span>
-                                        </div>
-                                        <div class="legend-item">
-                                            <div class="legend-color selected-end"></div>
-                                            <span>Selesai</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="time-ruler" id="time_ruler">
-                                    </div>
-                                    
-                                    <div class="booking-info mt-3">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <label class="form-label">Waktu Mulai:</label>
-                                                <div class="selected-time" id="display_waktu_mulai">Belum dipilih</div>
-                                            </div>
-                                            <div class="col-6">
-                                                <label class="form-label">Waktu Selesai:</label>
-                                                <div class="selected-time" id="display_waktu_selesai">Belum dipilih</div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-2">
-                                            <small class="text-muted">
-                                                <i class="bi bi-info-circle"></i>
-                                                Klik untuk memilih waktu mulai, klik lagi untuk waktu selesai
-                                            </small>
-                                        </div>
-                                        <div id="duration_display" class="mt-2" style="display: none;">
-                                            <span class="badge bg-info">Durasi: <span id="duration_text"></span></span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div id="conflict_warning" class="conflict-warning" style="display: none;">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        <strong>Konflik Waktu!</strong>
-                                        <div id="conflict_message"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary" id="submit_booking" style="background-color: #133E87;" disabled>
-                            Ajukan Peminjaman
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-
-  const modalElement = document.getElementById("modalPinjamRuangan");
-  modalElement.innerHTML = modalContent;
-
-  addTimePickerStyles();
-
-  const modal = new bootstrap.Modal(modalElement);
-
-  modalElement.addEventListener("shown.bs.modal", function () {
-    initializeTimePicker(cleanRuanganId);
-
-    const form = document.getElementById("formPinjamRuanganModal");
-    if (form) {
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const jumlahPeserta = parseInt(
-          document.getElementById("jumlah_peserta").value
-        );
-        if (jumlahPeserta > cleanKapasitas) {
-          Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: `Jumlah peserta tidak boleh melebihi kapasitas ruangan (${cleanKapasitas} orang)`,
-            confirmButtonColor: "#dc3545",
-          });
-          return;
-        }
-
-        const waktuMulai = document.getElementById("waktu_mulai").value;
-        const waktuSelesai = document.getElementById("waktu_selesai").value;
-
-        if (!waktuMulai || !waktuSelesai) {
-          Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: "Silakan pilih waktu mulai dan waktu selesai terlebih dahulu",
-            confirmButtonColor: "#dc3545",
-          });
-          return;
-        }
-
-        const formData = new FormData(this);
-        handlePinjamRuanganSubmit(e, formData);
-      });
-
-      // PERBAIKAN: Auto load booking untuk tanggal hari ini
-      const tanggalInput = document.getElementById("tanggal");
-
-      // Set tanggal hari ini sebagai default
-      const today = new Date().toISOString().split("T")[0];
-      tanggalInput.value = today;
-
-      // Auto load booking untuk hari ini
-      console.log(
-        `Auto-loading bookings for ruangan ${cleanRuanganId} on ${today}`
-      );
-      loadExistingBookings(cleanRuanganId, today);
-
-      // Event listener untuk perubahan tanggal
-      tanggalInput.addEventListener("change", function () {
-        const selectedDate = this.value;
-        if (selectedDate) {
-          console.log(`Date changed to: ${selectedDate}`);
-          resetTimeSelection(); // Reset selection saat ganti tanggal
-          loadExistingBookings(cleanRuanganId, selectedDate);
-        }
-      });
-    }
-  });
-
-  modal.show();
-}
 
 // EDIT AND DELETE FUNCTIONS
 function openEditRuangan(id) {
@@ -2314,5 +2062,945 @@ function toggleRuanganStatus(id) {
           });
         });
     }
+  });
+}
+// ===== REPLACE SELURUH CODE INI KE FILE JAVASCRIPT ANDA =====
+// COMPLETE JAVASCRIPT WITH VISUAL TIME SELECTION & AUTO DATE
+
+function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
+  const baseUrl =
+    document.querySelector("base")?.href || window.location.origin;
+
+  const cleanNamaRuangan = escapeHtml(namaRuangan);
+  const cleanKeterangan = escapeHtml(keterangan);
+  const cleanRuanganId = parseInt(ruanganId);
+  const cleanKapasitas = parseInt(kapasitas);
+
+  if (!cleanRuanganId || !cleanNamaRuangan || !cleanKapasitas) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Data ruangan tidak valid",
+    });
+    return;
+  }
+
+  const keteranganSection = cleanKeterangan
+    ? `
+        <div class="alert alert-info mb-3">
+            <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Informasi Fasilitas</h6>
+            <p class="mb-0">${cleanKeterangan}</p>
+        </div>
+    `
+    : "";
+
+  const modalContent = `
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #ffc107, #ff8c00); color: white;">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Form Request Confirm - ${cleanNamaRuangan}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formPinjamRuanganModal" action="${baseUrl}/user/ruangan/pinjam" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <input type="hidden" name="ruangan_id" value="${cleanRuanganId}">
+                        
+                        ${keteranganSection}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nama_penanggung_jawab" class="form-label">
+                                        <i class="bi bi-person-fill me-1"></i>
+                                        Nama Penanggung Jawab <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" required
+                                           placeholder="Masukkan nama penanggung jawab">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="nomor_hp_penanggung_jawab" class="form-label">
+                                        <i class="bi bi-telephone-fill me-1"></i>
+                                        Nomor HP Penanggung Jawab <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" class="form-control" id="nomor_hp_penanggung_jawab" name="nomor_hp_penanggung_jawab" required
+                                           pattern="[0-9]{10,15}" placeholder="Contoh: 081234567890">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="unit_organisasi" class="form-label">
+                                        <i class="bi bi-building me-1"></i>
+                                        Unit Organisasi <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" id="unit_organisasi" name="unit_organisasi" required>
+                                        <option value="" disabled selected>Pilih Unit Organisasi</option>
+                                        <option value="Setjen">Sekretariat Jenderal</option>
+                                        <option value="Itjen">Inspektorat Jenderal</option>
+                                        <option value="Ditjen Sumber Daya Air">Direktorat Jenderal Sumber Daya Air</option>
+                                        <option value="Ditjen Bina Marga">Direktorat Jenderal Bina Marga</option>
+                                        <option value="Ditjen Cipta Karya">Direktorat Jenderal Cipta Karya</option>
+                                        <option value="Ditjen Perumahan">Direktorat Jenderal Perumahan</option>
+                                        <option value="Ditjen Bina Konstruksi">Direktorat Jenderal Bina Konstruksi</option>
+                                        <option value="Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan">Direktorat Jenderal Pembiayaan Infrastruktur PU dan Perumahan</option>
+                                        <option value="BPIW">Badan Pengembangan Infrastruktur Wilayah</option>
+                                        <option value="BPSDM">Badan Pengembangan Sumber Daya Manusia</option>
+                                        <option value="BPJT">Badan Pengatur Jalan Tol</option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="tanggal" class="form-label">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        Tanggal Peminjaman <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="tanggal" name="tanggal" required
+                                           min="${
+                                             new Date(Date.now() + 86400000)
+                                               .toISOString()
+                                               .split("T")[0]
+                                           }">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="jumlah_peserta" class="form-label">
+                                        <i class="bi bi-people-fill me-1"></i>
+                                        Jumlah Peserta <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="jumlah_peserta" name="jumlah_peserta" 
+                                           required min="1" max="${cleanKapasitas}" placeholder="Max: ${cleanKapasitas} orang">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="keperluan" class="form-label">
+                                        <i class="bi bi-card-text me-1"></i>
+                                        Keperluan <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="keperluan" name="keperluan" 
+                                              rows="3" required placeholder="Jelaskan keperluan penggunaan ruangan"></textarea>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="surat_permohonan" class="form-label">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                                        Surat Permohonan <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="file" class="form-control" id="surat_permohonan" name="surat_permohonan" 
+                                           required accept=".pdf" max="2048">
+                                    <small class="text-muted">Format: PDF, Maksimal 2MB</small>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Auto-fill Settings -->
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" id="enable_autofill" checked>
+                                    <label class="form-check-label text-muted" for="enable_autofill">
+                                        <small>
+                                            <i class="bi bi-magic me-1"></i>
+                                            Isi otomatis data dari booking terakhir di ruangan ini
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <input type="hidden" id="waktu_mulai" name="waktu_mulai" required>
+                                <input type="hidden" id="waktu_selesai" name="waktu_selesai" required>
+                                
+                                <div id="existing_bookings" class="existing-bookings mb-3" style="display: none;">
+                                    <h6><i class="bi bi-info-circle"></i> Booking yang Sudah Ada:</h6>
+                                    <div id="booking_list"></div>
+                                </div>
+
+                                <div class="time-picker-container">
+                                    <h6 class="text-center mb-3">
+                                        <i class="bi bi-clock"></i>
+                                        Pilih Waktu Booking
+                                    </h6>
+                                    
+                                    <div class="legend mb-3">
+                                        <div class="legend-item">
+                                            <div class="legend-color available"></div>
+                                            <span>Tersedia</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color booked"></div>
+                                            <span>Dibooking</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color selected-start"></div>
+                                            <span>Mulai</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color selected-end"></div>
+                                            <span>Selesai</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="time-ruler" id="time_ruler">
+                                    </div>
+                                    
+                                    <div class="booking-info mt-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <label class="form-label">Waktu Mulai:</label>
+                                                <div class="selected-time" id="display_waktu_mulai">Belum dipilih</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Waktu Selesai:</label>
+                                                <div class="selected-time" id="display_waktu_selesai">Belum dipilih</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i>
+                                                Klik untuk memilih waktu mulai, klik lagi untuk waktu selesai
+                                            </small>
+                                        </div>
+                                        <div id="duration_display" class="mt-2" style="display: none;">
+                                            <span class="badge bg-info">Durasi: <span id="duration_text"></span></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="conflict_warning" class="conflict-warning" style="display: none;">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        <strong>Konflik Waktu!</strong>
+                                        <div id="conflict_message"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Ruangan -->
+                        <div class="alert alert-info mt-3">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            <strong>Informasi Ruangan:</strong>
+                            <div class="mt-1">
+                                <small>
+                                    <strong>Kapasitas:</strong> ${cleanKapasitas} orang
+                                    ${
+                                      cleanKeterangan
+                                        ? ` | <strong>Fasilitas:</strong> ${cleanKeterangan}`
+                                        : ""
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Warning untuk confirm -->
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Perhatian:</strong> 
+                            Request ini memerlukan persetujuan admin. Status akan menjadi "Pending" hingga admin melakukan verifikasi.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-warning" id="submit_booking" disabled>
+                            <i class="bi bi-send-fill me-1"></i>
+                            Kirim Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+  const modalElement = document.getElementById("modalPinjamRuangan");
+  modalElement.innerHTML = modalContent;
+
+  addTimePickerStyles();
+  initializeAutoFillStyles(); // TAMBAHAN BARU!
+
+  const modal = new bootstrap.Modal(modalElement);
+
+  modalElement.addEventListener("shown.bs.modal", function () {
+    // Auto-fill data dari booking sebelumnya dengan filter ruangan
+    loadPreviousBookingDataIfEnabled(cleanRuanganId);
+
+    initializeTimePicker(cleanRuanganId);
+
+    // Auto-fill handler untuk checkbox
+    const autoFillCheckbox = document.getElementById("enable_autofill");
+    if (autoFillCheckbox) {
+      autoFillCheckbox.checked = isAutoFillEnabled();
+
+      autoFillCheckbox.addEventListener("change", function () {
+        localStorage.setItem("ruangan_autofill_enabled", this.checked);
+
+        if (this.checked) {
+          loadPreviousBookingData(cleanRuanganId);
+        } else {
+          clearAutoFilledDataFixed();
+        }
+      });
+    }
+
+    const form = document.getElementById("formPinjamRuanganModal");
+    if (form) {
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Enhanced Validation
+        const requiredFields = [
+          "nama_penanggung_jawab",
+          "nomor_hp_penanggung_jawab",
+          "unit_organisasi",
+          "tanggal",
+          "jumlah_peserta",
+          "keperluan",
+          "surat_permohonan",
+        ];
+        let isValid = true;
+
+        requiredFields.forEach((field) => {
+          const input = document.getElementById(field);
+          if (!input || !input.value.trim()) {
+            if (input) input.classList.add("is-invalid");
+            isValid = false;
+          } else {
+            if (input) input.classList.remove("is-invalid");
+          }
+        });
+
+        // Validate HP number format
+        const hpInput = document.getElementById("nomor_hp_penanggung_jawab");
+        if (hpInput) {
+          const hpPattern = /^[0-9]{10,15}$/;
+          if (!hpPattern.test(hpInput.value)) {
+            hpInput.classList.add("is-invalid");
+            isValid = false;
+          }
+        }
+
+        if (!isValid) {
+          Swal.fire({
+            icon: "error",
+            title: "Form Tidak Valid!",
+            text: "Mohon lengkapi semua field yang required dengan benar",
+            confirmButtonColor: "#dc3545",
+          });
+          return;
+        }
+
+        const jumlahPeserta = parseInt(
+          document.getElementById("jumlah_peserta").value
+        );
+        if (jumlahPeserta > cleanKapasitas) {
+          Swal.fire({
+            icon: "error",
+            title: "Error!",
+            text: `Jumlah peserta tidak boleh melebihi kapasitas ruangan (${cleanKapasitas} orang)`,
+            confirmButtonColor: "#dc3545",
+          });
+          return;
+        }
+
+        const waktuMulai = document.getElementById("waktu_mulai").value;
+        const waktuSelesai = document.getElementById("waktu_selesai").value;
+
+        if (!waktuMulai || !waktuSelesai) {
+          Swal.fire({
+            icon: "error",
+            title: "Error!",
+            text: "Silakan pilih waktu mulai dan waktu selesai terlebih dahulu",
+            confirmButtonColor: "#dc3545",
+          });
+          return;
+        }
+
+        const formData = new FormData(this);
+        handlePinjamRuanganSubmit(e, formData);
+      });
+
+      // Set tanggal minimum (besok) - AKAN DIUPDATE OTOMATIS JIKA ADA DATA
+      const tanggalInput = document.getElementById("tanggal");
+      const tomorrow = new Date(Date.now() + 86400000)
+        .toISOString()
+        .split("T")[0];
+      tanggalInput.value = tomorrow;
+
+      // Event listener untuk perubahan tanggal
+      tanggalInput.addEventListener("change", function () {
+        const selectedDate = this.value;
+        if (selectedDate) {
+          console.log(`Date changed to: ${selectedDate}`);
+          resetTimeSelection();
+          loadExistingBookings(cleanRuanganId, selectedDate);
+        }
+      });
+    }
+  });
+
+  modal.show();
+}
+
+// ===== AUTO-FILL FUNCTIONS WITH VISUAL TIME SELECTION =====
+
+function loadPreviousBookingData(ruanganId) {
+  const url = `${window.location.origin}/user/ruangan/getUserLatestBookingData?ruangan_id=${ruanganId}`;
+
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(`Previous booking data for ruangan ${ruanganId}:`, data);
+
+      if (data.success && data.data) {
+        // Auto-fill form fields
+        const fields = {
+          nama_penanggung_jawab: data.data.nama_penanggung_jawab,
+          unit_organisasi: data.data.unit_organisasi,
+          jumlah_peserta: data.data.jumlah_peserta,
+          keperluan: data.data.keperluan,
+        };
+
+        Object.entries(fields).forEach(([fieldId, value]) => {
+          const field = document.getElementById(fieldId);
+          if (field && value) {
+            field.value = value;
+            console.log(
+              `✅ Auto-filled ${fieldId}: ${value} for ruangan ${ruanganId}`
+            );
+          }
+        });
+
+        // Auto-set tanggal dari booking terakhir (jika tersedia)
+        if (data.data.tanggal) {
+          const tanggalField = document.getElementById("tanggal");
+          if (tanggalField) {
+            tanggalField.value = data.data.tanggal;
+            console.log(`📅 Auto-set tanggal: ${data.data.tanggal}`);
+
+            // Load existing bookings untuk tanggal yang baru
+            loadExistingBookings(parseInt(ruanganId), data.data.tanggal);
+          }
+        }
+
+        // Auto-fill waktu booking dengan visual selection
+        if (data.data.waktu_mulai && data.data.waktu_selesai) {
+          const waktuMulai = data.data.waktu_mulai.substring(0, 5);
+          const waktuSelesai = data.data.waktu_selesai.substring(0, 5);
+
+          setTimeout(() => {
+            autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai);
+          }, 2500); // Delay untuk memastikan time picker ready
+        }
+
+        showAutoFillNotificationComplete(
+          data.data.source_type,
+          data.data,
+          ruanganId
+        );
+      } else {
+        console.log(
+          `No previous booking data found for ruangan ${ruanganId}:`,
+          data.message
+        );
+      }
+    })
+    .catch((error) => {
+      console.error(
+        `Error loading previous booking data for ruangan ${ruanganId}:`,
+        error
+      );
+    });
+}
+
+function autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai) {
+  console.log(
+    `🎯 Auto-selecting time slots VISUALLY: ${waktuMulai} - ${waktuSelesai}`
+  );
+
+  try {
+    // Reset existing selections first
+    if (typeof resetTimeSelection === "function") {
+      resetTimeSelection();
+    }
+
+    // Set global variables
+    if (typeof window !== "undefined") {
+      window.selectedStartTime = waktuMulai;
+      window.selectedEndTime = waktuSelesai;
+      window.isSelectingTime = false;
+    }
+
+    if (typeof selectedStartTime !== "undefined") {
+      selectedStartTime = waktuMulai;
+    }
+    if (typeof selectedEndTime !== "undefined") {
+      selectedEndTime = waktuSelesai;
+    }
+
+    // Update hidden inputs
+    const waktuMulaiField = document.getElementById("waktu_mulai");
+    const waktuSelesaiField = document.getElementById("waktu_selesai");
+    if (waktuMulaiField) waktuMulaiField.value = waktuMulai;
+    if (waktuSelesaiField) waktuSelesaiField.value = waktuSelesai;
+
+    // Update display texts
+    const displayMulai = document.getElementById("display_waktu_mulai");
+    const displaySelesai = document.getElementById("display_waktu_selesai");
+    if (displayMulai) displayMulai.textContent = waktuMulai;
+    if (displaySelesai) displaySelesai.textContent = waktuSelesai;
+
+    // VISUAL HIGHLIGHTING dengan multiple attempts
+    setTimeout(() => {
+      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
+    }, 500);
+
+    setTimeout(() => {
+      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
+    }, 1000);
+
+    setTimeout(() => {
+      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
+    }, 1500);
+
+    // Update duration display
+    updateDurationDisplay(waktuMulai, waktuSelesai);
+
+    // Enable submit button
+    const submitBtn = document.getElementById("submit_booking");
+    if (submitBtn) {
+      submitBtn.disabled = false;
+    }
+
+    // Call existing functions if available
+    if (typeof updateTimeSlotStyles === "function") {
+      updateTimeSlotStyles();
+    }
+
+    console.log(
+      `✅ Auto-selected time VISUALLY: ${waktuMulai} - ${waktuSelesai}`
+    );
+  } catch (error) {
+    console.error("Error in autoSelectTimeSlotsVisual:", error);
+  }
+}
+
+function highlightTimeSlotsMultiple(waktuMulai, waktuSelesai) {
+  console.log(`🎨 Highlighting time slots: ${waktuMulai} - ${waktuSelesai}`);
+
+  // Multiple selectors untuk berbagai kemungkinan structure
+  const selectors = [
+    ".time-slot",
+    "[data-time]",
+    ".time-ruler .btn",
+    ".time-ruler button",
+    'button[onclick*="selectTime"]',
+    ".btn-outline-primary",
+    ".btn-outline-secondary",
+    ".btn-outline-info",
+    "#time_ruler button",
+    "#time_ruler .btn",
+    ".time-picker button",
+    ".time-ruler .time-slot",
+    'button[class*="btn"]',
+  ];
+
+  let totalHighlighted = 0;
+
+  selectors.forEach((selector) => {
+    const timeSlots = document.querySelectorAll(selector);
+
+    timeSlots.forEach((slot) => {
+      // Skip if already processed
+      if (slot.dataset.autoProcessed) return;
+      slot.dataset.autoProcessed = "true";
+
+      // Reset classes
+      slot.classList.remove(
+        "selected",
+        "selected-start",
+        "selected-end",
+        "selected-range"
+      );
+
+      let slotTime = getTimeFromElement(slot);
+
+      if (slotTime) {
+        slotTime = normalizeTimeFormat(slotTime);
+
+        // Highlight logic dengan inline styles untuk memastikan terlihat
+        if (slotTime === waktuMulai) {
+          slot.classList.add("selected", "selected-start");
+          applyStartTimeStyles(slot);
+          console.log(`🟢 Start time highlighted: ${slotTime}`);
+          totalHighlighted++;
+        } else if (slotTime === waktuSelesai) {
+          slot.classList.add("selected", "selected-end");
+          applyEndTimeStyles(slot);
+          console.log(`🔴 End time highlighted: ${slotTime}`);
+          totalHighlighted++;
+        } else if (isTimeInRange(slotTime, waktuMulai, waktuSelesai)) {
+          slot.classList.add("selected", "selected-range");
+          applyRangeTimeStyles(slot);
+          console.log(`🟡 Range time highlighted: ${slotTime}`);
+          totalHighlighted++;
+        }
+      }
+    });
+  });
+
+  console.log(`Total highlighted slots: ${totalHighlighted}`);
+
+  // Reset processed flags after highlighting
+  setTimeout(() => {
+    document.querySelectorAll("[data-auto-processed]").forEach((el) => {
+      delete el.dataset.autoProcessed;
+    });
+  }, 100);
+}
+
+function applyStartTimeStyles(element) {
+  element.style.setProperty("background-color", "#28a745", "important");
+  element.style.setProperty("color", "white", "important");
+  element.style.setProperty("border-color", "#1e7e34", "important");
+  element.style.setProperty("font-weight", "bold", "important");
+  element.style.setProperty(
+    "box-shadow",
+    "0 0 0 3px rgba(40,167,69,0.3)",
+    "important"
+  );
+  element.style.setProperty("transform", "scale(1.05)", "important");
+  element.style.setProperty("z-index", "10", "important");
+  element.style.setProperty("position", "relative", "important");
+}
+
+function applyEndTimeStyles(element) {
+  element.style.setProperty("background-color", "#dc3545", "important");
+  element.style.setProperty("color", "white", "important");
+  element.style.setProperty("border-color", "#bd2130", "important");
+  element.style.setProperty("font-weight", "bold", "important");
+  element.style.setProperty(
+    "box-shadow",
+    "0 0 0 3px rgba(220,53,69,0.3)",
+    "important"
+  );
+  element.style.setProperty("transform", "scale(1.05)", "important");
+  element.style.setProperty("z-index", "10", "important");
+  element.style.setProperty("position", "relative", "important");
+}
+
+function applyRangeTimeStyles(element) {
+  element.style.setProperty("background-color", "#ffc107", "important");
+  element.style.setProperty("color", "black", "important");
+  element.style.setProperty("border-color", "#d39e00", "important");
+  element.style.setProperty(
+    "box-shadow",
+    "0 0 0 2px rgba(255,193,7,0.3)",
+    "important"
+  );
+  element.style.setProperty("transform", "scale(1.02)", "important");
+  element.style.setProperty("z-index", "5", "important");
+  element.style.setProperty("position", "relative", "important");
+}
+
+function getTimeFromElement(element) {
+  return (
+    element.textContent.trim() ||
+    element.dataset.time ||
+    element.getAttribute("data-time") ||
+    element.getAttribute("onclick")?.match(/[\d:]+/)?.[0] ||
+    element.value ||
+    ""
+  );
+}
+
+function normalizeTimeFormat(timeStr) {
+  if (!timeStr) return "";
+
+  timeStr = timeStr.replace(/[^\d:]/g, "");
+
+  if (timeStr.length === 5 && timeStr.includes(":")) {
+    return timeStr;
+  } else if (timeStr.length === 4 && !timeStr.includes(":")) {
+    return timeStr.substring(0, 2) + ":" + timeStr.substring(2);
+  } else if (timeStr.length === 2) {
+    return timeStr + ":00";
+  } else if (timeStr.length === 1) {
+    return "0" + timeStr + ":00";
+  }
+
+  return timeStr;
+}
+
+function isTimeInRange(time, start, end) {
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const timeMin = timeToMinutes(time);
+  const startMin = timeToMinutes(start);
+  const endMin = timeToMinutes(end);
+
+  return timeMin > startMin && timeMin < endMin;
+}
+
+function updateDurationDisplay(waktuMulai, waktuSelesai) {
+  const durationDisplay = document.getElementById("duration_display");
+  const durationText = document.getElementById("duration_text");
+
+  if (durationDisplay && durationText) {
+    const start = new Date(`2000-01-01T${waktuMulai}:00`);
+    const end = new Date(`2000-01-01T${waktuSelesai}:00`);
+    const diffMs = end - start;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    let durationStr = "";
+    if (diffHours > 0) {
+      durationStr += `${diffHours} jam`;
+    }
+    if (diffMinutes > 0) {
+      if (durationStr) durationStr += " ";
+      durationStr += `${diffMinutes} menit`;
+    }
+
+    durationText.textContent = durationStr || "0 menit";
+    durationDisplay.style.display = "block";
+  }
+}
+
+function showAutoFillNotificationComplete(sourceType, data, ruanganId) {
+  const sourceText =
+    sourceType === "booking" ? "booking langsung" : "confirm request";
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+
+  if (modalBody) {
+    const notification = document.createElement("div");
+    notification.className = "alert alert-success alert-dismissible fade show";
+    notification.innerHTML = `
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <strong>✨ Auto-fill berhasil!</strong> Data diisi otomatis dari ${sourceText} terakhir di ruangan ini:
+      <div class="mt-2">
+        <small>
+          🏢 <strong>Ruangan ID:</strong> ${ruanganId}<br>
+          👤 <strong>Nama:</strong> ${
+            data.nama_penanggung_jawab || "Tidak ada"
+          }<br>
+          🏢 <strong>Unit:</strong> ${data.unit_organisasi || "Tidak ada"}<br>
+          👥 <strong>Peserta:</strong> ${
+            data.jumlah_peserta || "Tidak ada"
+          } orang<br>
+          📅 <strong>Tanggal:</strong> ${data.tanggal || "Default (besok)"}<br>
+          📝 <strong>Keperluan:</strong> ${
+            data.keperluan
+              ? data.keperluan.length > 30
+                ? data.keperluan.substring(0, 30) + "..."
+                : data.keperluan
+              : "Tidak ada"
+          }<br>
+          ⏰ <strong>Waktu:</strong> ${
+            data.waktu_mulai && data.waktu_selesai
+              ? `${data.waktu_mulai.substring(
+                  0,
+                  5
+                )} - ${data.waktu_selesai.substring(0, 5)}`
+              : "Tidak ada"
+          }
+        </small>
+      </div>
+      <div class="mt-2">
+        <small class="text-info">
+          🎯 <strong>Smart Fill:</strong> Tanggal auto-set & waktu terpilih di time picker!
+        </small>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">
+          📱 <strong>Note:</strong> Nomor HP tetap harus diisi manual.
+        </small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    modalBody.insertBefore(notification, modalBody.firstChild);
+
+    setTimeout(() => {
+      const alert = notification.querySelector(".btn-close");
+      if (alert) alert.click();
+    }, 15000);
+  }
+}
+
+function clearAutoFilledDataFixed() {
+  const fields = [
+    "nama_penanggung_jawab",
+    "unit_organisasi",
+    "jumlah_peserta",
+    "keperluan",
+  ];
+
+  fields.forEach((fieldId) => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      if (field.tagName === "SELECT") {
+        field.selectedIndex = 0;
+      } else {
+        field.value = "";
+      }
+    }
+  });
+
+  // Reset tanggal ke default
+  const tanggalField = document.getElementById("tanggal");
+  if (tanggalField) {
+    const tomorrow = new Date(Date.now() + 86400000)
+      .toISOString()
+      .split("T")[0];
+    tanggalField.value = tomorrow;
+  }
+
+  if (typeof resetTimeSelection === "function") {
+    resetTimeSelection();
+  }
+
+  // Clear visual highlighting
+  document
+    .querySelectorAll(
+      ".selected, .selected-start, .selected-end, .selected-range"
+    )
+    .forEach((el) => {
+      el.classList.remove(
+        "selected",
+        "selected-start",
+        "selected-end",
+        "selected-range"
+      );
+      el.style.removeProperty("background-color");
+      el.style.removeProperty("color");
+      el.style.removeProperty("border-color");
+      el.style.removeProperty("font-weight");
+      el.style.removeProperty("box-shadow");
+      el.style.removeProperty("transform");
+      el.style.removeProperty("z-index");
+      el.style.removeProperty("position");
+    });
+
+  const notification = document.querySelector(
+    ".alert-success.alert-dismissible"
+  );
+  if (notification) {
+    notification.remove();
+  }
+
+  console.log("✅ Auto-filled data cleared completely");
+}
+
+function loadPreviousBookingDataIfEnabled(ruanganId) {
+  if (!isAutoFillEnabled()) {
+    console.log("Auto-fill is disabled by user preference");
+    return;
+  }
+
+  if (!ruanganId) {
+    console.log("No ruangan_id provided, skipping auto-fill");
+    return;
+  }
+
+  loadPreviousBookingData(ruanganId);
+}
+
+function isAutoFillEnabled() {
+  return localStorage.getItem("ruangan_autofill_enabled") !== "false";
+}
+
+function initializeAutoFillStyles() {
+  const style = document.createElement("style");
+  style.textContent = `
+    .time-slot.selected-start,
+    .btn.selected-start {
+      background-color: #28a745 !important;
+      color: white !important;
+      border-color: #1e7e34 !important;
+      font-weight: bold !important;
+      box-shadow: 0 0 0 3px rgba(40,167,69,0.3) !important;
+      transform: scale(1.05) !important;
+      z-index: 10 !important;
+      position: relative !important;
+    }
+    
+    .time-slot.selected-end,
+    .btn.selected-end {
+      background-color: #dc3545 !important;
+      color: white !important;
+      border-color: #bd2130 !important;
+      font-weight: bold !important;
+      box-shadow: 0 0 0 3px rgba(220,53,69,0.3) !important;
+      transform: scale(1.05) !important;
+      z-index: 10 !important;
+      position: relative !important;
+    }
+    
+    .time-slot.selected-range,
+    .btn.selected-range {
+      background-color: #ffc107 !important;
+      color: black !important;
+      border-color: #d39e00 !important;
+      box-shadow: 0 0 0 2px rgba(255,193,7,0.3) !important;
+      transform: scale(1.02) !important;
+      z-index: 5 !important;
+      position: relative !important;
+    }
+    
+    .time-slot.selected,
+    .btn.selected {
+      transition: all 0.3s ease !important;
+    }
+    
+    /* Legend colors update */
+    .legend-color.selected-start {
+      background-color: #28a745;
+    }
+    
+    .legend-color.selected-end {
+      background-color: #dc3545;
+    }
+  `;
+
+  if (!document.querySelector("#time-slot-highlight-styles")) {
+    style.id = "time-slot-highlight-styles";
+    document.head.appendChild(style);
+  }
+}
+
+// DEBUG function
+function debugTimeSlots() {
+  const selectors = [
+    ".time-slot",
+    "[data-time]",
+    ".time-ruler .btn",
+    ".time-ruler button",
+    'button[onclick*="selectTime"]',
+    ".btn-outline-primary",
+    ".btn-outline-secondary",
+    "#time_ruler button",
+    "#time_ruler .btn",
+  ];
+
+  console.log("=== DEBUG TIME SLOTS ===");
+  selectors.forEach((selector) => {
+    const elements = document.querySelectorAll(selector);
+    console.log(`${selector}: ${elements.length} elements`);
+    elements.forEach((el, index) => {
+      const time = getTimeFromElement(el);
+      console.log(
+        `  [${index}] Text: "${el.textContent.trim()}" | Time: "${time}" | Classes: ${
+          el.className
+        }`
+      );
+    });
   });
 }
