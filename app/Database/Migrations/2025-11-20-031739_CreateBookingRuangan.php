@@ -43,6 +43,13 @@ class CreateBookingRuangan extends Migration
                 'constraint' => 255,
                 'null'       => false,
             ],
+            // FIELD BARU: Nomor HP Penanggung Jawab
+            'nomor_hp_penanggung_jawab' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 20,
+                'null'       => false,
+                'comment'    => 'Nomor HP Penanggung Jawab'
+            ],
             'unit_organisasi' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
@@ -122,6 +129,7 @@ class CreateBookingRuangan extends Migration
         $this->db->query("COMMENT ON COLUMN booking_ruangan.status IS 'Status booking: aktif, selesai, dibatalkan'");
         $this->db->query("COMMENT ON COLUMN booking_ruangan.keperluan IS 'Penjelasan keperluan penggunaan ruangan'");
         $this->db->query("COMMENT ON COLUMN booking_ruangan.nama_penanggung_jawab IS 'Nama penanggung jawab acara/kegiatan'");
+        $this->db->query("COMMENT ON COLUMN booking_ruangan.nomor_hp_penanggung_jawab IS 'Nomor HP penanggung jawab acara/kegiatan'");
         $this->db->query("COMMENT ON COLUMN booking_ruangan.unit_organisasi IS 'Unit kerja atau organisasi pengguna'");
     }
 

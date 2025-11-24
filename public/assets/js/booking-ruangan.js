@@ -1282,6 +1282,11 @@ function markBookingTimeSlots(startTime, endTime) {
 function handleBookingRuanganSubmit(event, formData) {
   event.preventDefault();
 
+  // TAMBAHKAN VALIDASI NOMOR HP DI SINI
+  if (!validateNomorHP()) {
+    return; // Stop jika validasi gagal
+  }
+
   const submitButton = document.getElementById("booking_submit_booking");
   const originalText = submitButton.innerHTML;
 
@@ -1348,3 +1353,141 @@ function escapeHtml(unsafe) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+function autoFillPreviousBookingData(ruanganId) {
+  const baseUrl =
+    document.querySelector("base")?.href || window.location.origin;
+
+  console.log("Loading previous booking data for ruangan:", ruanganId);
+
+  fetch(
+    `${baseUrl}/user/ruangan/getUserLatestBookingData?ruangan_id=${ruanganId}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success && data.data) {
+        const bookingData = data.data;
+
+        // Auto-fill semua field termasuk nomor HP
+        if (bookingData.nama_penanggung_jawab) {
+          const namaInput = document.getElementById(
+            "booking_nama_penanggung_jawab"
+          );
+          if (namaInput) namaInput.value = bookingData.nama_penanggung_jawab;
+        }
+
+        // FIELD BARU: Auto-fill nomor HP
+        if (bookingData.nomor_hp_penanggung_jawab) {
+          const hpInput = document.getElementById(
+            "booking_nomor_hp_penanggung_jawab"
+          );
+          if (hpInput) hpInput.value = bookingData.nomor_hp_penanggung_jawab;
+        }
+
+        if (bookingData.unit_organisasi) {
+          const unitSelect = document.querySelector(
+            'select[name="unit_organisasi"]'
+          );
+          if (unitSelect) unitSelect.value = bookingData.unit_organisasi;
+        }
+
+        if (bookingData.keperluan) {
+          const keperluanInput = document.getElementById("booking_keperluan");
+          if (keperluanInput) keperluanInput.value = bookingData.keperluan;
+        }
+
+        if (bookingData.jumlah_peserta) {
+          const pesertaInput = document.getElementById(
+            "booking_jumlah_peserta"
+          );
+          if (pesertaInput) pesertaInput.value = bookingData.jumlah_peserta;
+        }
+
+        // Tampilkan notifikasi
+        showBookingToast("Data booking sebelumnya berhasil dimuat", "success");
+        console.log("Auto-fill completed successfully");
+      }
+    })
+    .catch((error) => {
+      console.error("Auto-fill error:", error);
+    });
+}
+
+// 2. VALIDASI NOMOR HP
+function validateNomorHP() {
+  const nomorHP = document.getElementById(
+    "booking_nomor_hp_penanggung_jawab"
+  ).value;
+  const hpPattern = /^[0-9]{10,15}$/;
+
+  if (!nomorHP || nomorHP.trim() === "") {
+    Swal.fire({
+      icon: "error",
+      title: "Nomor HP Kosong",
+      text: "Nomor HP Penanggung Jawab wajib diisi",
+      confirmButtonColor: "#dc3545",
+    });
+    return false;
+  }
+
+  if (!hpPattern.test(nomorHP)) {
+    Swal.fire({
+      icon: "error",
+      title: "Format Nomor HP Tidak Valid",
+      text: "Nomor HP harus berupa 10-15 digit angka (contoh: 08123456789)",
+      confirmButtonColor: "#dc3545",
+    });
+    return false;
+  }
+  return true;
+}
+
+// 3. SETUP VALIDASI REAL-TIME UNTUK NOMOR HP
+function setupNomorHPValidation() {
+  // Setup validation saat modal dibuka
+  const modalElement = document.getElementById("modalBookingRuangan");
+  if (modalElement) {
+    modalElement.addEventListener("shown.bs.modal", function () {
+      const nomorHPInput = document.getElementById(
+        "booking_nomor_hp_penanggung_jawab"
+      );
+
+      if (nomorHPInput) {
+        // Validasi saat mengetik
+        nomorHPInput.addEventListener("input", function (e) {
+          const value = e.target.value;
+
+          // Hanya izinkan angka
+          e.target.value = value.replace(/[^0-9]/g, "");
+
+          // Validasi panjang
+          if (e.target.value.length < 10 || e.target.value.length > 15) {
+            e.target.classList.add("is-invalid");
+            e.target.classList.remove("is-valid");
+          } else {
+            e.target.classList.remove("is-invalid");
+            e.target.classList.add("is-valid");
+          }
+        });
+
+        // Tambahkan placeholder dan pattern
+        nomorHPInput.setAttribute("placeholder", "Contoh: 08123456789");
+        nomorHPInput.setAttribute("pattern", "[0-9]{10,15}");
+
+        // Auto-fill data setelah modal terbuka
+        const ruanganId = document.querySelector(
+          'input[name="ruangan_id"]'
+        ).value;
+        if (ruanganId) {
+          setTimeout(() => {
+            autoFillPreviousBookingData(ruanganId);
+          }, 500);
+        }
+      }
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  setupNomorHPValidation();
+});

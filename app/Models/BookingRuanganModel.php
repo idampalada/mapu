@@ -16,7 +16,7 @@ class BookingRuanganModel extends Model
     
     protected $allowedFields = [
         'ruangan_id', 'user_id', 'tanggal', 'waktu_mulai', 'waktu_selesai',
-        'keperluan', 'nama_penanggung_jawab', 'unit_organisasi', 
+        'keperluan', 'nama_penanggung_jawab', 'nomor_hp_penanggung_jawab', 'unit_organisasi', 
         'jumlah_peserta', 'status'
     ];
     
@@ -32,6 +32,7 @@ class BookingRuanganModel extends Model
         'waktu_selesai' => 'required',
         'keperluan' => 'required|min_length[5]',
         'nama_penanggung_jawab' => 'required|min_length[3]',
+        'nomor_hp_penanggung_jawab' => 'required|regex_match[/^[0-9]{10,15}$/]',
         'unit_organisasi' => 'required|min_length[3]',
         'jumlah_peserta' => 'required|integer|greater_than[0]'
     ];
@@ -58,6 +59,10 @@ class BookingRuanganModel extends Model
         'nama_penanggung_jawab' => [
             'required' => 'Nama penanggung jawab harus diisi',
             'min_length' => 'Nama minimal 3 karakter'
+        ],
+                'nomor_hp_penanggung_jawab' => [
+            'required' => 'Nomor HP Penanggung Jawab wajib diisi',
+            'regex_match' => 'Format Nomor HP tidak valid (10-15 digit angka)'
         ],
         'unit_organisasi' => [
             'required' => 'Unit organisasi harus diisi',

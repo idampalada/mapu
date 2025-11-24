@@ -1573,6 +1573,7 @@ public function bookingLangsung()
             'waktu_selesai' => 'required', 
             'keperluan' => 'required|min_length[5]',
             'nama_penanggung_jawab' => 'required|min_length[3]',
+            'nomor_hp_penanggung_jawab' => 'required|regex_match[/^[0-9]{10,15}$/]',
             'unit_organisasi' => 'required|min_length[3]',
             'jumlah_peserta' => 'required|integer|greater_than[0]'
         ]);
@@ -1619,6 +1620,7 @@ public function bookingLangsung()
             'waktu_selesai' => $this->request->getPost('waktu_selesai'),
             'keperluan' => $this->request->getPost('keperluan'),
             'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
+            'nomor_hp_penanggung_jawab' => $this->request->getPost('nomor_hp_penanggung_jawab'),
             'unit_organisasi' => $this->request->getPost('unit_organisasi'),
             'jumlah_peserta' => $this->request->getPost('jumlah_peserta'),
             'status' => 'aktif'
@@ -1689,7 +1691,7 @@ public function getUserLatestBookingData()
         
         // Query dengan filter ruangan_id yang SANGAT SPESIFIK
         $latestBooking = $db->table('booking_ruangan')
-            ->select('nama_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
             ->where('user_id', $userId)
             ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
             ->where('status', 'aktif')
@@ -1709,6 +1711,7 @@ public function getUserLatestBookingData()
                     'success' => true,
                     'data' => [
                         'nama_penanggung_jawab' => $latestBooking['nama_penanggung_jawab'],
+                        'nomor_hp_penanggung_jawab' => $latestBooking['nomor_hp_penanggung_jawab'],
                         'unit_organisasi' => $latestBooking['unit_organisasi'],
                         'keperluan' => $latestBooking['keperluan'],
                         'jumlah_peserta' => $latestBooking['jumlah_peserta'],
@@ -1729,7 +1732,7 @@ public function getUserLatestBookingData()
 
         // Fallback: Cari di tabel pinjam_ruangan untuk ruangan yang sama
         $latestPinjam = $db->table('pinjam_ruangan')
-            ->select('nama_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
             ->where('user_id', $userId)
             ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
             ->where('deleted_at IS NULL')
@@ -1750,6 +1753,7 @@ public function getUserLatestBookingData()
                     'success' => true,
                     'data' => [
                         'nama_penanggung_jawab' => $latestPinjam['nama_penanggung_jawab'],
+                        'nomor_hp_penanggung_jawab' => $latestPinjam['nomor_hp_penanggung_jawab'],
                         'unit_organisasi' => $latestPinjam['unit_organisasi'],
                         'keperluan' => $latestPinjam['keperluan'],
                         'jumlah_peserta' => $latestPinjam['jumlah_peserta'],
