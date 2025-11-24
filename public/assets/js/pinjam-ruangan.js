@@ -2064,8 +2064,34 @@ function toggleRuanganStatus(id) {
     }
   });
 }
-// ===== REPLACE SELURUH CODE INI KE FILE JAVASCRIPT ANDA =====
-// COMPLETE JAVASCRIPT WITH CACHE BUG FIX
+// COMPLETE REPLACEMENT untuk pinjam-ruangan.js
+// Includes: Auto-fill HP + Cache Bug Fix + Tanggal Minimum Hari Ini
+
+// Global variables untuk cache management
+window.currentModalRuanganId = null;
+window.lastAutoFillRuanganId = null;
+
+function clearGlobalAutoFillCache() {
+  console.log("🗑️ Clearing global auto-fill cache...");
+
+  // Clear local storage cache jika ada
+  if (typeof localStorage !== "undefined") {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes("autofill") || key.includes("booking_data"))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  }
+
+  // Clear global variables
+  window.currentModalRuanganId = null;
+  window.lastAutoFillRuanganId = null;
+
+  console.log("✅ Global cache cleared");
+}
 
 function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   const baseUrl =
@@ -2084,6 +2110,13 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
     });
     return;
   }
+
+  // ✅ CRITICAL: Clear cache SEBELUM modal dibuka
+  console.log(`🎯 Opening modal for ruangan ${cleanRuanganId}`);
+  clearGlobalAutoFillCache();
+
+  // Set ruangan yang sedang aktif
+  window.currentModalRuanganId = cleanRuanganId;
 
   const keteranganSection = cleanKeterangan
     ? `
@@ -2161,7 +2194,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                     </label>
                                     <input type="date" class="form-control" id="tanggal" name="tanggal" required
                                            min="${
-                                             new Date(Date.now() + 86400000)
+                                             new Date()
                                                .toISOString()
                                                .split("T")[0]
                                            }">
@@ -2326,15 +2359,28 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   const modal = new bootstrap.Modal(modalElement);
 
   modalElement.addEventListener("shown.bs.modal", function () {
-    // IMPORTANT: Clear semua data sebelumnya untuk mencegah cache antar ruangan
+    console.log(`📋 Modal opened for ruangan ${cleanRuanganId}`);
+
+    // ✅ TRIPLE CHECK: Clear lagi setelah modal terbuka
     clearAllPreviousData();
 
-    console.log(
-      `🧹 Cleared previous data, starting fresh for ruangan ${cleanRuanganId}`
-    );
+    // ✅ SECURITY: Pastikan ruangan ID konsisten
+    if (window.currentModalRuanganId !== cleanRuanganId) {
+      console.error(
+        `❌ RUANGAN MISMATCH: Expected ${cleanRuanganId}, current ${window.currentModalRuanganId}`
+      );
+      clearAllPreviousData();
+      window.currentModalRuanganId = cleanRuanganId;
+    }
 
-    // Auto-fill data dari booking sebelumnya dengan filter ruangan
-    loadPreviousBookingDataIfEnabled(cleanRuanganId);
+    // Auto-fill dengan delay untuk memastikan clear selesai
+    setTimeout(() => {
+      if (window.currentModalRuanganId === cleanRuanganId) {
+        loadPreviousBookingDataIfEnabled(cleanRuanganId);
+      } else {
+        console.warn(`⚠️ Skipping auto-fill: ruangan mismatch`);
+      }
+    }, 200);
 
     initializeTimePicker(cleanRuanganId);
 
@@ -2347,10 +2393,11 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
         localStorage.setItem("ruangan_autofill_enabled", this.checked);
 
         if (this.checked) {
-          // Clear dulu sebelum load data baru
           clearAllPreviousData();
           setTimeout(() => {
-            loadPreviousBookingData(cleanRuanganId);
+            if (window.currentModalRuanganId === cleanRuanganId) {
+              loadPreviousBookingData(cleanRuanganId);
+            }
           }, 100);
         } else {
           clearAutoFilledDataFixed();
@@ -2435,12 +2482,10 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
         handlePinjamRuanganSubmit(e, formData);
       });
 
-      // Set tanggal minimum (besok) - AKAN DIUPDATE OTOMATIS JIKA ADA DATA
+      // ✅ FIX: Set tanggal hari ini (bukan besok)
       const tanggalInput = document.getElementById("tanggal");
-      const tomorrow = new Date(Date.now() + 86400000)
-        .toISOString()
-        .split("T")[0];
-      tanggalInput.value = tomorrow;
+      const today = new Date().toISOString().split("T")[0];
+      tanggalInput.value = today;
 
       // Event listener untuk perubahan tanggal
       tanggalInput.addEventListener("change", function () {
@@ -2454,18 +2499,24 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
     }
   });
 
+  // ✅ CLEANUP saat modal ditutup
+  modalElement.addEventListener("hidden.bs.modal", function () {
+    console.log(`🔄 Modal closed for ruangan ${cleanRuanganId}`);
+    clearGlobalAutoFillCache();
+    clearAllPreviousData();
+    window.currentModalRuanganId = null;
+  });
+
   modal.show();
 }
-
-// ===== CACHE BUG FIX FUNCTIONS =====
 
 function clearAllPreviousData() {
   console.log("🧹 Clearing ALL previous data to prevent cross-room cache");
 
-  // 1. Clear form fields
+  // 1. Clear form fields dengan lebih aggressive
   const formFields = [
     "nama_penanggung_jawab",
-    "nomor_hp_penanggung_jawab",
+    "nomor_hp_penanggung_jawab", // ✅ TAMBAHKAN NOMOR HP
     "unit_organisasi",
     "jumlah_peserta",
     "keperluan",
@@ -2476,39 +2527,62 @@ function clearAllPreviousData() {
     if (field) {
       if (field.tagName === "SELECT") {
         field.selectedIndex = 0;
+        field.value = "";
       } else {
         field.value = "";
-        field.placeholder = field.getAttribute("placeholder") || "";
+        field.defaultValue = "";
       }
-      field.classList.remove("is-invalid", "is-valid");
+      field.classList.remove("is-invalid", "is-valid", "auto-filled");
+
+      if (field.dataset.autoFilled) {
+        delete field.dataset.autoFilled;
+      }
     }
   });
 
-  // 2. Reset tanggal ke default (besok)
-  const tanggalField = document.getElementById("tanggal");
-  if (tanggalField) {
-    const tomorrow = new Date(Date.now() + 86400000)
-      .toISOString()
-      .split("T")[0];
-    tanggalField.value = tomorrow;
+  // 2. Clear all notifications sebelumnya
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+  if (modalBody) {
+    const notifications = modalBody.querySelectorAll(".alert");
+    notifications.forEach((notification) => {
+      if (
+        notification.classList.contains("alert-success") ||
+        notification.classList.contains("alert-info") ||
+        notification.classList.contains("alert-warning")
+      ) {
+        notification.remove();
+      }
+    });
   }
 
-  // 3. Reset time selection
+  // 3. Reset waktu dengan lebih aggressive
+  const waktuMulaiField = document.getElementById("waktu_mulai");
+  const waktuSelesaiField = document.getElementById("waktu_selesai");
+  const displayMulai = document.getElementById("display_waktu_mulai");
+  const displaySelesai = document.getElementById("display_waktu_selesai");
+
+  if (waktuMulaiField) {
+    waktuMulaiField.value = "";
+    waktuMulaiField.removeAttribute("data-auto-filled");
+  }
+  if (waktuSelesaiField) {
+    waktuSelesaiField.value = "";
+    waktuSelesaiField.removeAttribute("data-auto-filled");
+  }
+  if (displayMulai) displayMulai.textContent = "Belum dipilih";
+  if (displaySelesai) displaySelesai.textContent = "Belum dipilih";
+
+  // 4. ✅ FIX: Reset tanggal ke hari ini (bukan besok)
+  const tanggalField = document.getElementById("tanggal");
+  if (tanggalField) {
+    const today = new Date().toISOString().split("T")[0];
+    tanggalField.value = today;
+  }
+
+  // 5. Reset time selection
   if (typeof resetTimeSelection === "function") {
     resetTimeSelection();
   }
-
-  // 4. Clear hidden time inputs
-  const waktuMulaiField = document.getElementById("waktu_mulai");
-  const waktuSelesaiField = document.getElementById("waktu_selesai");
-  if (waktuMulaiField) waktuMulaiField.value = "";
-  if (waktuSelesaiField) waktuSelesaiField.value = "";
-
-  // 5. Reset display texts
-  const displayMulai = document.getElementById("display_waktu_mulai");
-  const displaySelesai = document.getElementById("display_waktu_selesai");
-  if (displayMulai) displayMulai.textContent = "Belum dipilih";
-  if (displaySelesai) displaySelesai.textContent = "Belum dipilih";
 
   // 6. Hide duration display
   const durationDisplay = document.getElementById("duration_display");
@@ -2516,7 +2590,7 @@ function clearAllPreviousData() {
     durationDisplay.style.display = "none";
   }
 
-  // 7. Clear visual highlighting dari time slots
+  // 7. Clear visual highlighting
   clearAllTimeSlotHighlights();
 
   // 8. Reset global variables
@@ -2532,24 +2606,10 @@ function clearAllPreviousData() {
     submitBtn.disabled = true;
   }
 
-  // 10. Remove any previous notifications
-  const existingNotifications = document.querySelectorAll(".modal-body .alert");
-  existingNotifications.forEach((notification) => {
-    if (
-      notification.classList.contains("alert-success") ||
-      notification.classList.contains("alert-info") ||
-      notification.classList.contains("alert-warning") ||
-      notification.classList.contains("alert-danger")
-    ) {
-      notification.remove();
-    }
-  });
-
-  console.log("✅ All previous data cleared successfully");
+  console.log("✅ All previous data cleared aggressively");
 }
 
 function clearAllTimeSlotHighlights() {
-  // Clear semua highlight dari time slots dengan berbagai selector
   const selectors = [
     ".time-slot",
     "[data-time]",
@@ -2569,7 +2629,6 @@ function clearAllTimeSlotHighlights() {
   selectors.forEach((selector) => {
     const elements = document.querySelectorAll(selector);
     elements.forEach((el) => {
-      // Remove classes
       el.classList.remove(
         "selected",
         "selected-start",
@@ -2578,16 +2637,19 @@ function clearAllTimeSlotHighlights() {
       );
 
       // Remove inline styles
-      el.style.removeProperty("background-color");
-      el.style.removeProperty("color");
-      el.style.removeProperty("border-color");
-      el.style.removeProperty("font-weight");
-      el.style.removeProperty("box-shadow");
-      el.style.removeProperty("transform");
-      el.style.removeProperty("z-index");
-      el.style.removeProperty("position");
+      [
+        "background-color",
+        "color",
+        "border-color",
+        "font-weight",
+        "box-shadow",
+        "transform",
+        "z-index",
+        "position",
+      ].forEach((prop) => {
+        el.style.removeProperty(prop);
+      });
 
-      // Remove processed flag
       if (el.dataset.autoProcessed) {
         delete el.dataset.autoProcessed;
       }
@@ -2597,68 +2659,60 @@ function clearAllTimeSlotHighlights() {
   console.log("🎨 All time slot highlights cleared");
 }
 
-// ===== AUTO-FILL FUNCTIONS WITH SECURITY CHECKS =====
-
 function loadPreviousBookingData(ruanganId) {
-  // Pastikan ruanganId valid
-  if (!ruanganId || isNaN(ruanganId)) {
-    console.error(`❌ Invalid ruanganId: ${ruanganId}`);
+  const requestedRuanganId = parseInt(ruanganId);
+
+  // ✅ SECURITY CHECK: Pastikan ini ruangan yang benar
+  if (window.currentModalRuanganId !== requestedRuanganId) {
+    console.error(
+      `❌ CROSS-ROOM CACHE DETECTED: Current modal for ${window.currentModalRuanganId}, but requesting ${requestedRuanganId}`
+    );
+    clearAllPreviousData();
     return;
   }
 
-  // SECURITY CHECK: Pastikan ini adalah request untuk ruangan yang benar
-  const currentModalTitle = document.querySelector(
-    "#modalPinjamRuangan .modal-title"
-  );
-  if (currentModalTitle) {
+  // ✅ PREVENT DUPLICATE CALLS
+  if (window.lastAutoFillRuanganId === requestedRuanganId) {
     console.log(
-      `🔒 Security check: Modal title = ${currentModalTitle.textContent}`
+      `ℹ️ Auto-fill already processed for ruangan ${requestedRuanganId}, skipping`
     );
+    return;
   }
 
-  const url = `${window.location.origin}/user/ruangan/getUserLatestBookingData?ruangan_id=${ruanganId}`;
-  console.log(`🔍 AUTO-FILL REQUEST: ruangan ${ruanganId}`);
-  console.log(`🌐 API URL: ${url}`);
+  console.log(`🔍 Loading auto-fill for ruangan ${requestedRuanganId}`);
+  window.lastAutoFillRuanganId = requestedRuanganId;
+
+  const url = `${window.location.origin}/user/ruangan/getUserLatestBookingData?ruangan_id=${requestedRuanganId}`;
 
   fetch(url)
     .then((response) => response.json())
     .then((data) => {
-      console.log(`📡 AUTO-FILL RESPONSE for ruangan ${ruanganId}:`, data);
+      // ✅ FINAL SECURITY CHECK setelah response
+      if (window.currentModalRuanganId !== requestedRuanganId) {
+        console.error(
+          `❌ RUANGAN CHANGED during fetch: Expected ${requestedRuanganId}, current ${window.currentModalRuanganId}`
+        );
+        return;
+      }
 
       if (data.success && data.data) {
-        // TRIPLE CHECK ruangan_id dari response
         const responseRuanganId = parseInt(data.data.ruangan_id);
-        const requestedRuanganId = parseInt(ruanganId);
 
+        // ✅ TRIPLE CHECK ruangan ID
         if (responseRuanganId !== requestedRuanganId) {
           console.error(
-            `❌ SECURITY MISMATCH: Requested ruangan ${requestedRuanganId}, got ruangan ${responseRuanganId}`
+            `❌ API MISMATCH: Requested ${requestedRuanganId}, got ${responseRuanganId}`
           );
           showAutoFillErrorNotification(requestedRuanganId, responseRuanganId);
           return;
         }
 
-        // ADDITIONAL CHECK: Pastikan modal masih untuk ruangan yang benar
-        const currentRuanganInput = document.querySelector(
-          'input[name="ruangan_id"]'
-        );
-        if (
-          currentRuanganInput &&
-          parseInt(currentRuanganInput.value) !== requestedRuanganId
-        ) {
-          console.error(
-            `❌ MODAL MISMATCH: Current modal for ruangan ${currentRuanganInput.value}, but trying to fill for ruangan ${requestedRuanganId}`
-          );
-          return;
-        }
+        console.log(`✅ Auto-fill SUCCESS for ruangan ${requestedRuanganId}`);
 
-        console.log(
-          `✅ SECURITY CHECK PASSED: Auto-filling for ruangan ${ruanganId}`
-        );
-
-        // Auto-fill form fields
+        // Auto-fill form fields TERMASUK NOMOR HP
         const fields = {
           nama_penanggung_jawab: data.data.nama_penanggung_jawab,
+          nomor_hp_penanggung_jawab: data.data.nomor_hp_penanggung_jawab, // ✅ TAMBAHKAN HP
           unit_organisasi: data.data.unit_organisasi,
           jumlah_peserta: data.data.jumlah_peserta,
           keperluan: data.data.keperluan,
@@ -2668,15 +2722,22 @@ function loadPreviousBookingData(ruanganId) {
         Object.entries(fields).forEach(([fieldId, value]) => {
           const field = document.getElementById(fieldId);
           if (field && value) {
-            field.value = value;
+            // Special handling untuk nomor HP
+            if (fieldId === "nomor_hp_penanggung_jawab") {
+              const cleanHP = value.toString().replace(/[^0-9]/g, "");
+              field.value = cleanHP;
+              field.dataset.autoFilled = "true";
+              console.log(`✅ Auto-filled HP: ${cleanHP}`);
+            } else {
+              field.value = value;
+              field.dataset.autoFilled = "true";
+              console.log(`✅ Auto-filled ${fieldId}: ${value}`);
+            }
             filledCount++;
-            console.log(
-              `✅ Auto-filled ${fieldId}: ${value} for ruangan ${ruanganId}`
-            );
           }
         });
 
-        // Auto-set tanggal dari booking terakhir (jika tersedia)
+        // Auto-set tanggal dari booking terakhir
         if (data.data.tanggal) {
           const tanggalField = document.getElementById("tanggal");
           if (tanggalField) {
@@ -2700,93 +2761,273 @@ function loadPreviousBookingData(ruanganId) {
           }, 2500);
         }
 
-        showAutoFillNotificationComplete(
+        showAutoFillNotificationCompleteFixed(
           data.data.source_type,
           data.data,
-          ruanganId
+          requestedRuanganId
         );
         console.log(
-          `🎉 Auto-fill completed for ruangan ${ruanganId}. Fields filled: ${filledCount}`
+          `🎉 Auto-fill completed for ruangan ${requestedRuanganId}. Fields filled: ${filledCount}`
         );
       } else {
         console.log(
-          `ℹ️ No previous booking data found for ruangan ${ruanganId}:`,
+          `ℹ️ No previous booking data found for ruangan ${requestedRuanganId}:`,
           data.message
         );
-        showNoDataNotification(ruanganId);
+        showNoDataNotification(requestedRuanganId);
       }
     })
     .catch((error) => {
       console.error(
-        `❌ Error loading previous booking data for ruangan ${ruanganId}:`,
+        `❌ Auto-fill error for ruangan ${requestedRuanganId}:`,
         error
       );
-      showErrorNotification(ruanganId, error.message);
+      window.lastAutoFillRuanganId = null; // Reset pada error
+      showErrorNotification(requestedRuanganId, error.message);
     });
 }
 
+function loadPreviousBookingDataIfEnabled(ruanganId) {
+  if (!isAutoFillEnabled()) {
+    console.log("ℹ️ Auto-fill is disabled by user preference");
+    return;
+  }
+
+  if (!ruanganId || isNaN(ruanganId)) {
+    console.error(
+      `❌ No valid ruangan_id provided: ${ruanganId}, skipping auto-fill`
+    );
+    return;
+  }
+
+  console.log(`🚀 Starting auto-fill process for ruangan: ${ruanganId}`);
+  loadPreviousBookingData(ruanganId);
+}
+
+function isAutoFillEnabled() {
+  return localStorage.getItem("ruangan_autofill_enabled") !== "false";
+}
+
+function clearAutoFilledDataFixed() {
+  const fields = [
+    "nama_penanggung_jawab",
+    "nomor_hp_penanggung_jawab", // ✅ TAMBAHKAN INI!
+    "unit_organisasi",
+    "jumlah_peserta",
+    "keperluan",
+  ];
+
+  fields.forEach((fieldId) => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      if (field.tagName === "SELECT") {
+        field.selectedIndex = 0;
+      } else {
+        field.value = "";
+      }
+    }
+  });
+
+  // ✅ FIX: Reset tanggal ke hari ini (bukan besok)
+  const tanggalField = document.getElementById("tanggal");
+  if (tanggalField) {
+    const today = new Date().toISOString().split("T")[0];
+    tanggalField.value = today;
+  }
+
+  if (typeof resetTimeSelection === "function") {
+    resetTimeSelection();
+  }
+
+  clearAllTimeSlotHighlights();
+
+  const notification = document.querySelector(
+    ".alert-success.alert-dismissible"
+  );
+  if (notification) {
+    notification.remove();
+  }
+
+  console.log("✅ Auto-filled data cleared completely including HP");
+}
+
+function showAutoFillNotificationCompleteFixed(sourceType, data, ruanganId) {
+  const sourceText =
+    sourceType === "booking" ? "booking langsung" : "confirm request";
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+
+  if (modalBody) {
+    const notification = document.createElement("div");
+    notification.className = "alert alert-success alert-dismissible fade show";
+    notification.innerHTML = `
+      <i class="bi bi-check-circle-fill me-2"></i>
+      <strong>✨ Auto-fill berhasil!</strong> Data diisi otomatis dari ${sourceText} terakhir di ruangan ini:
+      <div class="mt-2">
+        <small>
+          🏢 <strong>Ruangan ID:</strong> ${ruanganId} (${data.ruangan_id})<br>
+          👤 <strong>Nama:</strong> ${
+            data.nama_penanggung_jawab || "Tidak ada"
+          }<br>
+          📱 <strong>Nomor HP:</strong> ${
+            data.nomor_hp_penanggung_jawab
+              ? data.nomor_hp_penanggung_jawab.toString().replace(/[^0-9]/g, "")
+              : "Tidak ada"
+          }<br>
+          🏢 <strong>Unit:</strong> ${data.unit_organisasi || "Tidak ada"}<br>
+          👥 <strong>Peserta:</strong> ${
+            data.jumlah_peserta || "Tidak ada"
+          } orang<br>
+          📅 <strong>Tanggal:</strong> ${
+            data.tanggal || "Default (hari ini)"
+          }<br>
+          📝 <strong>Keperluan:</strong> ${
+            data.keperluan
+              ? data.keperluan.length > 30
+                ? data.keperluan.substring(0, 30) + "..."
+                : data.keperluan
+              : "Tidak ada"
+          }<br>
+          ⏰ <strong>Waktu:</strong> ${
+            data.waktu_mulai && data.waktu_selesai
+              ? `${data.waktu_mulai.substring(
+                  0,
+                  5
+                )} - ${data.waktu_selesai.substring(0, 5)}`
+              : "Tidak ada"
+          }
+        </small>
+      </div>
+      <div class="mt-2">
+        <small class="text-info">
+          🎯 <strong>Smart Fill:</strong> Data khusus untuk ruangan ${ruanganId} termasuk nomor HP!
+        </small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    modalBody.insertBefore(notification, modalBody.firstChild);
+
+    setTimeout(() => {
+      const alert = notification.querySelector(".btn-close");
+      if (alert) alert.click();
+    }, 15000);
+  }
+}
+
+function showNoDataNotification(ruanganId) {
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+  if (modalBody) {
+    const notification = document.createElement("div");
+    notification.className = "alert alert-info alert-dismissible fade show";
+    notification.innerHTML = `
+      <i class="bi bi-info-circle-fill me-2"></i>
+      <strong>📝 Auto-fill tidak tersedia</strong> untuk ruangan ini.
+      <div class="mt-2">
+        <small>
+          🏢 <strong>Ruangan ID:</strong> ${ruanganId}<br>
+          ℹ️ Tidak ada data booking sebelumnya di ruangan ini.<br>
+          💡 Silakan isi form secara manual.
+        </small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    modalBody.insertBefore(notification, modalBody.firstChild);
+
+    setTimeout(() => {
+      const alert = notification.querySelector(".btn-close");
+      if (alert) alert.click();
+    }, 5000);
+  }
+}
+
+function showAutoFillErrorNotification(requested, received) {
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+  if (modalBody) {
+    const notification = document.createElement("div");
+    notification.className = "alert alert-warning alert-dismissible fade show";
+    notification.innerHTML = `
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <strong>⚠️ Auto-fill error</strong>
+      <div class="mt-2">
+        <small>
+          🏢 <strong>Expected ruangan:</strong> ${requested}<br>
+          🏢 <strong>Received ruangan:</strong> ${received}<br>
+          💡 Data tidak sesuai ruangan. Auto-fill dibatalkan.
+        </small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    modalBody.insertBefore(notification, modalBody.firstChild);
+
+    setTimeout(() => {
+      const alert = notification.querySelector(".btn-close");
+      if (alert) alert.click();
+    }, 8000);
+  }
+}
+
+function showErrorNotification(ruanganId, errorMessage) {
+  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
+  if (modalBody) {
+    const notification = document.createElement("div");
+    notification.className = "alert alert-danger alert-dismissible fade show";
+    notification.innerHTML = `
+      <i class="bi bi-x-circle-fill me-2"></i>
+      <strong>❌ Auto-fill gagal</strong>
+      <div class="mt-2">
+        <small>
+          🏢 <strong>Ruangan ID:</strong> ${ruanganId}<br>
+          ❌ <strong>Error:</strong> ${errorMessage}<br>
+          💡 Silakan isi form secara manual.
+        </small>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    modalBody.insertBefore(notification, modalBody.firstChild);
+
+    setTimeout(() => {
+      const alert = notification.querySelector(".btn-close");
+      if (alert) alert.click();
+    }, 10000);
+  }
+}
+
+// Helper functions untuk time selection dan visual
 function autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai) {
   console.log(
     `🎯 Auto-selecting time slots VISUALLY: ${waktuMulai} - ${waktuSelesai}`
   );
 
   try {
-    // Reset existing selections first
     if (typeof resetTimeSelection === "function") {
       resetTimeSelection();
     }
 
-    // Set global variables
     if (typeof window !== "undefined") {
       window.selectedStartTime = waktuMulai;
       window.selectedEndTime = waktuSelesai;
       window.isSelectingTime = false;
     }
 
-    if (typeof selectedStartTime !== "undefined") {
-      selectedStartTime = waktuMulai;
-    }
-    if (typeof selectedEndTime !== "undefined") {
-      selectedEndTime = waktuSelesai;
-    }
-
-    // Update hidden inputs
     const waktuMulaiField = document.getElementById("waktu_mulai");
     const waktuSelesaiField = document.getElementById("waktu_selesai");
     if (waktuMulaiField) waktuMulaiField.value = waktuMulai;
     if (waktuSelesaiField) waktuSelesaiField.value = waktuSelesai;
 
-    // Update display texts
     const displayMulai = document.getElementById("display_waktu_mulai");
     const displaySelesai = document.getElementById("display_waktu_selesai");
     if (displayMulai) displayMulai.textContent = waktuMulai;
     if (displaySelesai) displaySelesai.textContent = waktuSelesai;
 
-    // VISUAL HIGHLIGHTING dengan multiple attempts
-    setTimeout(() => {
-      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
-    }, 500);
-
-    setTimeout(() => {
-      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
-    }, 1000);
-
-    setTimeout(() => {
-      highlightTimeSlotsMultiple(waktuMulai, waktuSelesai);
-    }, 1500);
-
-    // Update duration display
+    setTimeout(() => highlightTimeSlotsMultiple(waktuMulai, waktuSelesai), 500);
     updateDurationDisplay(waktuMulai, waktuSelesai);
 
-    // Enable submit button
     const submitBtn = document.getElementById("submit_booking");
     if (submitBtn) {
       submitBtn.disabled = false;
-    }
-
-    // Call existing functions if available
-    if (typeof updateTimeSlotStyles === "function") {
-      updateTimeSlotStyles();
     }
 
     console.log(
@@ -2800,34 +3041,22 @@ function autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai) {
 function highlightTimeSlotsMultiple(waktuMulai, waktuSelesai) {
   console.log(`🎨 Highlighting time slots: ${waktuMulai} - ${waktuSelesai}`);
 
-  // Multiple selectors untuk berbagai kemungkinan structure
   const selectors = [
     ".time-slot",
     "[data-time]",
     ".time-ruler .btn",
     ".time-ruler button",
-    'button[onclick*="selectTime"]',
-    ".btn-outline-primary",
-    ".btn-outline-secondary",
-    ".btn-outline-info",
     "#time_ruler button",
     "#time_ruler .btn",
-    ".time-picker button",
-    ".time-ruler .time-slot",
-    'button[class*="btn"]',
   ];
-
-  let totalHighlighted = 0;
 
   selectors.forEach((selector) => {
     const timeSlots = document.querySelectorAll(selector);
 
     timeSlots.forEach((slot) => {
-      // Skip if already processed
       if (slot.dataset.autoProcessed) return;
       slot.dataset.autoProcessed = "true";
 
-      // Reset classes
       slot.classList.remove(
         "selected",
         "selected-start",
@@ -2840,30 +3069,20 @@ function highlightTimeSlotsMultiple(waktuMulai, waktuSelesai) {
       if (slotTime) {
         slotTime = normalizeTimeFormat(slotTime);
 
-        // Highlight logic dengan inline styles untuk memastikan terlihat
         if (slotTime === waktuMulai) {
           slot.classList.add("selected", "selected-start");
           applyStartTimeStyles(slot);
-          console.log(`🟢 Start time highlighted: ${slotTime}`);
-          totalHighlighted++;
         } else if (slotTime === waktuSelesai) {
           slot.classList.add("selected", "selected-end");
           applyEndTimeStyles(slot);
-          console.log(`🔴 End time highlighted: ${slotTime}`);
-          totalHighlighted++;
         } else if (isTimeInRange(slotTime, waktuMulai, waktuSelesai)) {
           slot.classList.add("selected", "selected-range");
           applyRangeTimeStyles(slot);
-          console.log(`🟡 Range time highlighted: ${slotTime}`);
-          totalHighlighted++;
         }
       }
     });
   });
 
-  console.log(`Total highlighted slots: ${totalHighlighted}`);
-
-  // Reset processed flags after highlighting
   setTimeout(() => {
     document.querySelectorAll("[data-auto-processed]").forEach((el) => {
       delete el.dataset.autoProcessed;
@@ -2982,221 +3201,10 @@ function updateDurationDisplay(waktuMulai, waktuSelesai) {
   }
 }
 
-// ===== NOTIFICATION FUNCTIONS =====
-
-function showNoDataNotification(ruanganId) {
-  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
-  if (modalBody) {
-    const notification = document.createElement("div");
-    notification.className = "alert alert-info alert-dismissible fade show";
-    notification.innerHTML = `
-      <i class="bi bi-info-circle-fill me-2"></i>
-      <strong>📝 Auto-fill tidak tersedia</strong> untuk ruangan ini.
-      <div class="mt-2">
-        <small>
-          🏢 <strong>Ruangan ID:</strong> ${ruanganId}<br>
-          ℹ️ Tidak ada data booking sebelumnya di ruangan ini.<br>
-          💡 Silakan isi form secara manual.
-        </small>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    modalBody.insertBefore(notification, modalBody.firstChild);
-
-    setTimeout(() => {
-      const alert = notification.querySelector(".btn-close");
-      if (alert) alert.click();
-    }, 5000);
-  }
-}
-
-function showAutoFillErrorNotification(requested, received) {
-  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
-  if (modalBody) {
-    const notification = document.createElement("div");
-    notification.className = "alert alert-warning alert-dismissible fade show";
-    notification.innerHTML = `
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      <strong>⚠️ Auto-fill error</strong>
-      <div class="mt-2">
-        <small>
-          🏢 <strong>Expected ruangan:</strong> ${requested}<br>
-          🏢 <strong>Received ruangan:</strong> ${received}<br>
-          💡 Data tidak sesuai ruangan. Auto-fill dibatalkan.
-        </small>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    modalBody.insertBefore(notification, modalBody.firstChild);
-
-    setTimeout(() => {
-      const alert = notification.querySelector(".btn-close");
-      if (alert) alert.click();
-    }, 8000);
-  }
-}
-
-function showErrorNotification(ruanganId, errorMessage) {
-  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
-  if (modalBody) {
-    const notification = document.createElement("div");
-    notification.className = "alert alert-danger alert-dismissible fade show";
-    notification.innerHTML = `
-      <i class="bi bi-x-circle-fill me-2"></i>
-      <strong>❌ Auto-fill gagal</strong>
-      <div class="mt-2">
-        <small>
-          🏢 <strong>Ruangan ID:</strong> ${ruanganId}<br>
-          ❌ <strong>Error:</strong> ${errorMessage}<br>
-          💡 Silakan isi form secara manual.
-        </small>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    modalBody.insertBefore(notification, modalBody.firstChild);
-
-    setTimeout(() => {
-      const alert = notification.querySelector(".btn-close");
-      if (alert) alert.click();
-    }, 10000);
-  }
-}
-
-function showAutoFillNotificationComplete(sourceType, data, ruanganId) {
-  const sourceText =
-    sourceType === "booking" ? "booking langsung" : "confirm request";
-  const modalBody = document.querySelector("#modalPinjamRuangan .modal-body");
-
-  if (modalBody) {
-    const notification = document.createElement("div");
-    notification.className = "alert alert-success alert-dismissible fade show";
-    notification.innerHTML = `
-      <i class="bi bi-check-circle-fill me-2"></i>
-      <strong>✨ Auto-fill berhasil!</strong> Data diisi otomatis dari ${sourceText} terakhir di ruangan ini:
-      <div class="mt-2">
-        <small>
-          🏢 <strong>Ruangan ID:</strong> ${ruanganId} (${data.ruangan_id})<br>
-          👤 <strong>Nama:</strong> ${
-            data.nama_penanggung_jawab || "Tidak ada"
-          }<br>
-          🏢 <strong>Unit:</strong> ${data.unit_organisasi || "Tidak ada"}<br>
-          👥 <strong>Peserta:</strong> ${
-            data.jumlah_peserta || "Tidak ada"
-          } orang<br>
-          📅 <strong>Tanggal:</strong> ${data.tanggal || "Default (besok)"}<br>
-          📝 <strong>Keperluan:</strong> ${
-            data.keperluan
-              ? data.keperluan.length > 30
-                ? data.keperluan.substring(0, 30) + "..."
-                : data.keperluan
-              : "Tidak ada"
-          }<br>
-          ⏰ <strong>Waktu:</strong> ${
-            data.waktu_mulai && data.waktu_selesai
-              ? `${data.waktu_mulai.substring(
-                  0,
-                  5
-                )} - ${data.waktu_selesai.substring(0, 5)}`
-              : "Tidak ada"
-          }
-        </small>
-      </div>
-      <div class="mt-2">
-        <small class="text-info">
-          🎯 <strong>Smart Fill:</strong> Data khusus untuk ruangan ${ruanganId}!
-        </small>
-      </div>
-      <div class="mt-2">
-        <small class="text-muted">
-          📱 <strong>Note:</strong> Nomor HP tetap harus diisi manual.
-        </small>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    modalBody.insertBefore(notification, modalBody.firstChild);
-
-    setTimeout(() => {
-      const alert = notification.querySelector(".btn-close");
-      if (alert) alert.click();
-    }, 15000);
-  }
-}
-
-function clearAutoFilledDataFixed() {
-  const fields = [
-    "nama_penanggung_jawab",
-    "unit_organisasi",
-    "jumlah_peserta",
-    "keperluan",
-  ];
-
-  fields.forEach((fieldId) => {
-    const field = document.getElementById(fieldId);
-    if (field) {
-      if (field.tagName === "SELECT") {
-        field.selectedIndex = 0;
-      } else {
-        field.value = "";
-      }
-    }
-  });
-
-  // Reset tanggal ke default
-  const tanggalField = document.getElementById("tanggal");
-  if (tanggalField) {
-    const tomorrow = new Date(Date.now() + 86400000)
-      .toISOString()
-      .split("T")[0];
-    tanggalField.value = tomorrow;
-  }
-
-  if (typeof resetTimeSelection === "function") {
-    resetTimeSelection();
-  }
-
-  // Clear visual highlighting
-  clearAllTimeSlotHighlights();
-
-  const notification = document.querySelector(
-    ".alert-success.alert-dismissible"
-  );
-  if (notification) {
-    notification.remove();
-  }
-
-  console.log("✅ Auto-filled data cleared completely");
-}
-
-function loadPreviousBookingDataIfEnabled(ruanganId) {
-  if (!isAutoFillEnabled()) {
-    console.log("ℹ️ Auto-fill is disabled by user preference");
-    return;
-  }
-
-  if (!ruanganId || isNaN(ruanganId)) {
-    console.error(
-      `❌ No valid ruangan_id provided: ${ruanganId}, skipping auto-fill`
-    );
-    return;
-  }
-
-  console.log(`🚀 Starting auto-fill process for ruangan: ${ruanganId}`);
-  loadPreviousBookingData(ruanganId);
-}
-
-function isAutoFillEnabled() {
-  return localStorage.getItem("ruangan_autofill_enabled") !== "false";
-}
-
 function initializeAutoFillStyles() {
   const style = document.createElement("style");
   style.textContent = `
-    .time-slot.selected-start,
-    .btn.selected-start {
+    .time-slot.selected-start, .btn.selected-start {
       background-color: #28a745 !important;
       color: white !important;
       border-color: #1e7e34 !important;
@@ -3207,8 +3215,7 @@ function initializeAutoFillStyles() {
       position: relative !important;
     }
     
-    .time-slot.selected-end,
-    .btn.selected-end {
+    .time-slot.selected-end, .btn.selected-end {
       background-color: #dc3545 !important;
       color: white !important;
       border-color: #bd2130 !important;
@@ -3219,8 +3226,7 @@ function initializeAutoFillStyles() {
       position: relative !important;
     }
     
-    .time-slot.selected-range,
-    .btn.selected-range {
+    .time-slot.selected-range, .btn.selected-range {
       background-color: #ffc107 !important;
       color: black !important;
       border-color: #d39e00 !important;
@@ -3230,18 +3236,8 @@ function initializeAutoFillStyles() {
       position: relative !important;
     }
     
-    .time-slot.selected,
-    .btn.selected {
+    .time-slot.selected, .btn.selected {
       transition: all 0.3s ease !important;
-    }
-    
-    /* Legend colors update */
-    .legend-color.selected-start {
-      background-color: #28a745;
-    }
-    
-    .legend-color.selected-end {
-      background-color: #dc3545;
     }
   `;
 
@@ -3251,31 +3247,37 @@ function initializeAutoFillStyles() {
   }
 }
 
-// DEBUG function
-function debugTimeSlots() {
-  const selectors = [
-    ".time-slot",
-    "[data-time]",
-    ".time-ruler .btn",
-    ".time-ruler button",
-    'button[onclick*="selectTime"]',
-    ".btn-outline-primary",
-    ".btn-outline-secondary",
-    "#time_ruler button",
-    "#time_ruler .btn",
-  ];
+// Escape HTML function untuk keamanan
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 
-  console.log("=== DEBUG TIME SLOTS ===");
-  selectors.forEach((selector) => {
-    const elements = document.querySelectorAll(selector);
-    console.log(`${selector}: ${elements.length} elements`);
-    elements.forEach((el, index) => {
-      const time = getTimeFromElement(el);
+// Debug function
+function debugAutoFillCache() {
+  console.log("=== AUTO-FILL CACHE DEBUG ===");
+  console.log("Current modal ruangan:", window.currentModalRuanganId);
+  console.log("Last auto-fill ruangan:", window.lastAutoFillRuanganId);
+
+  const fields = [
+    "nama_penanggung_jawab",
+    "nomor_hp_penanggung_jawab",
+    "unit_organisasi",
+  ];
+  fields.forEach((fieldId) => {
+    const field = document.getElementById(fieldId);
+    if (field) {
       console.log(
-        `  [${index}] Text: "${el.textContent.trim()}" | Time: "${time}" | Classes: ${
-          el.className
-        }`
+        `${fieldId}:`,
+        field.value,
+        field.dataset.autoFilled ? "(auto-filled)" : "(manual)"
       );
-    });
+    }
   });
 }
+
+// Call debugAutoFillCache() di console untuk debug
