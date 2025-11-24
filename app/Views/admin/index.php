@@ -898,7 +898,7 @@
                         <input type="hidden" name="status" value="disetujui">
                         
                         <div class="form-group mb-3">
-                            <label class="form-label">Rating Kondisi Kendaraan <span class="text-danger">*</span></label>
+                            <label class="form-label">Rating Kondisi Kendaraan <span class="text-danger"> *</span></label>
                             <div class="rating-container">
                                 <div class="star-rating d-flex align-items-center">
                                     <div class="rating-stars">
@@ -953,7 +953,7 @@
                     <input type="hidden" id="pinjam_id_surat" name="pinjam_id">
 
                     <div class="form-group mb-3">
-                        <label for="nomor_surat" class="form-label">Nomor Surat</label>
+                        <label for="nomor_surat" class="form-label">Nomor Surat<span class="text-danger"> *</span></label>
                         <input type="text" class="form-control" id="nomor_surat" name="nomor_surat" required>
                     </div>
                     
@@ -1228,7 +1228,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group mb-2">
-                                    <label for="nomor_surat" class="form-label">Nomor Surat</label>
+                                    <label for="nomor_surat" class="form-label">Nomor Surat <span class="text-danger"> *</span></label>
                                     <input type="text" class="form-control surat-penanggung-field" id="nomor_surat" name="nomor_surat">
                                 </div>
                             </div>
@@ -1418,109 +1418,113 @@
 
 <?php if (in_groups('admin')): ?>
     <div class="modal fade" id="modalTambahAset" tabindex="-1" aria-labelledby="modalTambahAsetLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalTambahAsetLabel">Tambah Aset Baru</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTambahAsetLabel">Tambah Aset Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-                <form id="formTambahAset" action="<?= base_url('/AsetKendaraan/tambah'); ?>" method="post" class="assets"
-                    enctype="multipart/form-data">
-                    <div class="modal-body">
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="kategori_id">Kategori</label>
-                                    <select class="form-control" id="kategori_id" name="kategori_id" required>
-                                        <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
-                                        <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
-                                        <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
-                                        <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
-                                        <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
-                                        <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
-                                        <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="kode_barang">Kode Barang</label>
-                                    <input type="text" class="form-control" id="kode_barang" name="kode_barang" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="merk">Merk</label>
-                                    <input type="text" class="form-control" id="merk" name="merk" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="warna">Warna</label>
-                                    <input type="text" class="form-control" id="warna" name="warna">
-                                </div>
-                                <div class="form-group">
-                                    <label for="tahun_pembuatan">Tahun Pembuatan</label>
-                                    <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan">
-                                </div>
-                                <div class="form-group">
-                                    <label for="kapasitas">Kapasitas</label>
-                                    <input type="number" class="form-control" id="kapasitas" name="kapasitas">
-                                </div>
-                                <!-- Tambahkan field no_stnk di sini -->
-                                <div class="form-group">
-                                    <label for="no_stnk">Nomor STNK</label>
-                                    <input type="text" class="form-control" id="no_stnk" name="no_stnk" placeholder="Masukkan nomor STNK">
-                                </div>
+            <form id="formTambahAset" action="<?= base_url('/AsetKendaraan/tambah'); ?>" method="post" class="assets" enctype="multipart/form-data">
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="kategori_id">Kategori</label>
+                                <select class="form-control" id="kategori_id" name="kategori_id" required>
+                                    <option value="" class="text-muted" disabled selected>Pilih Kategori Aset</option>
+                                    <option class="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
+                                    <option class="text-muted" disabled>Sedan, Hatchback, dan SUV</option>
+                                    <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
+                                    <option class="text-muted" disabled>Bus, Truk, dan Kendaraan Box</option>
+                                    <option class="fw-bold text-dark" value="KDF">Kendaraan Dinamis Fasilitas (KDF)</option>
+                                    <option class="text-muted" disabled>Ambulance, Mobil Derek, dan Mobil Crane</option>
+                                </select>
                             </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="nomor_polisi">Nomor Polisi</label>
-                                    <input type="text" class="form-control" id="no_polisi" name="no_polisi">
-                                </div>
-                                <div class="form-group">
-                                    <label for="nup">NUP</label>
-                                    <input type="text" class="form-control" id="nup" name="nup">
-                                </div>
-                                <div class="form-group">
-                                    <label for="nomor_mesin">Nomor Mesin</label>
-                                    <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin">
-                                </div>
-                                <div class="form-group">
-                                    <label for="no_rangka">No Rangka</label>
-                                    <input type="text" class="form-control" id="no_rangka" name="no_rangka">
-                                </div>
-                                <div class="form-group">
-                                    <label for="kondisi">Kondisi</label>
-                                    <select class="form-control" id="kondisi" name="kondisi">
-                                        <option value="Baik">Baik</option>
-                                        <option value="Rusak Ringan">Rusak Ringan</option>
-                                        <option value="Rusak Berat">Rusak Berat</option>
-                                    </select>
-                                </div>
-                                <!-- Tambahkan field no_bpkb di sini -->
-                                <div class="form-group">
-                                    <label for="no_bpkb">Nomor BPKB</label>
-                                    <input type="text" class="form-control" id="no_bpkb" name="no_bpkb" placeholder="Masukkan nomor BPKB">
-                                </div>
-                                <div class="form-group">
-                                    <label for="gambar_mobil">Gambar Mobil (JPG/PNG, max 5 foto)</label>
-                                    <input type="file" id="gambar_mobil" name="gambar_mobil[]" class="form-control" multiple accept="image/jpeg,image/png">
-                                    <small class="text-muted">Max 5MB/foto</small>
-                                    <div id="imagePreviewContainer" class="mt-3">
-                                        <div class="row" id="previewRow"></div>
-                                    </div>
-                                </div>
+                            <div class="form-group mb-3">
+                                <label for="kode_barang">Kode Barang</label>
+                                <input type="text" class="form-control" id="kode_barang" name="kode_barang" required>
                             </div>
+                            <div class="form-group mb-3">
+                                <label for="merk">Merk</label>
+                                <input type="text" class="form-control" id="merk" name="merk" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="warna">Warna</label>
+                                <input type="text" class="form-control" id="warna" name="warna">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="tahun_pembuatan">Tahun Pembuatan</label>
+                                <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="kapasitas">Kapasitas</label>
+                                <input type="number" class="form-control" id="kapasitas" name="kapasitas">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="no_stnk">Nomor STNK</label>
+                                <input type="text" class="form-control" id="no_stnk" name="no_stnk" placeholder="Masukkan nomor STNK">
+                            </div>
+                        </div>
 
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="nomor_polisi">Nomor Polisi</label>
+                                <input type="text" class="form-control" id="no_polisi" name="no_polisi">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="nup">NUP</label>
+                                <input type="text" class="form-control" id="nup" name="nup">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="nomor_mesin">Nomor Mesin</label>
+                                <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="no_rangka">No Rangka</label>
+                                <input type="text" class="form-control" id="no_rangka" name="no_rangka">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="kondisi">Kondisi</label>
+                                <select class="form-control" id="kondisi" name="kondisi">
+                                    <option value="Baik">Baik</option>
+                                    <option value="Rusak Ringan">Rusak Ringan</option>
+                                    <option value="Rusak Berat">Rusak Berat</option>
+                                </select>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="no_bpkb">Nomor BPKB</label>
+                                <input type="text" class="form-control" id="no_bpkb" name="no_bpkb" placeholder="Masukkan nomor BPKB">
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+
+                    <!-- SECTION UPLOAD FOTO -->
+                    <hr class="my-4">
+                    <h5 class="mb-3">📸 Upload Foto Kendaraan</h5>
+                    
+                    <div class="form-group mb-3">
+                        <label for="gambar_mobil">Gambar Mobil <span class="text-danger"> *</span></label>
+                        <input type="file" id="gambar_mobil" name="gambar_mobil[]" class="form-control" multiple accept="image/jpeg,image/png" required>
+                        <small class="text-muted">Format: JPG, PNG (Max 5MB per foto, maksimal 5 foto)</small>
+                        
+                        <!-- CONTAINER PREVIEW - INI YANG PENTING -->
+                        <div id="imagePreviewContainer" class="mt-4">
+                            <div class="row" id="previewRow">
+                                <!-- Preview foto akan muncul di sini -->
+                            </div>
+                        </div>
                     </div>
-                </form>
+                </div>
                 
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
     <div class="modal fade" id="modalLaporan" tabindex="-1" aria-labelledby="modalLaporanLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -1677,13 +1681,13 @@
                     <input type="hidden" id="jenisVerifikasi" value="peminjaman">
                     
                     <div class="mb-3">
-                        <label for="alasanPenolakan" class="form-label">Alasan Penolakan</label>
+                        <label for="alasanPenolakan" class="form-label">Alasan Penolakan<span class="text-danger"> *</span></label>
                         <textarea class="form-control" id="alasanPenolakan" name="alasan" rows="3" required
                                   placeholder="Masukkan alasan penolakan yang jelas dan informatif..."></textarea>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="dokumen_tambahan" class="form-label">Dokumen Tambahan <span class="text-danger">*</span></label>
+                        <label for="dokumen_tambahan" class="form-label">Dokumen Tambahan <span class="text-danger"> *</span></label>
                         <input type="file" class="form-control" id="dokumen_tambahan" name="dokumen_tambahan" 
                                accept="application/pdf,image/jpeg,image/jpg,image/png" required>
                         <div class="form-text">

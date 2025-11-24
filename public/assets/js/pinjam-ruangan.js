@@ -2148,7 +2148,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="nama_penanggung_jawab" class="form-label">
                                         <i class="bi bi-person-fill me-1"></i>
-                                        Nama Penanggung Jawab <span class="text-danger">*</span>
+                                        Nama Penanggung Jawab <span class="text-danger"> *</span>
                                     </label>
                                     <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" required
                                            placeholder="Masukkan nama penanggung jawab">
@@ -2158,7 +2158,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="nomor_hp_penanggung_jawab" class="form-label">
                                         <i class="bi bi-telephone-fill me-1"></i>
-                                        Nomor HP Penanggung Jawab <span class="text-danger">*</span>
+                                        Nomor HP Penanggung Jawab <span class="text-danger"> *</span>
                                     </label>
                                     <input type="tel" class="form-control" id="nomor_hp_penanggung_jawab" name="nomor_hp_penanggung_jawab" required
                                            pattern="[0-9]{10,15}" placeholder="Contoh: 081234567890">
@@ -2168,7 +2168,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="form-group mb-3">
                                     <label for="unit_organisasi" class="form-label">
                                         <i class="bi bi-building me-1"></i>
-                                        Unit Organisasi <span class="text-danger">*</span>
+                                        Unit Organisasi <span class="text-danger"> *</span>
                                     </label>
                                     <select class="form-control" id="unit_organisasi" name="unit_organisasi" required>
                                         <option value="" disabled selected>Pilih Unit Organisasi</option>
@@ -2190,7 +2190,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="tanggal" class="form-label">
                                         <i class="bi bi-calendar3 me-1"></i>
-                                        Tanggal Peminjaman <span class="text-danger">*</span>
+                                        Tanggal Peminjaman <span class="text-danger"> *</span>
                                     </label>
                                     <input type="date" class="form-control" id="tanggal" name="tanggal" required
                                            min="${
@@ -2204,7 +2204,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="jumlah_peserta" class="form-label">
                                         <i class="bi bi-people-fill me-1"></i>
-                                        Jumlah Peserta <span class="text-danger">*</span>
+                                        Jumlah Peserta <span class="text-danger"> *</span>
                                     </label>
                                     <input type="number" class="form-control" id="jumlah_peserta" name="jumlah_peserta" 
                                            required min="1" max="${cleanKapasitas}" placeholder="Max: ${cleanKapasitas} orang">
@@ -2214,7 +2214,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="keperluan" class="form-label">
                                         <i class="bi bi-card-text me-1"></i>
-                                        Keperluan <span class="text-danger">*</span>
+                                        Keperluan <span class="text-danger"> *</span>
                                     </label>
                                     <textarea class="form-control" id="keperluan" name="keperluan" 
                                               rows="3" required placeholder="Jelaskan keperluan penggunaan ruangan"></textarea>
@@ -2224,7 +2224,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 <div class="mb-3">
                                     <label for="surat_permohonan" class="form-label">
                                         <i class="bi bi-file-earmark-pdf me-1"></i>
-                                        Surat Permohonan <span class="text-danger">*</span>
+                                        Surat Permohonan <span class="text-danger"> *</span>
                                     </label>
                                     <input type="file" class="form-control" id="surat_permohonan" name="surat_permohonan" 
                                            required accept=".pdf" max="2048">

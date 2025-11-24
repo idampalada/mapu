@@ -237,28 +237,34 @@
         
         <!-- Bagian Keterlambatan - Hanya tampil jika terlambat -->
         <?php if (!empty($alasan_keterlambatan)): ?>
-        <div style="margin-top: 20px; border: 1px solid #000; padding: 10px;">
-            <h3>KETERLAMBATAN PENGEMBALIAN</h3>
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <td style="width: 30%; padding: 5px;">Jumlah Hari Terlambat</td>
-                    <td style="width: 70%; padding: 5px;">: <?= $daysLate ?? '-' ?> hari</td>
-                </tr>
-                <tr>
-                    <td style="padding: 5px;">Alasan Keterlambatan</td>
-                    <td style="padding: 5px;">: <?= $alasan_keterlambatan ?></td>
-                </tr>
-            </table>
-            
-            <?php if (!empty($foto_keterlambatan)): ?>
-            <div style="margin-top: 10px;">
-                <p><strong>Dokumentasi Keterlambatan:</strong></p>
-                <img src="<?= 'data:image/jpeg;base64,' . base64_encode(@file_get_contents(ROOTPATH . 'public/uploads/images/' . $foto_keterlambatan)) ?>" 
-                    style="max-width: 100%; max-height: 300px; display: block; margin: 0 auto; border: 1px solid #ddd;">
-            </div>
-            <?php endif; ?>
+<div style="margin-top: 20px; border: 1px solid #000; padding: 10px;">
+    <h3>KETERLAMBATAN PENGEMBALIAN</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="width: 30%; padding: 5px;">Jumlah Hari Terlambat</td>
+            <td style="width: 70%; padding: 5px;">: <?= $daysLate ?? '-' ?> hari</td>
+        </tr>
+        <tr>
+            <td style="padding: 5px;">Alasan Keterlambatan</td>
+            <td style="padding: 5px;">: <?= $alasan_keterlambatan ?></td>
+        </tr>
+    </table>
+    
+    <!-- HAPUS SELURUH BAGIAN INI (DOKUMENTASI FOTO): -->
+    <?php /* 
+    <?php if (!empty($foto_keterlambatan)): ?>
+    <div style="margin-top: 10px;">
+        <p><strong>Dokumentasi Keterlambatan:</strong></p>
+        <img src="<?= 'data:image/jpeg;base64,' . base64_encode(@file_get_contents(ROOTPATH . 'public/uploads/images/' . $foto_keterlambatan)) ?>" 
+             alt="Dokumentasi Keterlambatan" style="max-width: 300px; height: auto;">
+        <div style="margin-top: 5px; font-size: 10px; color: #666;">
+            Timestamp: <?= date('d/m/Y H:i:s') ?>
         </div>
-        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+    */ ?>
+</div>
+<?php endif; ?>
         
         <p>Dengan adanya Serah Terima ini maka selanjutnya tanggung jawab Kendaraan Dinas tersebut beralih dari PIHAK KESATU kepada PIHAK KEDUA.</p>
         

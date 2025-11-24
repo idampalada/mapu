@@ -1019,226 +1019,210 @@ function initializeTambahAsetForm() {
   }
 }
 
+// Global variable untuk menyimpan file
+let selectedFiles = [];
+
 function handleImagePreview(e) {
-  const newFiles = e.target.files;
-  const previewRow = document.getElementById("previewRow");
-  const input = document.getElementById("gambar_mobil");
+  const newFiles = Array.from(e.target.files);
 
-  const dt = new DataTransfer();
+  console.log(
+    "handleImagePreview dipanggil dengan",
+    newFiles.length,
+    "file baru"
+  );
+  console.log("selectedFiles sebelum:", selectedFiles.length);
 
-  if (newFiles.length > 5) {
+  // Validasi maksimal 5 foto total
+  if (selectedFiles.length + newFiles.length > 5) {
     Swal.fire({
-      icon: "error",
-      title: "Error!",
-      text: "Maksimal 5 foto yang dapat diunggah",
+      icon: "warning",
+      title: "Maksimal 5 foto!",
+      text: `Anda sudah memiliki ${selectedFiles.length} foto. Maksimal total 5 foto.`,
       confirmButtonColor: "#dc3545",
     });
+    e.target.value = "";
     return;
   }
 
-  const existingFiles = Array.from(input.files || []);
-  existingFiles.forEach((file) => dt.items.add(file));
-
   let isValid = true;
-  Array.from(newFiles).forEach((file) => {
+  const validNewFiles = [];
+
+  // Validasi setiap file baru
+  newFiles.forEach((file) => {
+    console.log(
+      "Memvalidasi file:",
+      file.name,
+      "Size:",
+      file.size,
+      "Type:",
+      file.type
+    );
+
+    // Validasi ukuran
     if (file.size > 5 * 1024 * 1024) {
       Swal.fire({
         icon: "error",
-        title: "Error!",
-        text: `File ${file.name} melebihi batas ukuran 5MB`,
+        title: "File terlalu besar!",
+        text: `${file.name} melebihi 5MB`,
         confirmButtonColor: "#dc3545",
       });
       isValid = false;
       return;
     }
 
-    if (!["image/jpeg", "image/png"].includes(file.type)) {
+    // Validasi format
+    if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
       Swal.fire({
         icon: "error",
-        title: "Error!",
-        text: `File ${file.name} harus berformat JPG atau PNG`,
+        title: "Format tidak didukung!",
+        text: `${file.name} harus berformat JPG atau PNG`,
         confirmButtonColor: "#dc3545",
       });
       isValid = false;
       return;
     }
 
-    const isDuplicate = existingFiles.some(
+    // Cek duplikasi nama file
+    const isDuplicate = selectedFiles.some(
       (existingFile) => existingFile.name === file.name
     );
-
     if (!isDuplicate) {
-      dt.items.add(file);
+      validNewFiles.push(file);
+    } else {
+      console.log("File duplikat diabaikan:", file.name);
     }
   });
 
-  if (!isValid) return;
-
-  input.files = dt.files;
-
-  previewRow.innerHTML = "";
-
-  Array.from(dt.files).forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const previewCol = document.createElement("div");
-      previewCol.className = "col-md-4 mb-3 preview-wrapper";
-      previewCol.innerHTML = `
-                <div class="card">
-                    <img src="${e.target.result}" 
-                         class="card-img-top preview-image" 
-                         style="height: 200px; object-fit: cover; cursor: pointer"
-                         alt="${file.name}"
-                         onclick="showImageDetail('${e.target.result}')">
-                    <div class="card-body p-2">
-                        <p class="card-text small text-muted mb-0">${file.name}</p>
-                    </div>
-                    <button type="button" 
-                            class="btn btn-danger btn-sm delete-btn" 
-                            onclick="removePreview(${index})">×</button>
-                </div>
-            `;
-      previewRow.appendChild(previewCol);
-    };
-    reader.readAsDataURL(file);
-  });
-
-  const fileLabel = input.nextElementSibling;
-  const fileCount = dt.files.length;
-  if (fileCount > 0) {
-    const fileNames = Array.from(dt.files)
-      .map((f) => f.name)
-      .join(", ");
-    fileLabel.textContent = `${fileCount} file${
-      fileCount > 1 ? "s" : ""
-    } terupload: ${fileNames}`;
-  } else {
-    fileLabel.textContent = "Tidak ada file dipilih";
+  if (!isValid) {
+    e.target.value = "";
+    return;
   }
+
+  // TAMBAHKAN file baru ke array
+  selectedFiles = [...selectedFiles, ...validNewFiles];
+  console.log("selectedFiles setelah:", selectedFiles.length);
+
+  // Update file input dengan semua file - JANGAN RESET!
+  updateFileInput();
+
+  // Update preview
+  updatePreview();
+
+  // JANGAN RESET INPUT - ini yang menyebabkan validasi gagal
+  // e.target.value = "";  // HAPUS BARIS INI
 }
 
-function updateImagePreviews(files) {
-  const previewRow = document.getElementById("previewRow");
-  previewRow.innerHTML = "";
-
-  Array.from(files).forEach((file, index) => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      const previewCol = document.createElement("div");
-      previewCol.className = "col-md-4 mb-3 preview-wrapper";
-      previewCol.innerHTML = `
-                <div class="card">
-                    <img src="${e.target.result}" 
-                         class="card-img-top preview-image" 
-                         style="height: 200px; object-fit: cover; cursor: pointer"
-                         alt="${file.name}"
-                         onclick="showImageDetail('${e.target.result}')">
-                    <div class="card-body p-2">
-                        <p class="card-text small text-muted mb-0">${file.name}</p>
-                    </div>
-                    <button type="button" 
-                            class="btn btn-danger btn-sm delete-btn" 
-                            onclick="removePreview(${index})">×</button>
-                </div>
-            `;
-      previewRow.appendChild(previewCol);
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function updateFileLabel(files) {
+function updateFileInput() {
   const input = document.getElementById("gambar_mobil");
-  const fileLabel = input.nextElementSibling;
-  const fileCount = files.length;
-
-  if (fileCount > 0) {
-    const fileNames = Array.from(files)
-      .map((f) => f.name)
-      .join(", ");
-    fileLabel.textContent = `${fileCount} file${
-      fileCount > 1 ? "s" : ""
-    } terupload: ${fileNames}`;
-  } else {
-    fileLabel.textContent = "Tidak ada file dipilih";
+  if (!input) {
+    console.error("Input gambar_mobil tidak ditemukan!");
+    return;
   }
-}
 
-function removePreview(index) {
-  const input = document.getElementById("gambar_mobil");
   const dt = new DataTransfer();
-  const files = Array.from(input.files);
-
-  files.splice(index, 1);
-
-  files.forEach((file) => dt.items.add(file));
+  selectedFiles.forEach((file) => {
+    dt.items.add(file);
+  });
 
   input.files = dt.files;
 
+  // PENTING: Hapus atribut required karena kita handle validasi manual
+  input.removeAttribute("required");
+
+  console.log("File input diupdate dengan", dt.files.length, "file");
+}
+
+function updatePreview() {
   const previewRow = document.getElementById("previewRow");
+
+  if (!previewRow) {
+    console.error("Element previewRow tidak ditemukan!");
+    return;
+  }
+
+  console.log("updatePreview dipanggil untuk", selectedFiles.length, "file");
+
+  // Clear preview sebelumnya
   previewRow.innerHTML = "";
 
-  Array.from(dt.files).forEach((file, idx) => {
+  if (selectedFiles.length === 0) {
+    console.log("Tidak ada file untuk preview");
+    return;
+  }
+
+  // Buat preview untuk setiap file
+  selectedFiles.forEach((file, index) => {
+    console.log("Membuat preview untuk file", index + 1, ":", file.name);
+
     const reader = new FileReader();
     reader.onload = function (e) {
+      console.log("FileReader berhasil untuk file:", file.name);
+
       const previewCol = document.createElement("div");
-      previewCol.className = "col-md-4 mb-3 preview-wrapper";
+      previewCol.className = "col-md-4 mb-3";
       previewCol.innerHTML = `
                 <div class="card">
                     <img src="${e.target.result}" 
-                         class="card-img-top preview-image" 
-                         style="height: 200px; object-fit: cover; cursor: pointer"
-                         alt="${file.name}"
-                         onclick="showImageDetail('${e.target.result}')">
+                         class="card-img-top" 
+                         style="height: 150px; object-fit: cover; cursor: pointer;"
+                         onclick="showImagePreview('${e.target.result}')"
+                         alt="${file.name}">
                     <div class="card-body p-2">
-                        <p class="card-text small text-muted mb-0">${file.name}</p>
+                        <p class="card-text small text-muted mb-1">${file.name}</p>
+                        <button type="button" 
+                                class="btn btn-danger btn-sm w-100" 
+                                onclick="removeImage(${index})">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
                     </div>
-                    <button type="button" 
-                            class="btn btn-danger btn-sm delete-btn" 
-                            onclick="removePreview(${idx})">×</button>
                 </div>
             `;
       previewRow.appendChild(previewCol);
+      console.log("Preview ditambahkan ke DOM untuk file:", file.name);
     };
+
+    reader.onerror = function (e) {
+      console.error("Error reading file:", file.name, e);
+    };
+
     reader.readAsDataURL(file);
   });
-
-  const fileLabel = input.nextElementSibling;
-  const fileCount = dt.files.length;
-  if (fileCount > 0) {
-    const fileNames = Array.from(dt.files)
-      .map((f) => f.name)
-      .join(", ");
-    fileLabel.textContent = `${fileCount} file${
-      fileCount > 1 ? "s" : ""
-    } terupload: ${fileNames}`;
-  } else {
-    fileLabel.textContent = "Tidak ada file dipilih";
-  }
 }
 
-function showImageDetail(src) {
-  const detailImage = document.getElementById("detailImage");
-  detailImage.src = src;
-  const modal = new bootstrap.Modal(
-    document.getElementById("imageDetailModal")
+function removeImage(index) {
+  console.log("Menghapus file pada index:", index);
+
+  // Hapus file dari array
+  selectedFiles.splice(index, 1);
+
+  // Update file input dan preview
+  updateFileInput();
+  updatePreview();
+
+  console.log(
+    `File pada index ${index} dihapus. Sisa: ${selectedFiles.length} file`
   );
-  modal.show();
+}
+
+function showImagePreview(src) {
+  Swal.fire({
+    imageUrl: src,
+    imageAlt: "Preview Image",
+    showConfirmButton: false,
+    showCloseButton: true,
+    width: "80%",
+    padding: "1em",
+    background: "#fff",
+  });
 }
 
 function handleTambahAsetSubmit(e) {
   e.preventDefault();
 
   const form = e.target;
-  const formData = new FormData(form);
 
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
-
-  const files = form.querySelector("#gambar_mobil").files;
-  if (files.length === 0) {
+  // VALIDASI MANUAL UNTUK FILE
+  if (selectedFiles.length === 0) {
     Swal.fire({
       icon: "error",
       title: "Error!",
@@ -1248,13 +1232,30 @@ function handleTambahAsetSubmit(e) {
     return;
   }
 
-  if (files.length > 5) {
+  if (selectedFiles.length > 5) {
     Swal.fire({
       icon: "error",
       title: "Error!",
       text: "Maksimal 5 foto yang dapat diunggah",
       confirmButtonColor: "#dc3545",
     });
+    return;
+  }
+
+  // Pastikan form input lain valid (kecuali file)
+  const otherInputs = form.querySelectorAll(
+    "input:not(#gambar_mobil), select, textarea"
+  );
+  let isFormValid = true;
+
+  otherInputs.forEach((input) => {
+    if (input.hasAttribute("required") && !input.value.trim()) {
+      input.reportValidity();
+      isFormValid = false;
+    }
+  });
+
+  if (!isFormValid) {
     return;
   }
 
@@ -1266,6 +1267,22 @@ function handleTambahAsetSubmit(e) {
     didOpen: () => {
       Swal.showLoading();
     },
+  });
+
+  // Buat FormData dengan file yang benar
+  const formData = new FormData();
+
+  // Tambahkan semua input form kecuali file
+  const formInputs = new FormData(form);
+  for (let [key, value] of formInputs.entries()) {
+    if (key !== "gambar_mobil[]") {
+      formData.append(key, value);
+    }
+  }
+
+  // Tambahkan file dari selectedFiles
+  selectedFiles.forEach((file) => {
+    formData.append("gambar_mobil[]", file);
   });
 
   fetch(form.action, {
@@ -1282,12 +1299,15 @@ function handleTambahAsetSubmit(e) {
           confirmButtonText: "OK",
           confirmButtonColor: "#198754",
         }).then(() => {
+          // Reset semua
           form.reset();
-          document.getElementById("previewRow").innerHTML = "";
+          selectedFiles = [];
+          updatePreview();
+
           const modal = bootstrap.Modal.getInstance(
             document.getElementById("modalTambahAset")
           );
-          modal.hide();
+          if (modal) modal.hide();
           window.location.reload();
         });
       } else {
@@ -1306,6 +1326,44 @@ function handleTambahAsetSubmit(e) {
     });
 }
 
+// Initialize saat DOM ready
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM loaded, menginisialisasi event listeners");
+
+  // Reset saat modal dibuka
+  const modal = document.getElementById("modalTambahAset");
+  if (modal) {
+    modal.addEventListener("show.bs.modal", function () {
+      console.log("Modal dibuka, reset selectedFiles");
+      selectedFiles = [];
+      updatePreview();
+
+      // Reset required attribute untuk input file
+      const fileInput = document.getElementById("gambar_mobil");
+      if (fileInput) {
+        fileInput.removeAttribute("required");
+      }
+    });
+  }
+
+  // Event listener untuk input file
+  const fileInput = document.getElementById("gambar_mobil");
+  if (fileInput) {
+    console.log("Event listener untuk file input ditambahkan");
+    fileInput.addEventListener("change", handleImagePreview);
+
+    // Hapus required attribute karena kita handle manual
+    fileInput.removeAttribute("required");
+  } else {
+    console.error("Input file gambar_mobil tidak ditemukan!");
+  }
+
+  // Event listener untuk form submit
+  const formTambahAset = document.getElementById("formTambahAset");
+  if (formTambahAset) {
+    formTambahAset.addEventListener("submit", handleTambahAsetSubmit);
+  }
+});
 function formatDate(date) {
   if (!date) return "-";
   const d = new Date(date);

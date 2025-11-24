@@ -288,8 +288,9 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalPengembalian" tabindex="-1" aria-labelledby="modalPengembalianLabel"
-    aria-hidden="true">
+<!-- Modal Pengembalian - DIPERBAIKI UNTUK FIELD KENDARAAN -->
+<!-- Modal Pengembalian - FINAL VERSION -->
+<div class="modal fade" id="modalPengembalian" tabindex="-1" aria-labelledby="modalPengembalianLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-gradient-primary text-white">
@@ -298,7 +299,7 @@
             </div>
 
             <form id="formPengembalian" action="<?= base_url('/AsetKendaraan/kembali'); ?>" method="post"
-                class="kembali" enctype="multipart/form-data">
+                class="kembali needs-validation" enctype="multipart/form-data" novalidate>
                 <div class="modal-body p-4">
                     <div class="row">
                         <input type="hidden" id="kendaraan_id_hidden" name="kendaraan_id" value="">
@@ -306,7 +307,7 @@
                         <input type="hidden" id="is_late_return" name="is_late_return" value="false">
                         <input type="hidden" id="days_late" name="days_late" value="0">
 
-                        <!-- Tab navigation for halaman 1 dan 2 -->
+                        <!-- Tab navigation -->
                         <ul class="nav nav-tabs mb-3" id="pengembalianTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="pihak-kesatu-tab" data-bs-toggle="tab" 
@@ -326,47 +327,61 @@
                                 aria-labelledby="pihak-kesatu-tab">
                                 <div class="row">
                                     <div class="col-md-6">
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
                                             <input type="text" class="form-control" id="nama_penanggung_jawab"
                                                 name="nama_penanggung_jawab" required readonly>
+                                            <div class="invalid-feedback">Nama penanggung jawab harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nip_nrp" class="form-label">NIP / NRP</label>
                                             <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" required readonly>
+                                            <div class="invalid-feedback">NIP/NRP harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="pangkat_golongan" class="form-label">Pangkat / Golongan</label>
                                             <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan"
                                                 required readonly>
+                                            <div class="invalid-feedback">Pangkat/Golongan harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="jabatan" class="form-label">Jabatan</label>
                                             <input type="text" class="form-control" id="jabatan" name="jabatan" required readonly>
+                                            <div class="invalid-feedback">Jabatan harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="unit_organisasi" class="form-label">Unit Organisasi</label>
                                             <input type="text" class="form-control" id="unit_organisasi" name="unit_organisasi"
                                                 required readonly>
+                                            <div class="invalid-feedback">Unit organisasi harus diisi.</div>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="alamat_rumah" class="form-label">Alamat Rumah</label>
-                                            <input type="text" class="form-control" id="alamat_rumah" name="alamat_rumah" readonly>
+                                            <input type="text" class="form-control" id="alamat_rumah" name="alamat_rumah" required readonly>
+                                            <div class="invalid-feedback">Alamat rumah harus diisi.</div>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="no_ktp" class="form-label">No. KTP</label>
-                                            <input type="text" class="form-control" id="no_ktp" name="no_ktp" readonly>
+                                            <input type="text" class="form-control" id="no_ktp" name="no_ktp" required readonly>
+                                            <div class="invalid-feedback">No. KTP harus diisi.</div>
                                         </div>
                                         
-                                        <!-- Tambahan fitur Rating Penggunaan -->
+                                        <!-- ADA * karena user input -->
                                         <div class="form-group mb-3">
-                                            <label for="rating_pengguna" class="form-label">Rating Penggunaan Kendaraan <span class="text-danger">*</span></label>
+                                            <label for="rating_pengguna" class="form-label">Rating Penggunaan Kendaraan <span class="text-danger"> *</span></label>
                                             <div class="rating-container">
                                                 <div class="star-rating d-flex align-items-center">
                                                     <div class="rating-stars">
@@ -390,51 +405,66 @@
                                                 <div class="form-text">
                                                     <small><i class="bi bi-info-circle"></i> Berikan rating penggunaan kendaraan (1-5)</small>
                                                 </div>
+                                                <div class="invalid-feedback d-block" style="display:none!important" id="rating-error">
+                                                    Rating penggunaan kendaraan harus dipilih.
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="col-md-6">
+                                        <!-- TIDAK ADA * karena data auto-load -->
                                         <div class="form-group mb-3">
                                             <label for="kendaraan_id" class="form-label">Kendaraan</label>
                                             <select class="form-control" id="kendaraan_id_kembali" name="kendaraan_id" required>
                                                 <option value="" disabled selected>Kendaraan</option>
                                             </select>
+                                            <div class="invalid-feedback">Kendaraan harus dipilih.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="pengemudi" class="form-label">Nama Pengemudi</label>
                                             <input type="text" class="form-control" id="pengemudi" name="pengemudi" required readonly>
+                                            <div class="invalid-feedback">Nama pengemudi harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="no_hp" class="form-label">Nomor HP</label>
                                             <input type="text" class="form-control" id="no_hp" name="no_hp" required readonly>
+                                            <div class="invalid-feedback">Nomor HP harus diisi.</div>
                                         </div>
 
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
                                             <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam"
                                                 readonly required>
+                                            <div class="invalid-feedback">Tanggal pinjam harus diisi.</div>
                                         </div>
 
+                                        <!-- ADA * karena user input -->
                                         <div class="form-group mb-3">
-                                            <label for="tanggal_kembali" class="form-label">Tanggal Kembali <span class="text-danger">*</span></label>
+                                            <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
                                             <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
                                                 required min="<?= date('Y-m-d') ?>">
                                             <small class="form-text text-muted">
                                                 Tanggal kembali yang telah ditetapkan pada saat peminjaman.
                                             </small>
+                                            <div class="invalid-feedback">Tanggal kembali harus diisi.</div>
                                         </div>
                                         
+                                        <!-- ADA * karena user input -->
                                         <div class="form-group mb-3">
-                                            <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Pengembalian</label>
+                                            <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Pengembalian <span class="text-danger"> *</span></label>
                                             <select class="form-control" id="kondisi_kembali" name="kondisi_kembali" required>
                                                 <option value="" disabled selected>Pilih Kondisi</option>
                                                 <option value="Baik">Baik</option>
                                                 <option value="Rusak Ringan">Rusak Ringan</option>
                                                 <option value="Rusak Berat">Rusak Berat</option>
                                             </select>
+                                            <div class="invalid-feedback">Kondisi kendaraan harus dipilih.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -454,62 +484,20 @@
                                                 <p class="mb-0">Mohon berikan alasan keterlambatan untuk melanjutkan proses pengembalian.</p>
                                             </div>
                                             
+                                            <!-- ADA * karena user input (jika terlambat) -->
                                             <div class="form-group mb-3">
-                                                <label for="alasan_keterlambatan" class="form-label">Alasan Keterlambatan <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" id="alasan_keterlambatan" name="alasan_keterlambatan" rows="3" placeholder="Jelaskan alasan keterlambatan pengembalian kendaraan"></textarea>
+                                                <label for="alasan_keterlambatan" class="form-label">Alasan Keterlambatan <span class="text-danger"> *</span></label>
+                                                <textarea class="form-control" id="alasan_keterlambatan" name="alasan_keterlambatan" rows="3" 
+                                                    placeholder="Jelaskan alasan keterlambatan pengembalian kendaraan"></textarea>
                                                 <div class="invalid-feedback">Alasan keterlambatan wajib diisi untuk pengembalian yang terlambat.</div>
-                                            </div>
-                                            
-                                            <div class="form-group mb-3">
-                                                <label for="foto_keterlambatan" class="form-label">Dokumentasi Keterlambatan (Opsional)</label>
-                                                <input type="file" class="form-control" id="foto_keterlambatan" name="foto_keterlambatan" accept="image/*">
-                                                <small class="form-text text-muted">Unggah foto atau dokumen pendukung terkait keterlambatan (jika ada).</small>
-                                            </div>
-                                            
-                                            <!-- Camera capture option for late return documentation -->
-                                            <div class="mt-2">
-                                                <button type="button" id="btn-camera-late-doc" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-camera"></i> Ambil Foto dengan Kamera
-                                                </button>
-                                            </div>
-                                            
-                                            <div id="camera-container-late" class="mt-3 d-none">
-                                                <div class="card">
-                                                    <div class="card-body p-2">
-                                                        <video id="camera-feed-late" autoplay playsinline style="width: 100%; border-radius: 4px;"></video>
-                                                        <div class="d-flex justify-content-between mt-2">
-                                                            <button type="button" id="btn-take-photo-late" class="btn btn-sm btn-success">
-                                                                <i class="bi bi-camera"></i> Ambil Foto
-                                                            </button>
-                                                            <button type="button" id="btn-cancel-camera-late" class="btn btn-sm btn-secondary">
-                                                                <i class="bi bi-x"></i> Tutup Kamera
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div id="photo-preview-late" class="mt-2 d-none">
-                                                    <div class="card">
-                                                        <div class="card-body p-2">
-                                                            <canvas id="photo-canvas-late" style="width: 100%; border-radius: 4px;"></canvas>
-                                                            <div class="d-flex justify-content-between mt-2">
-                                                                <button type="button" id="btn-use-photo-late" class="btn btn-sm btn-primary">
-                                                                    <i class="bi bi-check"></i> Gunakan Foto
-                                                                </button>
-                                                                <button type="button" id="btn-retake-photo-late" class="btn btn-sm btn-secondary">
-                                                                    <i class="bi bi-arrow-repeat"></i> Ambil Ulang
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
+                                <!-- ADA * karena user input -->
                                 <div class="form-group mb-3">
-                                    <label class="form-label">Ambil Foto</label>
+                                    <label class="form-label">Ambil Foto Kendaraan <span class="text-danger"> *</span></label>
                                     <div>
                                         <button type="button" class="btn btn-secondary" id="btn-camera-capture">
                                             <i class="bi bi-camera"></i> Ambil Foto
@@ -531,7 +519,10 @@
                                         </div>
                                     </div>
                                     <canvas id="photo-canvas" style="display:none;"></canvas>
-                                    <input type="hidden" id="photo-data" name="photo_data">
+                                    <input type="hidden" id="photo-data" name="photo_data" required>
+                                    <div class="invalid-feedback d-block" style="display:none!important" id="photo-error">
+                                        Foto kendaraan harus diambil.
+                                    </div>
                                 </div>
                                 
                                 <div class="d-flex justify-content-end">
@@ -539,64 +530,83 @@
                                 </div>
                             </div>
                             
-                            <!-- Tab 2: Detail Kendaraan dengan penambahan field yang dapat diedit untuk Pihak Kedua -->
+                            <!-- Tab 2: Detail Kendaraan -->
                             <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
                                 aria-labelledby="detail-kendaraan-tab">
                                 <div class="card p-3 mb-3">
                                     <h6 class="card-title fw-bold">Pihak Kedua <small class="text-muted">(Dapat diedit)</small></h6>
+                                    
+                                    <!-- ADA * karena user bisa edit -->
                                     <div class="row mb-2">
-                                        <div class="col-md-3">Nama</div>
+                                        <div class="col-md-3">Nama <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" value="Pak Udin">
+                                            <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" 
+                                                value="Pak Udin" required>
+                                            <div class="invalid-feedback">Nama pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- ADA * karena user bisa edit -->
                                     <div class="row mb-2">
-                                        <div class="col-md-3">NIP</div>
+                                        <div class="col-md-3">NIP <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" value="12345678">
+                                            <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" 
+                                                value="12345678" required>
+                                            <div class="invalid-feedback">NIP pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- ADA * karena user bisa edit -->
                                     <div class="row mb-2">
-                                        <div class="col-md-3">Jabatan</div>
+                                        <div class="col-md-3">Jabatan <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang">
+                                            <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" 
+                                                value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang" required>
+                                            <div class="invalid-feedback">Jabatan pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
                                 </div>
                                 
+                                <!-- ADA * karena user input -->
                                 <div class="form-group mb-3">
-                                    <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab</label>
+                                    <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab <span class="text-danger"> *</span></label>
                                     <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
+                                    <div class="invalid-feedback">Nomor SIP/Surat Penanggung Jawab harus diisi.</div>
                                 </div>
                                 
                                 <div class="row">
                                     <div class="col-md-6">
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
                                             <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
                                             <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="kode_barang_detail" class="form-label">Kode Barang</label>
                                             <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nup_detail" class="form-label">NUP</label>
                                             <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
                                             <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
                                         </div>
                                         
-                                        <!-- Tambahkan field STNK -->
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nomor_stnk" class="form-label">Nomor STNK</label>
                                             <input type="text" class="form-control" id="nomor_stnk" name="nomor_stnk" readonly>
@@ -604,27 +614,31 @@
                                     </div>
                                     
                                     <div class="col-md-6">
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="merk_detail" class="form-label">Merk</label>
                                             <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="warna" class="form-label">Warna</label>
                                             <input type="text" class="form-control" id="warna" name="warna" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
                                             <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
                                         </div>
                                         
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
                                             <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
                                         </div>
                                         
-                                        <!-- Tambahkan field BPKB -->
+                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
                                             <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
@@ -648,6 +662,64 @@
         </div>
     </div>
 </div>
+
+<!-- CSS untuk membuat select readonly tapi terlihat normal -->
+<style>
+#kendaraan_id_kembali[readonly] {
+    background-color: #e9ecef !important;
+    pointer-events: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+#kendaraan_id_kembali option {
+    background-color: #e9ecef;
+}
+#kendaraan_id_kembali {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    border-color: #ced4da !important;
+}
+
+#kendaraan_id_kembali:focus {
+    background-color: #e9ecef !important;
+    border-color: #ced4da !important;
+    box-shadow: none !important;
+}
+
+/* Styling khusus untuk option di dalam select */
+#kendaraan_id_kembali option {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+}
+
+/* Alternatif: Gunakan attribute readonly untuk styling otomatis */
+#kendaraan_id_kembali[readonly] {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+    border-color: #ced4da !important;
+}
+
+/* Pastikan tidak ada dropdown arrow yang muncul */
+#kendaraan_id_kembali {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: none !important;
+}
+
+/* Styling untuk semua readonly inputs agar konsisten */
+.form-control[readonly] {
+    background-color: #e9ecef;
+    color: #6c757d;
+    opacity: 1;
+}
+</style>
 
 /* CSS untuk styling inline keterlambatan pengembalian */
 <style>

@@ -344,75 +344,214 @@ function initializeJabatanDropdown() {
 function handlePengembalianSubmit(e) {
   e.preventDefault();
 
+  // Reset previous validation states
+  const form = e.target;
+  form.classList.remove("was-validated");
+
+  // Clear previous error displays
+  clearValidationErrors();
+
+  // Validasi custom untuk setiap field
+  let isValid = true;
+  const errors = [];
+
+  // 1. Validasi Kendaraan ID
   const kendaraanId = document.getElementById("kendaraan_id_hidden")?.value;
   if (!kendaraanId) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Data kendaraan tidak valid",
-      confirmButtonText: "Tutup",
-      confirmButtonColor: "#dc3545",
-    });
-    return;
+    showCustomError("kendaraan_display", "Kendaraan harus dipilih");
+    errors.push("Kendaraan harus dipilih");
+    isValid = false;
   }
 
-  // Validasi foto kamera
+  // 2. Validasi Foto Kendaraan
   const photoData = document.getElementById("photo-data")?.value;
   if (!photoData) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Foto kendaraan diperlukan untuk pengembalian",
-      confirmButtonText: "Tutup",
-      confirmButtonColor: "#dc3545",
-    });
-    return;
+    showPhotoError("Foto kendaraan harus diambil terlebih dahulu");
+    errors.push("Foto kendaraan harus diambil");
+    isValid = false;
   }
 
-  // Validasi rating
+  // 3. Validasi Rating
   const rating = document.querySelector(
     'input[name="rating_pengguna"]:checked'
   );
   if (!rating) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Rating penggunaan kendaraan harus dipilih",
-      confirmButtonText: "Tutup",
-      confirmButtonColor: "#dc3545",
-    });
-    return;
+    showRatingError("Rating penggunaan kendaraan harus dipilih");
+    errors.push("Rating penggunaan kendaraan harus dipilih");
+    isValid = false;
   }
 
-  // Ubah daftar field yang wajib diisi - HAPUS berita_acara_pengembalian dari daftar
+  // 4. Validasi field-field wajib - DITAMBAHKAN alamat_rumah dan no_ktp
   const requiredFields = [
-    "nama_penanggung_jawab",
-    "nip_nrp",
-    "pangkat_golongan",
-    "jabatan",
-    "unit_organisasi",
-    "tanggal_kembali",
-    // "berita_acara_pengembalian", // Hapus validasi ini
-    "nomor_sip", // Tambahkan nomor_sip yang diperlukan
+    { id: "nama_penanggung_jawab", label: "Nama Penanggung Jawab" },
+    { id: "nip_nrp", label: "NIP/NRP" },
+    { id: "pangkat_golongan", label: "Pangkat/Golongan" },
+    { id: "jabatan", label: "Jabatan" },
+    { id: "unit_organisasi", label: "Unit Organisasi" },
+    { id: "alamat_rumah", label: "Alamat Rumah" }, // DITAMBAHKAN
+    { id: "no_ktp", label: "No. KTP" }, // DITAMBAHKAN
+    { id: "no_hp", label: "Nomor HP" },
+    { id: "tanggal_kembali", label: "Tanggal Kembali" },
+    { id: "kondisi_kembali", label: "Kondisi Kendaraan" },
+    { id: "nomor_sip", label: "Nomor SIP/Surat Penanggung Jawab" },
+    { id: "pihak_kedua_nama", label: "Nama Pihak Kedua" },
+    { id: "pihak_kedua_nip", label: "NIP Pihak Kedua" },
+    { id: "pihak_kedua_jabatan", label: "Jabatan Pihak Kedua" },
   ];
 
   for (const field of requiredFields) {
-    const input = e.target.querySelector(`[name="${field}"]`);
-    if (!input?.value) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: `Field ${field.replace(/_/g, " ")} harus diisi`,
-        confirmButtonText: "Tutup",
-        confirmButtonColor: "#dc3545",
-      });
-      return;
+    const input = document.getElementById(field.id);
+    if (!input?.value || input.value.trim() === "") {
+      showCustomError(field.id, `${field.label} harus diisi`);
+      errors.push(`${field.label} harus diisi`);
+      isValid = false;
     }
   }
 
+  // 5. Validasi keterlambatan khusus
+  const isLateReturn =
+    document.getElementById("is_late_return")?.value === "true";
+  if (isLateReturn) {
+    const alasanKeterlambatan = document.getElementById(
+      "alasan_keterlambatan"
+    )?.value;
+    if (!alasanKeterlambatan || !alasanKeterlambatan.trim()) {
+      showCustomError(
+        "alasan_keterlambatan",
+        "Alasan keterlambatan wajib diisi untuk pengembalian yang terlambat"
+      );
+      errors.push("Alasan keterlambatan wajib diisi");
+      isValid = false;
+    }
+  }
+
+  // Jika ada error, tampilkan summary dan fokus ke field pertama yang error
+  if (!isValid) {
+    showValidationSummary(errors);
+    focusFirstError();
+    return false;
+  }
+
+  // Jika semua validasi passed, lanjutkan submit
+  submitForm(form);
+}
+
+function clearValidationErrors() {
+  // Clear all custom error displays
+  document.querySelectorAll(".is-invalid").forEach((el) => {
+    el.classList.remove("is-invalid");
+  });
+
+  document.querySelectorAll(".invalid-feedback.show").forEach((el) => {
+    el.classList.remove("show");
+  });
+
+  // Clear custom error containers
+  const photoError = document.getElementById("photo-error");
+  if (photoError) photoError.style.display = "none";
+
+  const ratingError = document.getElementById("rating-error");
+  if (ratingError) ratingError.style.display = "none";
+
+  // Clear visual indicators
+  const photoSection = document.querySelector(
+    ".form-group:has(#btn-camera-capture)"
+  );
+  if (photoSection) {
+    photoSection.classList.remove("has-error");
+    photoSection.style.border = "";
+    photoSection.style.borderRadius = "";
+    photoSection.style.padding = "";
+  }
+
+  const ratingContainer = document.querySelector(".rating-container");
+  if (ratingContainer) {
+    ratingContainer.style.border = "";
+    ratingContainer.style.borderRadius = "";
+    ratingContainer.style.padding = "";
+  }
+}
+
+function showCustomError(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  const feedback = field?.parentNode.querySelector(".invalid-feedback");
+
+  if (field) {
+    field.classList.add("is-invalid");
+    if (feedback) {
+      feedback.textContent = message;
+      feedback.style.display = "block";
+    }
+  }
+}
+
+function showPhotoError(message) {
+  const photoError = document.getElementById("photo-error");
+  if (photoError) {
+    photoError.textContent = message;
+    photoError.style.display = "block";
+    photoError.classList.add("show");
+  }
+
+  // Add visual indication to photo section
+  const photoSection = document.querySelector(
+    ".form-group:has(#btn-camera-capture)"
+  );
+  if (photoSection) {
+    photoSection.classList.add("has-error");
+    photoSection.style.border = "1px solid #dc3545";
+    photoSection.style.borderRadius = "5px";
+    photoSection.style.padding = "10px";
+  }
+}
+
+function showRatingError(message) {
+  const ratingError = document.getElementById("rating-error");
+  if (ratingError) {
+    ratingError.textContent = message;
+    ratingError.style.display = "block";
+    ratingError.classList.add("show");
+  }
+
+  // Add visual indication to rating section
+  const ratingContainer = document.querySelector(".rating-container");
+  if (ratingContainer) {
+    ratingContainer.style.border = "1px solid #dc3545";
+    ratingContainer.style.borderRadius = "5px";
+    ratingContainer.style.padding = "10px";
+  }
+}
+
+function showValidationSummary(errors) {
+  Swal.fire({
+    icon: "error",
+    title: "Form Tidak Lengkap",
+    html: `
+      <p>Mohon lengkapi field-field berikut:</p>
+      <ul style="text-align: left; padding-left: 20px;">
+        ${errors.map((error) => `<li>${error}</li>`).join("")}
+      </ul>
+    `,
+    confirmButtonText: "OK",
+    confirmButtonColor: "#dc3545",
+    customClass: {
+      popup: "swal-wide",
+    },
+  });
+}
+
+function focusFirstError() {
+  const firstError = document.querySelector(".is-invalid, .has-error");
+  if (firstError) {
+    firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (firstError.focus) firstError.focus();
+  }
+}
+
+function submitForm(form) {
   Swal.fire({
     title: "Mohon Tunggu",
-    text: "Sedang memproses data...",
+    text: "Sedang memproses data pengembalian...",
     allowOutsideClick: false,
     showConfirmButton: false,
     didOpen: () => {
@@ -420,17 +559,9 @@ function handlePengembalianSubmit(e) {
     },
   });
 
-  const formData = new FormData(e.target);
+  const formData = new FormData(form);
 
-  // Log form data for debugging
-  console.log("Submitting form data:", {
-    kendaraanId: kendaraanId,
-    photoData: photoData ? "Photo data exists" : "No photo data",
-    rating: rating.value, // Tambahkan log nilai rating
-    formValues: Object.fromEntries(formData),
-  });
-
-  fetch(e.target.action, {
+  fetch(form.action, {
     method: "POST",
     body: formData,
   })
@@ -457,7 +588,8 @@ function handlePengembalianSubmit(e) {
           confirmButtonText: "OK",
           confirmButtonColor: "#198754",
         }).then(() => {
-          e.target.reset();
+          form.reset();
+          clearValidationErrors();
           const modal = bootstrap.Modal.getInstance(
             document.getElementById("modalPengembalian")
           );
@@ -478,6 +610,123 @@ function handlePengembalianSubmit(e) {
         confirmButtonColor: "#dc3545",
       });
     });
+}
+
+// Event listeners untuk real-time validation
+document.addEventListener("DOMContentLoaded", function () {
+  // Real-time validation untuk rating
+  document
+    .querySelectorAll('input[name="rating_pengguna"]')
+    .forEach((radio) => {
+      radio.addEventListener("change", function () {
+        if (this.checked) {
+          const ratingError = document.getElementById("rating-error");
+          const ratingContainer = document.querySelector(".rating-container");
+
+          if (ratingError) ratingError.style.display = "none";
+          if (ratingContainer) {
+            ratingContainer.style.border = "";
+            ratingContainer.style.borderRadius = "";
+            ratingContainer.style.padding = "";
+          }
+
+          // Update rating display
+          const ratingText = document.querySelector(".rating-text");
+          if (ratingText) ratingText.textContent = `${this.value}/5`;
+        }
+      });
+    });
+
+  // Real-time validation untuk foto
+  document
+    .getElementById("btn-use-photo")
+    ?.addEventListener("click", function () {
+      const photoError = document.getElementById("photo-error");
+      const photoSection = document.querySelector(
+        ".form-group:has(#btn-camera-capture)"
+      );
+
+      if (photoError) photoError.style.display = "none";
+      if (photoSection) {
+        photoSection.classList.remove("has-error");
+        photoSection.style.border = "";
+        photoSection.style.borderRadius = "";
+        photoSection.style.padding = "";
+      }
+    });
+
+  // Real-time validation untuk input fields - TERMASUK alamat_rumah dan no_ktp
+  document
+    .querySelectorAll("input[required], select[required], textarea[required]")
+    .forEach((field) => {
+      field.addEventListener("blur", function () {
+        if (this.value.trim()) {
+          this.classList.remove("is-invalid");
+          const feedback = this.parentNode.querySelector(".invalid-feedback");
+          if (feedback) feedback.style.display = "none";
+        }
+      });
+
+      // Khusus untuk field yang di-load, hapus error saat data ter-populate
+      field.addEventListener("input", function () {
+        if (this.value.trim()) {
+          this.classList.remove("is-invalid");
+          const feedback = this.parentNode.querySelector(".invalid-feedback");
+          if (feedback) feedback.style.display = "none";
+        }
+      });
+    });
+});
+// Function untuk mengupdate field kendaraan display saat data dimuat
+function updateKendaraanDisplay(kendaraanData) {
+  const displayField = document.getElementById("kendaraan_display");
+  const hiddenSelect = document.getElementById("kendaraan_id_kembali");
+
+  if (displayField && kendaraanData) {
+    // Format: "Merk - No Polisi"
+    displayField.value = `${kendaraanData.merk} - ${kendaraanData.no_polisi}`;
+
+    // Update hidden select value
+    if (hiddenSelect) {
+      hiddenSelect.value = kendaraanData.id;
+    }
+  }
+}
+
+// Function untuk mengupdate field yang di-populate dari data peminjaman
+function populateFormWithData(data) {
+  // Populate semua field termasuk alamat_rumah dan no_ktp
+  const fieldMappings = {
+    nama_penanggung_jawab: data.nama_penanggung_jawab,
+    nip_nrp: data.nip_nrp,
+    pangkat_golongan: data.pangkat_golongan,
+    jabatan: data.jabatan,
+    unit_organisasi: data.unit_organisasi,
+    alamat_rumah: data.alamat_rumah, // DITAMBAHKAN
+    no_ktp: data.no_ktp, // DITAMBAHKAN
+    no_hp: data.no_hp,
+    tanggal_pinjam: data.tanggal_pinjam,
+    tanggal_kembali: data.tanggal_kembali,
+    pengemudi: data.pengemudi,
+  };
+
+  // Update semua field
+  Object.keys(fieldMappings).forEach((fieldId) => {
+    const field = document.getElementById(fieldId);
+    if (field && fieldMappings[fieldId]) {
+      field.value = fieldMappings[fieldId];
+
+      // Clear any existing validation errors untuk field yang ter-populate
+      field.classList.remove("is-invalid");
+      const feedback = field.parentNode.querySelector(".invalid-feedback");
+      if (feedback) feedback.style.display = "none";
+    }
+  });
+
+  // Update kendaraan display
+  if (data.kendaraan) {
+    updateKendaraanDisplay(data.kendaraan);
+  }
 }
 
 function showSetujuModal(pinjamId) {

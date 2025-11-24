@@ -598,17 +598,17 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="booking_nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
+                                    <label for="booking_nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab<span class="text-danger"> *</span></label>
                                     <input type="text" class="form-control" id="booking_nama_penanggung_jawab" name="nama_penanggung_jawab" required>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="booking_nomor_hp_penanggung_jawab" class="form-label">Nomor HP Penanggung Jawab</label>
+                                    <label for="booking_nomor_hp_penanggung_jawab" class="form-label">Nomor HP Penanggung Jawab<span class="text-danger"> *</span></label>
                                     <input type="tel" class="form-control" id="booking_nomor_hp_penanggung_jawab" name="nomor_hp_penanggung_jawab" required>
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="booking_unit_organisasi">Unit Organisasi</label>
+                                    <label for="booking_unit_organisasi">Unit Organisasi<span class="text-danger"> *</span></label>
                                     <select class="form-control" name="unit_organisasi" required>
                                         <option value="" class="text-muted" disabled selected>Pilih</option>
                                         <option value="Setjen">Sekretariat Jenderal</option>
@@ -626,7 +626,7 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="booking_tanggal" class="form-label">Tanggal Peminjaman</label>
+                                    <label for="booking_tanggal" class="form-label">Tanggal Peminjaman<span class="text-danger"> *</span></label>
                                     <input type="date" class="form-control" id="booking_tanggal" name="tanggal" required
                                            min="${
                                              new Date()
@@ -636,14 +636,14 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="booking_jumlah_peserta" class="form-label">Jumlah Peserta</label>
+                                    <label for="booking_jumlah_peserta" class="form-label">Jumlah Peserta<span class="text-danger"> *</span></label>
                                     <input type="number" class="form-control" id="booking_jumlah_peserta" name="jumlah_peserta" 
                                            required min="1" max="10">
                                     <div class="form-text">Maksimal 10 orang</div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    <label for="booking_keperluan" class="form-label">Keperluan</label>
+                                    <label for="booking_keperluan" class="form-label">Keperluan<span class="text-danger"> *</span></label>
                                     <textarea class="form-control" id="booking_keperluan" name="keperluan" 
                                               rows="3" required></textarea>
                                 </div>
