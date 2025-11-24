@@ -1662,6 +1662,7 @@ public function getUserLatestBookingData()
     try {
         $userId = user_id();
         if (!$userId) {
+            log_message('error', 'getUserLatestBookingData: User not authenticated');
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'User not authenticated'
@@ -1672,15 +1673,21 @@ public function getUserLatestBookingData()
         $ruanganId = $this->request->getGet('ruangan_id');
         
         if (!$ruanganId) {
+            log_message('error', 'getUserLatestBookingData: No ruangan_id provided');
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Ruangan ID is required'
             ]);
         }
 
+        // Convert to integer untuk memastikan type yang tepat
+        $ruanganId = intval($ruanganId);
+        
+        log_message('debug', "getUserLatestBookingData: Looking for user {$userId} in ruangan {$ruanganId}");
+
         $db = \Config\Database::connect();
         
-        // Query dengan filter ruangan_id yang spesifik + INCLUDE TANGGAL
+        // Query dengan filter ruangan_id yang SANGAT SPESIFIK
         $latestBooking = $db->table('booking_ruangan')
             ->select('nama_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
             ->where('user_id', $userId)
@@ -1691,26 +1698,33 @@ public function getUserLatestBookingData()
             ->get()
             ->getRowArray();
 
+        log_message('debug', "getUserLatestBookingData: Booking query result: " . json_encode($latestBooking));
+
         if ($latestBooking) {
-            log_message('debug', "Auto-fill: Found booking for user {$userId} at ruangan {$ruanganId}");
-            
-            return $this->response->setJSON([
-                'success' => true,
-                'data' => [
-                    'nama_penanggung_jawab' => $latestBooking['nama_penanggung_jawab'],
-                    'unit_organisasi' => $latestBooking['unit_organisasi'],
-                    'keperluan' => $latestBooking['keperluan'],
-                    'jumlah_peserta' => $latestBooking['jumlah_peserta'],
-                    'waktu_mulai' => $latestBooking['waktu_mulai'],
-                    'waktu_selesai' => $latestBooking['waktu_selesai'],
-                    'tanggal' => $latestBooking['tanggal'], // TAMBAHAN BARU!
-                    'source_type' => 'booking',
-                    'ruangan_id' => $latestBooking['ruangan_id'],
-                    'note' => "Data diambil dari booking terakhir di ruangan ini",
-                    'created_at' => $latestBooking['created_at']
-                ],
-                'message' => 'Data booking untuk ruangan ini ditemukan'
-            ]);
+            // DOUBLE CHECK ruangan_id untuk memastikan
+            if (intval($latestBooking['ruangan_id']) === $ruanganId) {
+                log_message('info', "Auto-fill SUCCESS: Found booking for user {$userId} at ruangan {$ruanganId}");
+                
+                return $this->response->setJSON([
+                    'success' => true,
+                    'data' => [
+                        'nama_penanggung_jawab' => $latestBooking['nama_penanggung_jawab'],
+                        'unit_organisasi' => $latestBooking['unit_organisasi'],
+                        'keperluan' => $latestBooking['keperluan'],
+                        'jumlah_peserta' => $latestBooking['jumlah_peserta'],
+                        'waktu_mulai' => $latestBooking['waktu_mulai'],
+                        'waktu_selesai' => $latestBooking['waktu_selesai'],
+                        'tanggal' => $latestBooking['tanggal'],
+                        'source_type' => 'booking',
+                        'ruangan_id' => $latestBooking['ruangan_id'],
+                        'note' => "Data diambil dari booking terakhir di ruangan {$ruanganId}",
+                        'created_at' => $latestBooking['created_at']
+                    ],
+                    'message' => 'Data booking untuk ruangan ini ditemukan'
+                ]);
+            } else {
+                log_message('error', "Auto-fill MISMATCH: Expected ruangan {$ruanganId}, got ruangan {$latestBooking['ruangan_id']}");
+            }
         }
 
         // Fallback: Cari di tabel pinjam_ruangan untuk ruangan yang sama
@@ -1725,36 +1739,43 @@ public function getUserLatestBookingData()
             ->get()
             ->getRowArray();
 
+        log_message('debug', "getUserLatestBookingData: Pinjam query result: " . json_encode($latestPinjam));
+
         if ($latestPinjam) {
-            log_message('debug', "Auto-fill: Found pinjam for user {$userId} at ruangan {$ruanganId}");
-            
-            return $this->response->setJSON([
-                'success' => true,
-                'data' => [
-                    'nama_penanggung_jawab' => $latestPinjam['nama_penanggung_jawab'],
-                    'unit_organisasi' => $latestPinjam['unit_organisasi'],
-                    'keperluan' => $latestPinjam['keperluan'],
-                    'jumlah_peserta' => $latestPinjam['jumlah_peserta'],
-                    'waktu_mulai' => $latestPinjam['waktu_mulai'],
-                    'waktu_selesai' => $latestPinjam['waktu_selesai'],
-                    'tanggal' => $latestPinjam['tanggal'], // TAMBAHAN BARU!
-                    'source_type' => 'confirm',
-                    'ruangan_id' => $latestPinjam['ruangan_id'],
-                    'note' => "Data diambil dari confirm request terakhir di ruangan ini",
-                    'created_at' => $latestPinjam['created_at']
-                ],
-                'message' => 'Data confirm request untuk ruangan ini ditemukan'
-            ]);
+            // DOUBLE CHECK ruangan_id untuk memastikan
+            if (intval($latestPinjam['ruangan_id']) === $ruanganId) {
+                log_message('info', "Auto-fill SUCCESS: Found pinjam for user {$userId} at ruangan {$ruanganId}");
+                
+                return $this->response->setJSON([
+                    'success' => true,
+                    'data' => [
+                        'nama_penanggung_jawab' => $latestPinjam['nama_penanggung_jawab'],
+                        'unit_organisasi' => $latestPinjam['unit_organisasi'],
+                        'keperluan' => $latestPinjam['keperluan'],
+                        'jumlah_peserta' => $latestPinjam['jumlah_peserta'],
+                        'waktu_mulai' => $latestPinjam['waktu_mulai'],
+                        'waktu_selesai' => $latestPinjam['waktu_selesai'],
+                        'tanggal' => $latestPinjam['tanggal'],
+                        'source_type' => 'confirm',
+                        'ruangan_id' => $latestPinjam['ruangan_id'],
+                        'note' => "Data diambil dari confirm request terakhir di ruangan {$ruanganId}",
+                        'created_at' => $latestPinjam['created_at']
+                    ],
+                    'message' => 'Data confirm request untuk ruangan ini ditemukan'
+                ]);
+            } else {
+                log_message('error', "Auto-fill MISMATCH: Expected ruangan {$ruanganId}, got ruangan {$latestPinjam['ruangan_id']}");
+            }
         }
 
-        log_message('debug', "Auto-fill: No previous data found for user {$userId} at ruangan {$ruanganId}");
+        log_message('info', "Auto-fill NOT FOUND: No previous data for user {$userId} at ruangan {$ruanganId}");
         
         return $this->response->setJSON([
             'success' => false,
             'message' => "No previous booking data found for this room",
             'ruangan_id' => $ruanganId,
             'user_id' => $userId,
-            'note' => "Tidak ada data booking/confirm sebelumnya untuk ruangan ini"
+            'note' => "Tidak ada data booking/confirm sebelumnya untuk ruangan {$ruanganId}"
         ]);
 
     } catch (\Exception $e) {
@@ -1764,12 +1785,11 @@ public function getUserLatestBookingData()
             'message' => 'Server error: ' . $e->getMessage(),
             'error_details' => [
                 'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'line' => $e->getLine()
             ]
         ]);
     }
-}   
+}
 public function getPinjamModal($ruanganId)
 {
     if (!logged_in()) {
