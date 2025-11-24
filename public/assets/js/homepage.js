@@ -1383,6 +1383,7 @@ $(document).ready(function () {
         // Cek apakah semua responses success
         let allSuccess = true;
         let errorMessage = "";
+        let successDocuments = []; // TAMBAHAN: Track dokumen yang berhasil
 
         for (const response of responses) {
           if (!response.success) {
@@ -1391,15 +1392,44 @@ $(document).ready(function () {
           }
         }
 
+        // TAMBAHAN: Tentukan jenis dokumen yang berhasil dibuat
         if (allSuccess) {
+          if (buatSuratPenanggungJawab) {
+            successDocuments.push("Penomoran Surat Penanggung Jawab");
+          }
+          if (buatSuratJalan) {
+            successDocuments.push("Surat Jalan");
+          }
+        }
+
+        if (allSuccess) {
+          // PERBAIKAN: Buat pesan sukses yang spesifik
+          let successMessage = "";
+          if (successDocuments.length === 1) {
+            if (successDocuments[0] === "Penomoran Surat Penanggung Jawab") {
+              successMessage = "Penomoran Berhasil";
+            } else {
+              successMessage = successDocuments[0] + " berhasil dibuat";
+            }
+          } else if (successDocuments.length > 1) {
+            successMessage =
+              successDocuments.join(" dan ") + " berhasil dibuat";
+          } else {
+            successMessage = "Dokumen berhasil dibuat";
+          }
+
           Swal.fire({
             icon: "success",
             title: "Berhasil!",
-            text: "Dokumen berhasil dibuat",
+            text: successMessage, // GUNAKAN PESAN SPESIFIK
             confirmButtonText: "OK",
             confirmButtonColor: "#198754",
           }).then(() => {
-            location.reload();
+            // PERBAIKAN: Tutup modal dulu, baru reload
+            $("#modalSetuju").modal("hide");
+            setTimeout(() => {
+              location.reload();
+            }, 300);
           });
         } else {
           Swal.fire({
@@ -1412,15 +1442,21 @@ $(document).ready(function () {
         }
       })
       .catch((error) => {
+        console.error("Error dalam Promise.all:", error); // TAMBAHAN: Console log untuk debugging
         Swal.fire({
           icon: "error",
           title: "Gagal!",
-          text: "Terjadi kesalahan saat memproses data",
+          text:
+            "Terjadi kesalahan saat memproses data: " +
+            (error.message || "Unknown error"),
           confirmButtonText: "Tutup",
           confirmButtonColor: "#dc3545",
         });
       });
   });
+
+  // Toggle required attribute berdasarkan checkbox
+  // DI AKHIR $(document).ready(function () { ... })
 
   // Toggle required attribute berdasarkan checkbox
   $("#buatSuratPenanggungJawab").on("change", function () {
@@ -1432,8 +1468,73 @@ $(document).ready(function () {
     const isChecked = $(this).is(":checked");
     $(".surat-jalan-field").prop("required", isChecked);
   });
-});
 
+  // TAMBAHKAN INI - EVENT HANDLER UNTUK FORM EDIT SURAT YANG HILANG!
+  $("#formEditSurat").on("submit", function (e) {
+    e.preventDefault(); // CRUCIAL: Prevent default form submission
+
+    // Tampilkan loading
+    Swal.fire({
+      title: "Mohon Tunggu",
+      text: "Sedang memproses penomoran surat...",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Ambil data form
+    const formData = new FormData(this);
+
+    // Kirim AJAX request
+    $.ajax({
+      url: $(this).attr("action"),
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Berhasil!",
+            text: "Penomoran Berhasil", // PESAN SPESIFIK YANG DIINGINKAN
+            confirmButtonText: "OK",
+            confirmButtonColor: "#198754",
+          }).then(() => {
+            // Tutup modal
+            $("#modalEditSurat").modal("hide");
+
+            // Reload halaman setelah modal tertutup
+            setTimeout(() => {
+              location.reload();
+            }, 300);
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal!",
+            text:
+              response.error || "Terjadi kesalahan saat memproses penomoran",
+            confirmButtonText: "Tutup",
+            confirmButtonColor: "#dc3545",
+          });
+        }
+      },
+      error: function (xhr, status, error) {
+        Swal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Terjadi kesalahan: " + error,
+          confirmButtonText: "Tutup",
+          confirmButtonColor: "#dc3545",
+        });
+      },
+    });
+  });
+}); // AKHIR $(document).ready
 // Function untuk menampilkan modal setuju dengan dual tab dan checkbox
 function showSetujuModal(pinjamId) {
   // Reset form

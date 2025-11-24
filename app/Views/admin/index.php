@@ -948,7 +948,7 @@
                 <h5 class="modal-title" id="modalEditSuratLabel">Edit Surat Permohonan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formEditSurat" action="<?= base_url('/admin/AsetKendaraan/updateSurat'); ?>" method="post">
+            <form id="formEditSurat" action="<?= base_url('AsetKendaraan/updateSurat'); ?>" method="post">
                 <div class="modal-body">
                     <input type="hidden" id="pinjam_id_surat" name="pinjam_id">
 
