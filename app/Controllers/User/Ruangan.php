@@ -1274,84 +1274,75 @@ public function checkTimeConflict($ruanganId, $tanggal, $waktuMulai, $waktuSeles
      * Endpoint: /user/ruangan/checkAvailability
      */
     public function checkAvailability()
-    {
-        try {
-            $ruanganId = $this->request->getGet('ruangan_id');
-            $tanggal = $this->request->getGet('tanggal');
-            $waktuMulai = $this->request->getGet('waktu_mulai');
-            $waktuSelesai = $this->request->getGet('waktu_selesai');
-            $excludeId = $this->request->getGet('exclude_id'); // untuk edit booking
-            
-            // Validasi input
-            if (!$ruanganId || !$tanggal || !$waktuMulai || !$waktuSelesai) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => 'Semua parameter harus diisi'
-                ]);
-            }
-            
-            $pinjamModel = new PinjamRuanganModel();
-            
-            // Cek konflik dengan booking yang ada
-            $builder = $pinjamModel->builder();
-            $builder->where('ruangan_id', $ruanganId)
-                    ->where('tanggal', $tanggal)
-                    ->whereIn('status', ['disetujui', 'pending'])
-                    ->where('deleted_at', null)
-                    ->groupStart()
-                        // Case 1: Waktu mulai baru di antara booking yang ada
-                        ->where('waktu_mulai <=', $waktuMulai)
-                        ->where('waktu_selesai >', $waktuMulai)
-                    ->groupEnd()
-                    ->orGroupStart()
-                        // Case 2: Waktu selesai baru di antara booking yang ada
-                        ->where('waktu_mulai <', $waktuSelesai)
-                        ->where('waktu_selesai >=', $waktuSelesai)
-                        ->where('ruangan_id', $ruanganId)
-                        ->where('tanggal', $tanggal)
-                        ->whereIn('status', ['disetujui', 'pending'])
-                        ->where('deleted_at', null)
-                    ->groupEnd()
-                    ->orGroupStart()
-                        // Case 3: Booking baru menutupi booking yang ada
-                        ->where('waktu_mulai >=', $waktuMulai)
-                        ->where('waktu_selesai <=', $waktuSelesai)
-                        ->where('ruangan_id', $ruanganId)
-                        ->where('tanggal', $tanggal)
-                        ->whereIn('status', ['disetujui', 'pending'])
-                        ->where('deleted_at', null)
-                    ->groupEnd();
-            
-            // Exclude booking tertentu jika sedang edit
-            if ($excludeId) {
-                $builder->where('id !=', $excludeId);
-            }
-            
-            $conflicts = $builder->get()->getResultArray();
-            
-            $available = empty($conflicts);
-            
-            $response = [
-                'success' => true,
-                'available' => $available,
-                'message' => $available ? 'Ruangan tersedia' : 'Ruangan tidak tersedia pada waktu tersebut'
-            ];
-            
-            if (!$available) {
-                $response['conflicts'] = $conflicts;
-            }
-            
-            return $this->response->setJSON($response);
-            
-        } catch (\Exception $e) {
-            log_message('error', 'Error checkAvailability: ' . $e->getMessage());
+{
+    try {
+        $ruanganId = $this->request->getGet('ruangan_id');
+        $tanggal = $this->request->getGet('tanggal');
+        $waktuMulai = $this->request->getGet('waktu_mulai');
+        $waktuSelesai = $this->request->getGet('waktu_selesai');
+        $excludeId = $this->request->getGet('exclude_id'); // untuk edit
+
+        if (!$ruanganId || !$tanggal || !$waktuMulai || !$waktuSelesai) {
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengecek ketersediaan',
-                'error' => $e->getMessage()
+                'message' => 'Parameter tidak lengkap'
             ]);
         }
+
+        // PERBAIKAN: Validasi format waktu
+        if (!$this->isValidTimeFormat($waktuMulai) || !$this->isValidTimeFormat($waktuSelesai)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Format waktu tidak valid'
+            ]);
+        }
+
+        // PERBAIKAN: Validasi waktu selesai harus lebih besar dari waktu mulai
+        if (strtotime($waktuSelesai) <= strtotime($waktuMulai)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Waktu selesai harus lebih besar dari waktu mulai'
+            ]);
+        }
+
+        // Model untuk booking langsung
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        
+        // Model untuk confirm/pinjam
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+
+        // PERBAIKAN: Cek konflik dengan booking langsung
+        $bookingConflicts = $this->checkBookingConflicts($bookingModel, $ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $excludeId, 'booking');
+
+        // PERBAIKAN: Cek konflik dengan pinjam/confirm yang disetujui
+        $pinjamConflicts = $this->checkBookingConflicts($pinjamModel, $ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $excludeId, 'pinjam');
+
+        $allConflicts = array_merge($bookingConflicts, $pinjamConflicts);
+        $available = empty($allConflicts);
+
+        $response = [
+            'success' => true,
+            'available' => $available,
+            'message' => $available ? 'Ruangan tersedia' : 'Ruangan tidak tersedia pada waktu tersebut'
+        ];
+
+        if (!$available) {
+            $response['conflicts'] = $allConflicts;
+            $response['conflict_details'] = $this->formatConflictDetails($allConflicts);
+        }
+
+        return $this->response->setJSON($response);
+
+    } catch (\Exception $e) {
+        log_message('error', 'Error checkAvailability: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat mengecek ketersediaan',
+            'error' => $e->getMessage()
+        ]);
     }
+}
+
 // public function getBookingSaya()
 // {
 //     if (!logged_in()) {
@@ -1898,36 +1889,78 @@ public function cekKetersediaan()
  */
 public function ubahJamSetujui()
 {
+    // Debug log
+    log_message('info', 'ubahJamSetujui called');
+    
     try {
-        $pinjamId = $this->request->getPost('pinjam_id');
-        $waktuMulaiBaru = $this->request->getPost('waktu_mulai');
-        $waktuSelesaiBaru = $this->request->getPost('waktu_selesai');
-        $alasanUbah = $this->request->getPost('alasan_ubah');
+        // PERBAIKAN: Get data dari POST dan JSON
+        $input = $this->request->getJSON(true) ?: [];
+        $postData = $this->request->getPost();
+        
+        // Prioritaskan POST data untuk form submission
+        $pinjamId = $postData['pinjam_id'] ?? $input['pinjam_id'] ?? null;
+        $waktuMulaiBaru = $postData['waktu_mulai'] ?? $input['waktu_mulai'] ?? null;
+        $waktuSelesaiBaru = $postData['waktu_selesai'] ?? $input['waktu_selesai'] ?? null;
+        $alasanUbah = $postData['alasan'] ?? $input['alasan'] ?? null;
 
+        log_message('info', 'Received data: ' . json_encode([
+            'pinjam_id' => $pinjamId,
+            'waktu_mulai' => $waktuMulaiBaru,
+            'waktu_selesai' => $waktuSelesaiBaru,
+            'alasan' => $alasanUbah
+        ]));
+
+        // Validasi input
         if (!$pinjamId || !$waktuMulaiBaru || !$waktuSelesaiBaru || !$alasanUbah) {
-            throw new \Exception('Data tidak lengkap');
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data tidak lengkap: ' . json_encode([
+                    'pinjam_id' => !!$pinjamId,
+                    'waktu_mulai' => !!$waktuMulaiBaru,
+                    'waktu_selesai' => !!$waktuSelesaiBaru,
+                    'alasan' => !!$alasanUbah
+                ])
+            ]);
         }
 
         $pinjamModel = new PinjamRuanganModel();
         $ruanganModel = new RuanganModel();
         
-        // Get current data
-        $peminjaman = $pinjamModel->select('pinjam_ruangan.*, ruangan.lokasi')
+        // PERBAIKAN: Get current data dengan join
+        $peminjaman = $pinjamModel->select('pinjam_ruangan.*, ruangan.lokasi, ruangan.nama_ruangan')
                                   ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
-                                  ->find($pinjamId);
+                                  ->where('pinjam_ruangan.id', $pinjamId)
+                                  ->first();
 
         if (!$peminjaman) {
-            throw new \Exception('Data peminjaman tidak ditemukan');
+            log_message('error', 'Peminjaman not found: ' . $pinjamId);
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Data peminjaman tidak ditemukan'
+            ]);
         }
 
-        // Check admin access
+        log_message('info', 'Current peminjaman: ' . json_encode($peminjaman));
+
+        // PERBAIKAN: Check admin access
         $gedungRole = $this->getGedungRole($peminjaman['lokasi']);
         if (!in_groups('admin') && !in_groups($gedungRole)) {
-            throw new \Exception('Anda tidak memiliki akses untuk memverifikasi ruangan ini');
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk memverifikasi ruangan ini'
+            ]);
         }
 
-        // Final conflict check
-        $konflik = $this->checkTimeConflict(
+        // PERBAIKAN: Normalisasi format waktu (HH:MM)
+        if (strlen($waktuMulaiBaru) > 5) {
+            $waktuMulaiBaru = substr($waktuMulaiBaru, 0, 5);
+        }
+        if (strlen($waktuSelesaiBaru) > 5) {
+            $waktuSelesaiBaru = substr($waktuSelesaiBaru, 0, 5);
+        }
+
+        // PERBAIKAN: Final conflict check dengan exclude current booking
+        $konflik = $this->checkTimeConflictForUpdate(
             $peminjaman['ruangan_id'], 
             $peminjaman['tanggal'], 
             $waktuMulaiBaru, 
@@ -1936,59 +1969,133 @@ public function ubahJamSetujui()
         );
 
         if ($konflik) {
-            throw new \Exception('Waktu bentrok dengan peminjaman lain');
+            log_message('error', 'Time conflict detected: ' . json_encode($konflik));
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Waktu bentrok dengan peminjaman lain: ' . $konflik['nama_penanggung_jawab']
+            ]);
         }
 
+        // PERBAIKAN: Start transaction
         $db = \Config\Database::connect();
         $db->transStart();
 
         try {
-            // Update peminjaman - LANGSUNG UBAH KOLOM EXISTING
+            // PERBAIKAN: Update dengan query builder untuk debugging
             $updateData = [
-                'id' => $pinjamId,
-                'waktu_mulai' => $waktuMulaiBaru,     // Update langsung
-                'waktu_selesai' => $waktuSelesaiBaru, // Update langsung
+                'waktu_mulai' => $waktuMulaiBaru,
+                'waktu_selesai' => $waktuSelesaiBaru,
                 'status' => 'disetujui',
-                'keterangan_status' => "Jam diubah oleh admin. Alasan: " . $alasanUbah, // Simpan alasan
-                'verified_at' => date('Y-m-d H:i:s'),
-                'verified_by' => user_id(),
+                'keterangan_status' => "Jam diubah oleh admin. Alasan: " . $alasanUbah,
                 'updated_at' => date('Y-m-d H:i:s')
             ];
 
-            if (!$pinjamModel->save($updateData)) {
-                throw new \Exception('Gagal mengubah jam peminjaman');
+            log_message('info', 'Updating with data: ' . json_encode($updateData));
+            
+            $result = $pinjamModel->update($pinjamId, $updateData);
+
+            if (!$result) {
+                log_message('error', 'Update failed. Model errors: ' . json_encode($pinjamModel->errors()));
+                throw new \Exception('Gagal mengupdate data: ' . json_encode($pinjamModel->errors()));
             }
 
-            // Update status ruangan
-            $ruanganUpdate = [
-                'id' => $peminjaman['ruangan_id'],
-                'status' => 'Dipinjam',
-                'updated_at' => date('Y-m-d H:i:s')
-            ];
-
-            if (!$ruanganModel->save($ruanganUpdate)) {
-                throw new \Exception('Gagal update status ruangan');
-            }
+            // PERBAIKAN: Verify update dengan fresh query
+            $updatedData = $pinjamModel->find($pinjamId);
+            log_message('info', 'After update: ' . json_encode($updatedData));
 
             $db->transComplete();
 
-            if ($db->transStatus() === false) {
-                throw new \Exception('Transaksi database gagal');
+            if ($db->transStatus() === FALSE) {
+                log_message('error', 'Transaction failed');
+                throw new \Exception('Transaction failed');
             }
 
-            // TODO: Send email notification to user about time change
-            // $this->sendNotifikasiUbahJam($peminjaman, $waktuMulaiBaru, $waktuSelesaiBaru, $alasanUbah);
-
+            // PERBAIKAN: Success response dengan data
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Peminjaman berhasil disetujui dengan jam yang diubah'
+                'message' => 'Jam berhasil diubah dan peminjaman disetujui',
+                'data' => [
+                    'id' => $pinjamId,
+                    'waktu_lama' => $peminjaman['waktu_mulai'] . ' - ' . $peminjaman['waktu_selesai'],
+                    'waktu_baru' => $waktuMulaiBaru . ' - ' . $waktuSelesaiBaru,
+                    'ruangan' => $peminjaman['nama_ruangan'],
+                    'updated_data' => $updatedData
+                ]
             ]);
 
         } catch (\Exception $e) {
+            log_message('error', 'Transaction error: ' . $e->getMessage());
             $db->transRollback();
             throw $e;
         }
 
+    } catch (\Exception $e) {
+        log_message('error', 'ubahJamSetujui error: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ]);
+    }
+}
+
+private function checkTimeConflictForUpdate($ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $excludePinjamId = null)
+{
+    log_message('info', "Checking time conflict for update: ruangan={$ruanganId}, tanggal={$tanggal}, waktu={$waktuMulai}-{$waktuSelesai}, exclude={$excludePinjamId}");
+    
+    $pinjamModel = new PinjamRuanganModel();
+    
+    // PERBAIKAN: Query yang lebih eksplisit dengan debug
+    $query = $pinjamModel->select('id, nama_penanggung_jawab, waktu_mulai, waktu_selesai, status')
+                        ->where('ruangan_id', $ruanganId)
+                        ->where('tanggal', $tanggal)
+                        ->whereIn('status', ['pending', 'disetujui'])
+                        ->where('deleted_at', null);
+    
+    // Exclude current booking jika ada
+    if ($excludePinjamId) {
+        $query = $query->where('id !=', $excludePinjamId);
+    }
+    
+    $existingBookings = $query->findAll();
+    
+    log_message('info', 'Existing bookings: ' . json_encode($existingBookings));
+
+    foreach ($existingBookings as $booking) {
+        // PERBAIKAN: Normalisasi format waktu untuk perbandingan
+        $existingStart = substr($booking['waktu_mulai'], 0, 5);
+        $existingEnd = substr($booking['waktu_selesai'], 0, 5);
+        $newStart = substr($waktuMulai, 0, 5);
+        $newEnd = substr($waktuSelesai, 0, 5);
+        
+        log_message('info', "Comparing: new({$newStart}-{$newEnd}) vs existing({$existingStart}-{$existingEnd})");
+        
+        // Check overlap: (StartA < EndB) && (EndA > StartB)
+        if (($newStart < $existingEnd) && ($newEnd > $existingStart)) {
+            log_message('error', 'Time conflict found with booking ID: ' . $booking['id']);
+            return $booking; // Return conflicting booking
+        }
+    }
+    
+    log_message('info', 'No time conflict found');
+    return null; // No conflict
+}
+
+public function debugUbahJam()
+{
+    try {
+        $pinjamId = $this->request->getGet('id') ?: 47; // Default dari screenshot
+        
+        $pinjamModel = new PinjamRuanganModel();
+        $data = $pinjamModel->find($pinjamId);
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Debug data',
+            'data' => $data,
+            'post_data' => $this->request->getPost(),
+            'json_data' => $this->request->getJSON(true)
+        ]);
+        
     } catch (\Exception $e) {
         return $this->response->setJSON([
             'success' => false,
@@ -2058,5 +2165,89 @@ public function getPeminjamanByRuangan($ruanganId = null)
             'error' => 'Terjadi kesalahan server: ' . $e->getMessage()
         ]);
     }
+}
+private function checkBookingConflicts($model, $ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $excludeId = null, $type = 'booking')
+{
+    $builder = $model->builder();
+    $builder->where('ruangan_id', $ruanganId)
+            ->where('tanggal', $tanggal)
+            ->where('deleted_at', null);
+
+    // Status filter berdasarkan tipe
+    if ($type === 'booking') {
+        $builder->where('status', 'aktif');
+    } else {
+        $builder->whereIn('status', ['disetujui', 'pending']);
+    }
+
+    // Exclude booking tertentu jika sedang edit
+    if ($excludeId) {
+        $builder->where('id !=', $excludeId);
+    }
+
+    // PERBAIKAN: Logic konflik waktu yang lebih akurat
+    $builder->groupStart()
+        // Case 1: Waktu mulai baru berada di dalam range booking yang ada
+        ->where('waktu_mulai <', $waktuMulai)
+        ->where('waktu_selesai >', $waktuMulai)
+    ->groupEnd()
+    ->orGroupStart()
+        // Case 2: Waktu selesai baru berada di dalam range booking yang ada
+        ->where('waktu_mulai <', $waktuSelesai)
+        ->where('waktu_selesai >', $waktuSelesai)
+        ->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+    ->groupEnd()
+    ->orGroupStart()
+        // Case 3: Booking baru menutupi booking yang ada
+        ->where('waktu_mulai >=', $waktuMulai)
+        ->where('waktu_selesai <=', $waktuSelesai)
+        ->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+    ->groupEnd()
+    ->orGroupStart()
+        // Case 4: Booking yang ada menutupi booking baru
+        ->where('waktu_mulai <=', $waktuMulai)
+        ->where('waktu_selesai >=', $waktuSelesai)
+        ->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+    ->groupEnd();
+
+    // Re-apply filters untuk setiap group
+    if ($type === 'booking') {
+        $builder->where('status', 'aktif');
+    } else {
+        $builder->whereIn('status', ['disetujui', 'pending']);
+    }
+    
+    if ($excludeId) {
+        $builder->where('id !=', $excludeId);
+    }
+
+    $conflicts = $builder->get()->getResultArray();
+    
+    // Tambahkan tipe untuk identifikasi
+    foreach ($conflicts as &$conflict) {
+        $conflict['conflict_type'] = $type;
+    }
+
+    return $conflicts;
+}
+private function isValidTimeFormat($time)
+{
+    return preg_match('/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/', $time);
+}
+private function formatConflictDetails($conflicts)
+{
+    $details = [];
+    foreach ($conflicts as $conflict) {
+        $details[] = [
+            'type' => $conflict['conflict_type'],
+            'time' => $conflict['waktu_mulai'] . ' - ' . $conflict['waktu_selesai'],
+            'purpose' => $conflict['keperluan'] ?? 'Tidak disebutkan',
+            'status' => $conflict['status']
+        ];
+    }
+    return $details;
 }
 }

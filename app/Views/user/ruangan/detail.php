@@ -840,8 +840,8 @@ use App\Models\PinjamRuanganModel;
         </div>
     </div>
 
-    <div class="modal fade" id="modalUbahJam" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="modalUbahJam" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title text-white">
@@ -852,8 +852,119 @@ use App\Models\PinjamRuanganModel;
             </div>
             <div class="modal-body">
                 
-                <!-- TAMBAH SECTION INI - LIST PEMINJAMAN AKTIF -->
-                <div class="card mb-3">
+                <!-- Info Peminjaman -->
+                <div class="alert alert-info mb-4">
+                    <h6><i class="bi bi-info-circle"></i> Detail Peminjaman</h6>
+                    <div id="info_peminjaman_ubah">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Pemohon:</strong> <span id="nama_pemohon">-</span><br>
+                                <strong>Ruangan:</strong> <span id="nama_ruangan">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Tanggal:</strong> <span id="tanggal_pinjam">-</span><br>
+                                <strong>Waktu Saat Ini:</strong> <span id="waktu_original">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERBAIKAN: Time Picker Grid untuk Ubah Jam -->
+                <div class="time-picker-ubah-jam-container">
+                    <h6 class="text-center mb-3">
+                        <i class="bi bi-clock"></i> Pilih Waktu Baru (Interval 30 Menit)
+                    </h6>
+                    
+                    <!-- Legend -->
+                    <div class="legend mb-3">
+                        <div class="legend-item">
+                            <div class="legend-color available"></div>
+                            <span>Tersedia</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color booked"></div>
+                            <span>Sudah Dibooking</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color selected-start"></div>
+                            <span>Waktu Mulai</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color selected-end"></div>
+                            <span>Waktu Selesai</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color original-time"></div>
+                            <span>Waktu Asli</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Grid -->
+                    <div class="ubah-jam-time-grid" id="ubah_jam_time_ruler">
+                        <!-- Time slots akan di-generate oleh JavaScript -->
+                    </div>
+                    
+                    <!-- Display waktu terpilih -->
+                    <div class="time-selection-display mt-3">
+                        <div class="row">
+                            <div class="col-4">
+                                <label class="form-label">Waktu Mulai Baru:</label>
+                                <div class="selected-time" id="ubah_jam_display_waktu_mulai">Belum dipilih</div>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Waktu Selesai Baru:</label>
+                                <div class="selected-time" id="ubah_jam_display_waktu_selesai">Belum dipilih</div>
+                            </div>
+                            <div class="col-4">
+                                <label class="form-label">Durasi:</label>
+                                <div class="selected-time">
+                                    <span id="durasi_baru" class="badge bg-info">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i>
+                            Klik untuk memilih waktu mulai, lalu klik lagi untuk waktu selesai
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Form Ubah Jam -->
+                <form id="formUbahJam" class="mt-4" onsubmit="submitUbahJam(event)">
+                    <input type="hidden" id="ubah_pinjam_id" name="pinjam_id">
+                    
+                    <!-- Hidden inputs untuk waktu (akan diisi oleh JavaScript) -->
+                    <input type="hidden" id="waktu_mulai_baru" name="waktu_mulai">
+                    <input type="hidden" id="waktu_selesai_baru" name="waktu_selesai">
+                    
+                    <!-- Warning Konflik -->
+                    <div id="warning_konflik" class="alert alert-warning" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span id="pesan_konflik"></span>
+                    </div>
+                    
+                    <!-- Alasan Perubahan -->
+                    <div class="mb-3">
+                        <label for="alasan_ubah_jam" class="form-label">
+                            <i class="bi bi-chat-text"></i> 
+                            Alasan Perubahan <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="alasan_ubah_jam" name="alasan" 
+                                  rows="3" required placeholder="Jelaskan alasan perubahan waktu..."></textarea>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div id="preview_ubah" class="alert alert-success" style="display: none;">
+                        <h6><i class="bi bi-eye"></i> Preview Perubahan</h6>
+                        <div id="preview_content_ubah"></div>
+                    </div>
+                </form>
+
+                <!-- List Peminjaman Aktif -->
+                <div class="card mt-4">
                     <div class="card-header">
                         <h6 class="mb-0"><i class="bi bi-list"></i> Peminjaman Aktif untuk Ruangan Ini</h6>
                     </div>
@@ -867,13 +978,11 @@ use App\Models\PinjamRuanganModel;
                                         <th>Waktu</th>
                                         <th>Keperluan</th>
                                         <th>Status</th>
-                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
-                                <!-- ELEMENT YANG DICARI OLEH JAVASCRIPT -->
                                 <tbody id="tabelPeminjamanAktif">
                                     <tr>
-                                        <td colspan="6" class="text-center">
+                                        <td colspan="5" class="text-center">
                                             <i class="bi bi-hourglass-split"></i> Loading...
                                         </td>
                                     </tr>
@@ -882,83 +991,227 @@ use App\Models\PinjamRuanganModel;
                         </div>
                     </div>
                 </div>
-
-                <!-- FORM UBAH JAM - YANG SUDAH ADA -->
-                <form id="formUbahJam">
-                    <input type="hidden" id="ubah_pinjam_id" name="pinjam_id">
-                    
-                    <!-- Info Peminjaman -->
-                    <div class="alert alert-info">
-                        <h6><i class="bi bi-info-circle"></i> Detail Peminjaman</h6>
-                        <div id="info_peminjaman_ubah">
-                            <div><strong>Pemohon:</strong> <span id="nama_pemohon">-</span></div>
-                            <div><strong>Ruangan:</strong> <span id="nama_ruangan">-</span></div>
-                            <div><strong>Tanggal:</strong> <span id="tanggal_pinjam">-</span></div>
-                            <div><strong>Waktu Original:</strong> <span id="waktu_original">-</span></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Input Waktu Baru -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="waktu_mulai_baru" class="form-label">
-                                <i class="bi bi-clock"></i> Waktu Mulai Baru <span class="text-danger">*</span>
-                            </label>
-                            <input type="time" class="form-control" id="waktu_mulai_baru" 
-                                   name="waktu_mulai" required min="07:30" max="16:30">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="waktu_selesai_baru" class="form-label">
-                                <i class="bi bi-clock-fill"></i> Waktu Selesai Baru <span class="text-danger">*</span>
-                            </label>
-                            <input type="time" class="form-control" id="waktu_selesai_baru" 
-                                   name="waktu_selesai" required min="07:30" max="16:30">
-                        </div>
-                    </div>
-                    
-                    <!-- Durasi Display -->
-                    <div class="mt-2">
-                        <label class="form-label"><i class="bi bi-hourglass-split"></i> Durasi:</label>
-                        <span id="durasi_baru" class="badge bg-info">-</span>
-                    </div>
-                    
-                    <!-- Warning Konflik -->
-                    <div id="warning_konflik" class="alert alert-warning mt-3" style="display: none;">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <span id="pesan_konflik"></span>
-                    </div>
-                    
-                    <!-- Alasan Perubahan -->
-                    <div class="mt-3">
-                        <label for="alasan_ubah_jam" class="form-label">
-                            <i class="bi bi-chat-text"></i> 
-                            Alasan Perubahan <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" id="alasan_ubah_jam" name="alasan_ubah" 
-                                  rows="3" required placeholder="Contoh: Menyesuaikan dengan jadwal rapat lain yang bentrok"></textarea>
-                    </div>
-                    
-                    <!-- Preview -->
-                    <div class="alert alert-success mt-3" id="preview_ubah" style="display: none;">
-                        <h6><i class="bi bi-check-circle"></i> Preview Perubahan:</h6>
-                        <div id="preview_content_ubah"></div>
-                    </div>
-                </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Batal
-                </button>
-                <button type="button" class="btn btn-info" onclick="cekKetersediaanJam()">
-                    <i class="bi bi-search"></i> Cek Ketersediaan
-                </button>
-                <button type="submit" class="btn btn-success" id="btnUbahSetujui" disabled>
-                    <i class="bi bi-check-circle"></i> Ubah & Setujui
-                </button>
-            </div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <i class="bi bi-x-circle"></i> Batal
+    </button>
+                    <button
+        type="submit"
+        form="formUbahJam"
+        class="btn btn-warning disabled"
+        id="btnUbahSetujui"
+        disabled>
+        <i class="bi bi-check-circle"></i> Ubah & Setujui
+    </button>
+</div>
         </div>
     </div>
 </div>
+
+<style>
+/* PERBAIKAN: CSS untuk Time Picker Ubah Jam */
+.time-picker-ubah-jam-container {
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fff9c4 0%, #fffbdf 100%);
+    margin: 20px 0;
+}
+
+.ubah-jam-time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    margin: 15px 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.ubah-jam-time-slot {
+    padding: 10px 8px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    color: #495057;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.ubah-jam-time-slot:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: #ffc107;
+}
+
+.ubah-jam-time-slot.available {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+    color: #155724;
+}
+
+.ubah-jam-time-slot.available:hover {
+    background: linear-gradient(135deg, #c3e6cb 0%, #b3dfbf 100%);
+    border-color: #1e7e34;
+}
+
+.ubah-jam-time-slot.booked {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1c2c7 100%);
+    border-color: #dc3545;
+    color: #721c24;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.ubah-jam-time-slot.selected-start {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border-color: #0a58ca;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+}
+
+.ubah-jam-time-slot.selected-end {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    border-color: #4c2a85;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
+}
+
+.ubah-jam-time-slot.in-range {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.ubah-jam-time-slot.original-time {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border-color: #117a8b;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.4);
+}
+
+.time-selection-display .selected-time {
+    background: white;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 2px solid #dee2e6;
+    text-align: center;
+    font-weight: 600;
+    color: #495057;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    font-size: 0.8rem;
+}
+
+.legend-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: 2px solid #333;
+}
+
+.legend-color.available {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #28a745;
+}
+
+.legend-color.booked {
+    background: linear-gradient(135deg, #f8d7da 0%, #f1c2c7 100%);
+    border-color: #dc3545;
+}
+
+.legend-color.selected-start {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border-color: #0a58ca;
+}
+
+.legend-color.selected-end {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    border-color: #4c2a85;
+}
+
+.legend-color.original-time {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border-color: #117a8b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ubah-jam-time-grid {
+        grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+        gap: 6px;
+        padding: 15px;
+    }
+    
+    .ubah-jam-time-slot {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+        min-height: 35px;
+    }
+    
+    .legend {
+        gap: 8px;
+    }
+    
+    .legend-item {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+    
+    .legend-color {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ubah-jam-time-grid {
+        grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+        gap: 4px;
+        padding: 10px;
+    }
+    
+    .ubah-jam-time-slot {
+        padding: 6px 2px;
+        font-size: 0.7rem;
+        min-height: 32px;
+    }
+}
+</style>
 
     <!-- Container Notifikasi Booking -->
     <div class="card mb-4">
