@@ -1815,6 +1815,248 @@ public function getPinjamModal($ruanganId)
     
     return view('user/ruangan/modal_pinjam', $data);
 }
+public function getDetailPeminjaman($pinjamId)
+{
+    try {
+        $pinjamModel = new PinjamRuanganModel();
+        
+        $peminjaman = $pinjamModel->select('pinjam_ruangan.*, ruangan.nama_ruangan')
+                                  ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
+                                  ->find($pinjamId);
 
+        if (!$peminjaman) {
+            throw new \Exception('Data peminjaman tidak ditemukan');
+        }
 
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $peminjaman
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Cek ketersediaan untuk waktu baru
+ */
+public function cekKetersediaan()
+{
+    try {
+        $json = $this->request->getJSON();
+        
+        $pinjamId = $json->pinjam_id;
+        $waktuMulai = $json->waktu_mulai;
+        $waktuSelesai = $json->waktu_selesai;
+
+        // Get peminjaman data
+        $pinjamModel = new PinjamRuanganModel();
+        $peminjaman = $pinjamModel->find($pinjamId);
+        
+        if (!$peminjaman) {
+            throw new \Exception('Data peminjaman tidak ditemukan');
+        }
+
+        // Cek konflik (exclude current booking)
+        $konflik = $this->checkTimeConflict(
+            $peminjaman['ruangan_id'], 
+            $peminjaman['tanggal'], 
+            $waktuMulai, 
+            $waktuSelesai, 
+            $pinjamId  // Exclude current
+        );
+
+        if ($konflik) {
+            return $this->response->setJSON([
+                'success' => true,
+                'available' => false,
+                'message' => 'Waktu bentrok dengan: ' . $konflik['nama_penanggung_jawab'] . 
+                           ' (' . $konflik['waktu_mulai'] . ' - ' . $konflik['waktu_selesai'] . ')'
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'available' => true,
+            'message' => 'Waktu tersedia'
+        ]);
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Ubah jam dan setujui peminjaman
+ */
+public function ubahJamSetujui()
+{
+    try {
+        $pinjamId = $this->request->getPost('pinjam_id');
+        $waktuMulaiBaru = $this->request->getPost('waktu_mulai');
+        $waktuSelesaiBaru = $this->request->getPost('waktu_selesai');
+        $alasanUbah = $this->request->getPost('alasan_ubah');
+
+        if (!$pinjamId || !$waktuMulaiBaru || !$waktuSelesaiBaru || !$alasanUbah) {
+            throw new \Exception('Data tidak lengkap');
+        }
+
+        $pinjamModel = new PinjamRuanganModel();
+        $ruanganModel = new RuanganModel();
+        
+        // Get current data
+        $peminjaman = $pinjamModel->select('pinjam_ruangan.*, ruangan.lokasi')
+                                  ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
+                                  ->find($pinjamId);
+
+        if (!$peminjaman) {
+            throw new \Exception('Data peminjaman tidak ditemukan');
+        }
+
+        // Check admin access
+        $gedungRole = $this->getGedungRole($peminjaman['lokasi']);
+        if (!in_groups('admin') && !in_groups($gedungRole)) {
+            throw new \Exception('Anda tidak memiliki akses untuk memverifikasi ruangan ini');
+        }
+
+        // Final conflict check
+        $konflik = $this->checkTimeConflict(
+            $peminjaman['ruangan_id'], 
+            $peminjaman['tanggal'], 
+            $waktuMulaiBaru, 
+            $waktuSelesaiBaru, 
+            $pinjamId
+        );
+
+        if ($konflik) {
+            throw new \Exception('Waktu bentrok dengan peminjaman lain');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            // Update peminjaman - LANGSUNG UBAH KOLOM EXISTING
+            $updateData = [
+                'id' => $pinjamId,
+                'waktu_mulai' => $waktuMulaiBaru,     // Update langsung
+                'waktu_selesai' => $waktuSelesaiBaru, // Update langsung
+                'status' => 'disetujui',
+                'keterangan_status' => "Jam diubah oleh admin. Alasan: " . $alasanUbah, // Simpan alasan
+                'verified_at' => date('Y-m-d H:i:s'),
+                'verified_by' => user_id(),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            if (!$pinjamModel->save($updateData)) {
+                throw new \Exception('Gagal mengubah jam peminjaman');
+            }
+
+            // Update status ruangan
+            $ruanganUpdate = [
+                'id' => $peminjaman['ruangan_id'],
+                'status' => 'Dipinjam',
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            if (!$ruanganModel->save($ruanganUpdate)) {
+                throw new \Exception('Gagal update status ruangan');
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Transaksi database gagal');
+            }
+
+            // TODO: Send email notification to user about time change
+            // $this->sendNotifikasiUbahJam($peminjaman, $waktuMulaiBaru, $waktuSelesaiBaru, $alasanUbah);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Peminjaman berhasil disetujui dengan jam yang diubah'
+            ]);
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            throw $e;
+        }
+
+    } catch (\Exception $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
+public function getPeminjamanByRuangan($ruanganId = null)
+{
+    try {
+        if (!$ruanganId) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Ruangan ID harus disediakan'
+            ]);
+        }
+
+        // ✅ GUNAKAN MODEL YANG BENAR
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+        $ruanganModel = new \App\Models\RuanganModel();
+        $userModel = new \Myth\Auth\Models\UserModel(); // <- INI YANG BENAR!
+
+        // Get peminjaman data
+        $peminjaman = $pinjamModel->where('ruangan_id', $ruanganId)
+            ->where('tanggal >=', date('Y-m-d'))
+            ->whereIn('status', ['pending', 'disetujui'])
+            ->where('deleted_at', null)
+            ->orderBy('tanggal', 'ASC')
+            ->orderBy('waktu_mulai', 'ASC')
+            ->findAll();
+
+        // Format data untuk response
+        $formattedData = [];
+        foreach ($peminjaman as $item) {
+            $user = $userModel->find($item['user_id']);
+            
+            $formattedData[] = [
+                'id' => $item['id'],
+                'nama_penanggung_jawab' => $item['nama_penanggung_jawab'],
+                'nama_peminjam' => $user ? $user->fullname : 'User tidak ditemukan',
+                'tanggal' => $item['tanggal'],
+                'waktu_mulai' => $item['waktu_mulai'],
+                'waktu_selesai' => $item['waktu_selesai'],
+                'keperluan' => $item['keperluan'] ?? '',
+                'status' => $item['status'],
+                'created_at' => $item['created_at']
+            ];
+        }
+
+        $ruangan = $ruanganModel->find($ruanganId);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $formattedData,
+            'total' => count($formattedData),
+            'ruangan_info' => [
+                'id' => $ruangan['id'] ?? $ruanganId,
+                'nama_ruangan' => $ruangan['nama_ruangan'] ?? 'Unknown',
+                'lokasi' => $ruangan['lokasi'] ?? 'Unknown'
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        log_message('error', 'Error getPeminjamanByRuangan: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan server: ' . $e->getMessage()
+        ]);
+    }
+}
 }

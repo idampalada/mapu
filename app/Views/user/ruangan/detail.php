@@ -728,7 +728,7 @@ use App\Models\PinjamRuanganModel;
                                                 </div>
                                             </div>
 
-                                            <!-- TOMBOL ADMIN PERSIS SEPERTI ASLI -->
+                                            <!-- TOMBOL ADMIN UPDATED WITH UBAH JAM -->
                                             <div class="card-footer bg-white border-0">
                                                 <div class="d-grid">
                                                     <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
@@ -742,7 +742,7 @@ use App\Models\PinjamRuanganModel;
                                                         <span>Pinjam</span>
                                                     </button>
                                                     
-                                                    <!-- Admin buttons - PERSIS SEPERTI ASLI -->
+                                                    <!-- Admin buttons - UPDATED WITH UBAH JAM -->
                                                     <div class="d-flex flex-column gap-2 mt-2">
                                                         <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
                                                             style="background-color: #608BC1; color: white; border: none;"
@@ -753,6 +753,12 @@ use App\Models\PinjamRuanganModel;
                                                             style="background-color: #AE445A; color: white; border: none;"
                                                             onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
                                                             <i class="bi bi-trash"></i> Hapus
+                                                        </button>
+                                                        <!-- NEW: Ubah Jam Button -->
+                                                        <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
+                                                            style="background-color: #28a745; color: white; border: none;"
+                                                            onclick="bukaModalUbahJamAdmin('<?= $ruangan['id'] ?>', '<?= htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                            <i class="bi bi-clock-history"></i> Ubah Jam
                                                         </button>
                                                     </div>
                                                 </div>
@@ -796,7 +802,7 @@ use App\Models\PinjamRuanganModel;
                                                         Ruangan sedang maintenance, tidak dapat dipinjam
                                                     </small>
                                                     
-                                                    <!-- TOMBOL ADMIN TETAP ADA UNTUK MAINTENANCE -->
+                                                    <!-- TOMBOL ADMIN TETAP ADA UNTUK MAINTENANCE + UBAH JAM -->
                                                     <div class="d-flex flex-column gap-2 mt-2">
                                                         <button type="button" class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
                                                             style="background-color: #608BC1; color: white; border: none;"
@@ -807,6 +813,12 @@ use App\Models\PinjamRuanganModel;
                                                             style="background-color: #AE445A; color: white; border: none;"
                                                             onclick="deleteRuangan('<?= $ruangan['id'] ?>')">
                                                             <i class="bi bi-trash"></i> Hapus
+                                                        </button>
+                                                        <!-- NEW: Ubah Jam Button untuk Maintenance -->
+                                                        <button type="button" class="btn btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2"
+                                                            style="background-color: #28a745; color: white; border: none;"
+                                                            onclick="bukaModalUbahJamAdmin('<?= $ruangan['id'] ?>', '<?= htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                            <i class="bi bi-clock-history"></i> Ubah Jam
                                                         </button>
                                                     </div>
                                                 </div>
@@ -827,6 +839,126 @@ use App\Models\PinjamRuanganModel;
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modalUbahJam" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-clock-history"></i> 
+                    Ubah Jam Pinjaman Ruangan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- TAMBAH SECTION INI - LIST PEMINJAMAN AKTIF -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-list"></i> Peminjaman Aktif untuk Ruangan Ini</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Penanggung Jawab</th>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Keperluan</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <!-- ELEMENT YANG DICARI OLEH JAVASCRIPT -->
+                                <tbody id="tabelPeminjamanAktif">
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <i class="bi bi-hourglass-split"></i> Loading...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FORM UBAH JAM - YANG SUDAH ADA -->
+                <form id="formUbahJam">
+                    <input type="hidden" id="ubah_pinjam_id" name="pinjam_id">
+                    
+                    <!-- Info Peminjaman -->
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Detail Peminjaman</h6>
+                        <div id="info_peminjaman_ubah">
+                            <div><strong>Pemohon:</strong> <span id="nama_pemohon">-</span></div>
+                            <div><strong>Ruangan:</strong> <span id="nama_ruangan">-</span></div>
+                            <div><strong>Tanggal:</strong> <span id="tanggal_pinjam">-</span></div>
+                            <div><strong>Waktu Original:</strong> <span id="waktu_original">-</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Waktu Baru -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="waktu_mulai_baru" class="form-label">
+                                <i class="bi bi-clock"></i> Waktu Mulai Baru <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control" id="waktu_mulai_baru" 
+                                   name="waktu_mulai" required min="07:30" max="16:30">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="waktu_selesai_baru" class="form-label">
+                                <i class="bi bi-clock-fill"></i> Waktu Selesai Baru <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control" id="waktu_selesai_baru" 
+                                   name="waktu_selesai" required min="07:30" max="16:30">
+                        </div>
+                    </div>
+                    
+                    <!-- Durasi Display -->
+                    <div class="mt-2">
+                        <label class="form-label"><i class="bi bi-hourglass-split"></i> Durasi:</label>
+                        <span id="durasi_baru" class="badge bg-info">-</span>
+                    </div>
+                    
+                    <!-- Warning Konflik -->
+                    <div id="warning_konflik" class="alert alert-warning mt-3" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span id="pesan_konflik"></span>
+                    </div>
+                    
+                    <!-- Alasan Perubahan -->
+                    <div class="mt-3">
+                        <label for="alasan_ubah_jam" class="form-label">
+                            <i class="bi bi-chat-text"></i> 
+                            Alasan Perubahan <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="alasan_ubah_jam" name="alasan_ubah" 
+                                  rows="3" required placeholder="Contoh: Menyesuaikan dengan jadwal rapat lain yang bentrok"></textarea>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="alert alert-success mt-3" id="preview_ubah" style="display: none;">
+                        <h6><i class="bi bi-check-circle"></i> Preview Perubahan:</h6>
+                        <div id="preview_content_ubah"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Batal
+                </button>
+                <button type="button" class="btn btn-info" onclick="cekKetersediaanJam()">
+                    <i class="bi bi-search"></i> Cek Ketersediaan
+                </button>
+                <button type="submit" class="btn btn-success" id="btnUbahSetujui" disabled>
+                    <i class="bi bi-check-circle"></i> Ubah & Setujui
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Container Notifikasi Booking -->
     <div class="card mb-4">

@@ -585,6 +585,14 @@
                                                                 onclick="verifikasiPeminjamanRuangan(<?= $pinjam['id'] ?>, 'disetujui')">
                                                             Setujui
                                                         </button>
+
+    <!-- Ubah Jam (NEW) -->
+    <button class="btn btn-sm btn-warning me-1" 
+            onclick="bukaModalUbahJam(<?= $pinjam['id'] ?>)"
+            title="Ubah jam dan setujui">
+        <i class="bi bi-clock-history"></i> Ubah Jam
+    </button>
+
                                                         <button class="btn btn-sm btn-danger"
         data-tipe="ruangan" 
         data-id="<?= $pinjam['id'] ?>"
@@ -674,6 +682,96 @@
         </div>
     </div>
 <?php endif; ?>
+
+<!-- TAMBAHKAN: Modal untuk ubah jam -->
+<div class="modal fade" id="modalUbahJam" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-clock-history"></i> 
+                    Ubah Jam Pinjaman Ruangan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formUbahJam">
+                <div class="modal-body">
+                    <input type="hidden" id="ubah_pinjam_id" name="pinjam_id">
+                    
+                    <!-- Info Peminjaman -->
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> Detail Peminjaman</h6>
+                        <div id="info_peminjaman_ubah">
+                            <div><strong>Pemohon:</strong> <span id="nama_pemohon"></span></div>
+                            <div><strong>Ruangan:</strong> <span id="nama_ruangan"></span></div>
+                            <div><strong>Tanggal:</strong> <span id="tanggal_pinjam"></span></div>
+                            <div><strong>Waktu Original:</strong> <span id="waktu_original"></span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Input Waktu Baru -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="waktu_mulai_baru" class="form-label">
+                                <i class="bi bi-clock"></i> Waktu Mulai Baru <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control" id="waktu_mulai_baru" 
+                                   name="waktu_mulai" required min="07:30" max="16:30">
+                            <small class="text-muted">Jam operasional: 07:30 - 16:30</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="waktu_selesai_baru" class="form-label">
+                                <i class="bi bi-clock-fill"></i> Waktu Selesai Baru <span class="text-danger">*</span>
+                            </label>
+                            <input type="time" class="form-control" id="waktu_selesai_baru" 
+                                   name="waktu_selesai" required min="07:30" max="16:30">
+                            <small class="text-muted">Minimal 30 menit setelah waktu mulai</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Durasi Real-time -->
+                    <div class="mt-2">
+                        <label class="form-label"><i class="bi bi-hourglass-split"></i> Durasi:</label>
+                        <span id="durasi_baru" class="badge bg-info">-</span>
+                    </div>
+                    
+                    <!-- Warning Konflik -->
+                    <div id="warning_konflik" class="alert alert-warning mt-3" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span id="pesan_konflik"></span>
+                    </div>
+                    
+                    <!-- Alasan Perubahan -->
+                    <div class="mt-3">
+                        <label for="alasan_ubah_jam" class="form-label">
+                            <i class="bi bi-chat-text"></i> 
+                            Alasan Perubahan <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="alasan_ubah_jam" name="alasan_ubah" 
+                                  rows="3" required placeholder="Contoh: Menyesuaikan dengan jadwal rapat lain yang bentrok"></textarea>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div class="alert alert-success mt-3" id="preview_ubah" style="display: none;">
+                        <h6><i class="bi bi-check-circle"></i> Preview Perubahan:</h6>
+                        <div id="preview_content_ubah"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </button>
+                    <button type="button" class="btn btn-info" onclick="cekKetersediaanJam()">
+                        <i class="bi bi-search"></i> Cek Ketersediaan
+                    </button>
+                    <button type="submit" class="btn btn-success" id="btnUbahSetujui" disabled>
+                        <i class="bi bi-check-circle"></i> Ubah & Setujui
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
     <div class="modal fade" id="modalVerifikasi" tabindex="-1" data-bs-backdrop="static"

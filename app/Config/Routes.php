@@ -164,6 +164,11 @@ $routes->post('admin/users/deleteUser', 'Admin\Users::deleteUser');
 $routes->group('admin/verifikasi-ruangan', ['filter' => 'role:admin,admin_gedungutama,admin_pusdatin,admin_binamarga,admin_ciptakarya,admin_sda,admin_gedungg,admin_heritage,admin_auditorium'], function($routes) {
     $routes->post('verifikasiPeminjaman', 'User\Ruangan::verifikasiPeminjaman');
     $routes->post('verifikasiPengembalianRuangan', 'User\Ruangan::verifikasiPengembalian');
+        // ✅ TAMBAHKAN ROUTES UBAH JAM DI SINI (setelah line 159)
+    $routes->get('getDetailPeminjaman/(:num)', 'User\Ruangan::getDetailPeminjaman/$1');
+    $routes->post('cekKetersediaan', 'User\Ruangan::cekKetersediaan');
+    $routes->post('ubahJamSetujui', 'User\Ruangan::ubahJamSetujui');
+    $routes->get('getPeminjamanByRuangan/(:num)', 'User\Ruangan::getPeminjamanByRuangan/$1');
 });
 
 // Tambahan route API pengembalian ruangan untuk dashboard
