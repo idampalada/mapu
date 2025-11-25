@@ -220,8 +220,9 @@ use App\Models\PinjamRuanganModel;
                                     </div>
 
                                     <div class="card-footer bg-white border-0">
-                                        <div class="d-grid">
+                                        <div class="d-grid gap-2">
                                             <?php if ($isRuanganActive): ?>
+                                                <!-- Button Booking Sekarang -->
                                                 <button class="btn btn-success btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-booking-ruangan"
                                                         style="height: 2.2rem; background: linear-gradient(135deg, #28a745, #20c997); border: none;" 
                                                         data-ruangan-id="<?= $ruangan['id'] ?>"
@@ -229,8 +230,20 @@ use App\Models\PinjamRuanganModel;
                                                         data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
                                                         data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
                                                         data-booking-type="booking">
-                                                    
+                                                    <i class="bi bi-lightning-fill"></i>
                                                     <span>Booking Sekarang</span>
+                                                </button>
+                                                
+                                                <!-- Button Request Confirm - DENGAN CLASS DAN DATA YANG SAMA SEPERTI ASLI -->
+                                                <button class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
+                                                        style="height: 2.2rem; background: linear-gradient(135deg, #ffc107, #fd7e14); border: none; color: #000;" 
+                                                        data-ruangan-id="<?= $ruangan['id'] ?>"
+                                                        data-ruangan-nama="<?= $cleanRuanganName ?>"
+                                                        data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
+                                                        data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
+                                                        data-booking-type="confirm">
+                                                    <i class="bi bi-check-circle"></i>
+                                                    <span>Request Confirm</span>
                                                 </button>
                                             <?php else: ?>
                                                 <button class="btn btn-secondary btn-sm rounded-pill d-flex align-items-center justify-content-center gap-2"
@@ -253,185 +266,65 @@ use App\Models\PinjamRuanganModel;
                     </div>
                 </div>
                 
-                <!-- Tab Confirm -->
-                <div class="tab-pane fade" id="confirm" role="tabpanel" aria-labelledby="confirm-tab">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Confirm Ruangan:</strong> Peminjaman ruangan melalui proses ini memerlukan persetujuan admin. 
-                        Status akan menjadi "Pending" sampai admin melakukan verifikasi.
+                <!-- Tab Daftar Booking Saya -->
+                <div class="tab-pane fade" id="daftar-booking" role="tabpanel" aria-labelledby="daftar-booking-tab">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Daftar Booking Saya:</strong> Kelola semua booking ruangan yang telah Anda buat. 
+                        Anda dapat melihat status booking dan melakukan request confirm untuk approval admin.
                     </div>
                     
-                    <!-- Filter untuk Confirm -->
+                    <!-- Filter untuk Daftar Booking -->
                     <div class="filter-section mb-4">
                         <div class="card">
                             <div class="card-header">
-                                <h6 class="mb-0">Filter Ruangan - Confirm</h6>
+                                <h6 class="mb-0">Filter Booking Saya</h6>
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label">Cari Nama Ruangan</label>
-                                        <input type="text" class="form-control" id="filterNamaConfirm" placeholder="Cari ruangan...">
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Filter Kapasitas</label>
-                                        <select class="form-select" id="filterKapasitasConfirm">
-                                            <option value="">Semua Kapasitas</option>
-                                            <option value="1-10">1-10 Orang</option>
-                                            <option value="11-30">11-30 Orang</option>
-                                            <option value="31-50">31-50 Orang</option>
-                                            <option value="50+">>50 Orang</option>
-                                        </select>
+                                        <input type="text" class="form-control" id="filterNamaBookingSaya" placeholder="Cari ruangan...">
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label">Filter Status</label>
-                                        <select class="form-select" id="filterStatusConfirm">
+                                        <select class="form-select" id="filterStatusBookingSaya">
                                             <option value="">Semua Status</option>
-                                            <option value="Tersedia">Tersedia</option>
-                                            <option value="Dibooking">Sedang Dipinjam</option>
-                                            <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="pending_approval">Menunggu Approval</option>
+                                            <option value="disetujui">Disetujui</option>
+                                            <option value="ditolak">Ditolak</option>
+                                            <option value="selesai">Selesai</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3 mb-3">
-                                        <label class="form-label">Filter Fasilitas</label>
-                                        <select class="form-select" id="filterFasilitasConfirm">
-                                            <option value="">Semua Fasilitas</option>
-                                            <option value="Projector">Projektor</option>
-                                            <option value="Sound System">Sound System</option>
-                                            <option value="AC">AC</option>
-                                            <option value="Wifi">WiFi</option>
-                                        </select>
+                                        <label class="form-label">Filter Tanggal</label>
+                                        <input type="date" class="form-control" id="filterTanggalBookingSaya">
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <button class="btn btn-primary" onclick="resetFilterConfirm()">
-                                            <i class="bi bi-arrow-clockwise"></i> Reset Filter
-                                        </button>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Aksi</label>
+                                        <div class="d-grid">
+                                            <button class="btn btn-primary btn-sm" onclick="resetFilterBookingSaya()">
+                                                <i class="bi bi-arrow-clockwise"></i> Reset Filter
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Daftar Ruangan untuk Confirm - DUPLIKASI DARI BOOKING DENGAN BUTTON BERBEDA -->
-                    <div class="card-grid" id="ruanganGridConfirm">
-                        <?php if (!empty($ruangans)): ?>
-                            <?php foreach ($ruangans as $ruangan): ?>
-                                <div class="card h-300 room-card confirm-room-card" 
-                                    data-nama="<?= htmlspecialchars(strtolower($ruangan['nama_ruangan'])) ?>"
-                                    data-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                    data-status="<?= htmlspecialchars($ruangan['status']) ?>"
-                                    data-fasilitas="<?= htmlspecialchars(strtolower($ruangan['fasilitas'])) ?>">
-
-                                    <div class="position-relative" style="height: 13rem;">
-                                        <?php 
-                                        $fotos = json_decode($ruangan['foto_ruangan'], true) ?? [];
-                                        if (!empty($fotos)):
-                                            $mainFoto = $fotos[0];
-                                        ?>
-                                            <img src="<?= base_url('uploads/ruangan/' . $mainFoto) ?>" 
-                                                class="w-100 h-100 object-fit-cover image-preview-trigger"
-                                                style="cursor: pointer; border-top-left-radius: .7rem; border-top-right-radius: .7rem;"
-                                                data-ruangan='<?= htmlspecialchars(json_encode($ruangan)) ?>'
-                                                data-fotos='<?= htmlspecialchars(json_encode($fotos)) ?>'
-                                                alt="<?= $ruangan['nama_ruangan'] ?>">
-                                        <?php else: ?>
-                                            <img src="<?= base_url('assets/images/no-image.jpg') ?>" 
-                                                class="w-100 h-100 object-fit-cover"
-                                                style="border-top-left-radius: .7rem; border-top-right-radius: .7rem;"
-                                                alt="No Image">
-                                        <?php endif; ?>
-                                        
-                                        <div class="position-absolute top-0 end-0 p-2">
-                                            <span class="badge <?= $ruangan['status'] === 'Tersedia' ? 'bg-success' : 
-                                                ($ruangan['status'] === 'Dibooking' ? 'bg-warning' : 'bg-info') ?>">
-                                                <?= $ruangan['status'] ?>
-                                            </span>
-                                        </div>
-                                        
-                                        <!-- Badge Confirm Type -->
-                                        <div class="position-absolute top-0 start-0 p-2">
-                                            <span class="badge bg-warning confirm-type-badge text-dark">
-                                                 CONFIRM
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <?php 
-                                    // PERBAIKAN: Logika is_active yang sama seperti di tab booking
-                                    $isRuanganActive = true;
-                                    
-                                    if (isset($ruangan['is_active'])) {
-                                        $isActiveValue = $ruangan['is_active'];
-                                        
-                                        if ($isActiveValue === false || 
-                                            $isActiveValue === 'f' || 
-                                            $isActiveValue === '0' || 
-                                            $isActiveValue === 0 ||
-                                            $isActiveValue === 'false' ||
-                                            $isActiveValue === null) {
-                                            $isRuanganActive = false;
-                                        }
-                                    }
-                                    
-                                    $cleanRuanganName = htmlspecialchars($ruangan['nama_ruangan'], ENT_QUOTES);
-                                    $cleanFasilitas = htmlspecialchars($ruangan['fasilitas'] ?? '', ENT_QUOTES);
-                                    ?>
-
-                                    <div class="card-body">
-                                        <h5 class="card-title fw-bold"><?= $ruangan['nama_ruangan'] ?></h5>
-                                        <div class="mb-3">
-                                            <p class="mb-1">
-                                                <small class="text-muted">Kapasitas:</small>
-                                                <?= $ruangan['kapasitas'] ?> orang
-                                            </p>
-                                            <?php if (!empty($ruangan['luas_ruangan'])): ?>
-                                                <p class="mb-1">
-                                                    <small class="text-muted">Luas Ruangan:</small>
-                                                    <?= $ruangan['luas_ruangan'] ?> m²
-                                                </p>
-                                            <?php endif; ?>
-                                            <?php if (!empty($ruangan['fasilitas'])): ?>
-                                                <p class="mb-1">
-                                                    <small class="text-muted">Fasilitas:</small>
-                                                    <?= htmlspecialchars($ruangan['fasilitas']) ?>
-                                                </p>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-
-                                    <div class="card-footer bg-white border-0">
-                                        <div class="d-grid">
-                                            <?php if ($isRuanganActive): ?>
-                                                <button class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
-                                                        style="height: 2.2rem; background: linear-gradient(135deg, #ffc107, #fd7e14); border: none; color: #000;" 
-                                                        data-ruangan-id="<?= $ruangan['id'] ?>"
-                                                        data-ruangan-nama="<?= $cleanRuanganName ?>"
-                                                        data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                                        data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
-                                                        data-booking-type="confirm">
-                                                    
-                                                    <span>Request Confirm</span>
-                                                </button>
-                                            <?php else: ?>
-                                                <button class="btn btn-secondary btn-sm rounded-pill d-flex align-items-center justify-content-center gap-2"
-                                                        style="height: 2.2rem; cursor: not-allowed;" disabled>
-                                                    <i class="bi bi-tools"></i>
-                                                    <span>Maintenance</span>
-                                                </button>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
+                    <!-- Daftar Booking User -->
+                    <div class="row" id="daftarBookingSayaContainer">
+                        <!-- Data akan dimuat via AJAX -->
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="col-12">
-                                <div class="alert alert-warning text-center">
-                                    Tidak ada ruangan yang tersedia untuk confirm di lokasi ini.
-                                </div>
+                                <div class="mt-3">Memuat data booking Anda...</div>
                             </div>
-                        <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 
