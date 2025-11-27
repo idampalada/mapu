@@ -2250,4 +2250,274 @@ private function formatConflictDetails($conflicts)
     }
     return $details;
 }
+public function getDaftarBookingSaya()
+{
+    // Set content type JSON
+    $this->response->setContentType('application/json');
+    
+    try {
+        // Pastikan user sudah login
+        if (!logged_in()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User belum login'
+            ]);
+        }
+        
+        // Get user ID dan role yang sedang login
+        $userId = user_id();
+        $db = \Config\Database::connect();
+        
+        // ===== TAMBAHAN: CHECK USER ROLE =====
+        $isAdmin = in_groups('admin');
+        $isAdminGedungUtama = in_groups('admin_gedungutama');
+        $isAdminPusdatin = in_groups('admin_pusdatin');
+        $isAdminBinaMarga = in_groups('admin_binamarga');
+        $isAdminCiptaKarya = in_groups('admin_ciptakarya');
+        $isAdminSDA = in_groups('admin_sda');
+        $isAdminGedungG = in_groups('admin_gedungg');
+        $isAdminHeritage = in_groups('admin_heritage');
+        $isAdminAuditorium = in_groups('admin_auditorium');
+        
+        // ===== TAMBAHAN: BUILD QUERY BERDASARKAN ROLE =====
+        $whereConditions = [];
+        $queryParams = [];
+        
+        if ($isAdmin) {
+            // Admin bisa lihat semua booking dari semua gedung
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminGedungUtama) {
+            $whereConditions[] = "r.lokasi = 'Gedung Utama'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminPusdatin) {
+            $whereConditions[] = "r.lokasi = 'Pusat Data dan Teknologi Informasi'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminBinaMarga) {
+            $whereConditions[] = "r.lokasi = 'Bina Marga'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminCiptaKarya) {
+            $whereConditions[] = "r.lokasi = 'Cipta Karya'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminSDA) {
+            $whereConditions[] = "r.lokasi = 'Sumber Daya Air'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminGedungG) {
+            $whereConditions[] = "r.lokasi = 'Gedung G'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminHeritage) {
+            $whereConditions[] = "r.lokasi = 'Heritage'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } elseif ($isAdminAuditorium) {
+            $whereConditions[] = "r.lokasi = 'Auditorium'";
+            $whereConditions[] = "br.status != 'selesai'";
+        } else {
+            // User biasa hanya bisa lihat booking milik sendiri (SEPERTI SEBELUMNYA)
+            $whereConditions[] = "br.user_id = ?";
+            $whereConditions[] = "br.status != 'selesai'";
+            $queryParams[] = $userId;
+        }
+        
+        // ===== TAMBAHAN: DYNAMIC TITLE =====
+        $title = 'Daftar Booking Saya';
+        if ($isAdmin) {
+            $title = 'Semua Booking (Admin)';
+        } elseif ($isAdminGedungUtama) {
+            $title = 'Booking Gedung Utama';
+        } elseif ($isAdminPusdatin) {
+            $title = 'Booking Pusdatin';
+        } elseif ($isAdminBinaMarga) {
+            $title = 'Booking Bina Marga';
+        } elseif ($isAdminCiptaKarya) {
+            $title = 'Booking Cipta Karya';
+        } elseif ($isAdminSDA) {
+            $title = 'Booking SDA';
+        } elseif ($isAdminGedungG) {
+            $title = 'Booking Gedung G';
+        } elseif ($isAdminHeritage) {
+            $title = 'Booking Heritage';
+        } elseif ($isAdminAuditorium) {
+            $title = 'Booking Auditorium';
+        }
+        
+        // ===== MODIFIED QUERY =====
+        $whereClause = implode(' AND ', $whereConditions);
+        
+        $query = $db->query("
+            SELECT 
+                br.id,
+                br.ruangan_id,
+                br.user_id,
+                br.tanggal,
+                br.waktu_mulai,
+                br.waktu_selesai,
+                br.nama_penanggung_jawab,
+                br.nomor_hp_penanggung_jawab,
+                br.keperluan,
+                br.status,
+                br.created_at,
+                br.updated_at,
+                r.nama_ruangan,
+                r.lokasi,
+                u.email,
+                u.fullname
+            FROM public.booking_ruangan br
+            LEFT JOIN public.ruangan r ON r.id = br.ruangan_id  
+            LEFT JOIN public.users u ON u.id = br.user_id
+            WHERE {$whereClause}
+            ORDER BY br.created_at DESC
+        ", $queryParams);
+        
+        $bookings = $query->getResultArray();
+        
+        // Format data untuk response
+        $formattedBookings = [];
+        foreach ($bookings as $booking) {
+            $formattedBookings[] = [
+                'id' => $booking['id'],
+                'ruangan_id' => $booking['ruangan_id'],
+                'nama_ruangan' => $booking['nama_ruangan'] ?? 'Ruangan tidak ditemukan',
+                'lokasi' => $booking['lokasi'] ?? '', // TAMBAHAN
+                'tanggal' => $booking['tanggal'],
+                'waktu_mulai' => $booking['waktu_mulai'],
+                'waktu_selesai' => $booking['waktu_selesai'],
+                'nama_penanggung_jawab' => $booking['nama_penanggung_jawab'],
+                'nomor_hp_penanggung_jawab' => $booking['nomor_hp_penanggung_jawab'],
+                'keperluan' => $booking['keperluan'] ?? '',
+                'status' => $booking['status'] ?? 'aktif',
+                'user_id' => $booking['user_id'],
+                'email' => $booking['email'] ?? '', // TAMBAHAN
+                'fullname' => $booking['fullname'] ?? '', // TAMBAHAN
+                'created_at' => $booking['created_at'],
+                'updated_at' => $booking['updated_at']
+            ];
+        }
+        
+        // ===== TAMBAHAN: ROLE INFO DALAM RESPONSE =====
+        $userRole = 'user';
+        if ($isAdmin) $userRole = 'admin';
+        elseif ($isAdminGedungUtama) $userRole = 'admin_gedungutama';
+        elseif ($isAdminPusdatin) $userRole = 'admin_pusdatin';
+        elseif ($isAdminBinaMarga) $userRole = 'admin_binamarga';
+        elseif ($isAdminCiptaKarya) $userRole = 'admin_ciptakarya';
+        elseif ($isAdminSDA) $userRole = 'admin_sda';
+        elseif ($isAdminGedungG) $userRole = 'admin_gedungg';
+        elseif ($isAdminHeritage) $userRole = 'admin_heritage';
+        elseif ($isAdminAuditorium) $userRole = 'admin_auditorium';
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'bookings' => $formattedBookings,
+            'total' => count($formattedBookings),
+            'title' => $title, // TAMBAHAN
+            'user_role' => $userRole, // TAMBAHAN
+            'message' => 'Data booking berhasil dimuat'
+        ]);
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Error in getDaftarBookingSaya: ' . $e->getMessage());
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat memuat data booking',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Request confirm untuk booking
+ * Endpoint: user/ruangan/requestConfirm
+ */
+public function requestConfirm()
+{
+    // Set content type JSON
+    $this->response->setContentType('application/json');
+    
+    try {
+        // Pastikan method POST
+        if (!$this->request->is('post')) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Method tidak diizinkan'
+            ]);
+        }
+        
+        // Pastikan user sudah login
+        if (!logged_in()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'User belum login'
+            ]);
+        }
+        
+        // Get input data
+        $input = $this->request->getJSON(true);
+        $bookingId = $input['booking_id'] ?? '';
+        
+        if (empty($bookingId)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'ID booking tidak valid'
+            ]);
+        }
+        
+        // Get user ID yang sedang login
+        $userId = user_id();
+        
+        // Load database connection
+        $db = \Config\Database::connect();
+        
+        // Cek apakah booking exists dan milik user yang sedang login
+        // REMOVED deleted_at condition karena kolom tidak ada
+        $query = $db->query("
+            SELECT * FROM public.booking_ruangan 
+            WHERE id = ? AND user_id = ?
+        ", [$bookingId, $userId]);
+        
+        $booking = $query->getRowArray();
+        
+        if (!$booking) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Booking tidak ditemukan atau bukan milik Anda'
+            ]);
+        }
+        
+        // Cek status booking - hanya yang 'aktif' yang bisa di-request confirm
+        if ($booking['status'] !== 'aktif') {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Hanya booking dengan status aktif yang dapat di-request confirm'
+            ]);
+        }
+        
+        // Update status booking menjadi pending_approval
+        $updateQuery = $db->query("
+            UPDATE public.booking_ruangan 
+            SET status = 'pending_approval', updated_at = NOW() 
+            WHERE id = ?
+        ", [$bookingId]);
+        
+        if ($updateQuery) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Request confirm berhasil dikirim. Menunggu approval dari admin.'
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Gagal melakukan request confirm'
+            ]);
+        }
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Error in requestConfirm: ' . $e->getMessage());
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Terjadi kesalahan sistem',
+            'error' => $e->getMessage()
+        ]);
+    }
+}
 }

@@ -40,13 +40,14 @@ use App\Models\PinjamRuanganModel;
                         <span class="badge bg-success ms-2">Langsung</span>
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="confirm-tab" data-bs-toggle="tab" data-bs-target="#confirm" 
-                            type="button" role="tab" aria-controls="confirm" aria-selected="false">
-                        <i class="bi bi-check-circle me-2"></i>Confirm Ruangan
-                        <span class="badge bg-warning ms-2">Perlu Approval</span>
+                                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="daftar-booking-tab" data-bs-toggle="tab" data-bs-target="#daftar-booking" 
+                            type="button" role="tab" aria-controls="daftar-booking" aria-selected="false">
+                        <i class="bi bi-list-check me-2"></i>Daftar Booking Saya
+                        <span class="badge bg-primary ms-2">My Bookings</span>
                     </button>
                 </li>
+
                 
                 <!-- Tab Pengaturan Ruangan - Hanya untuk Admin -->
                 <?php if (in_groups('admin_gedungutama') || 
@@ -290,11 +291,10 @@ use App\Models\PinjamRuanganModel;
                                         <label class="form-label">Filter Status</label>
                                         <select class="form-select" id="filterStatusBookingSaya">
                                             <option value="">Semua Status</option>
-                                            <option value="pending">Pending</option>
+                                            <option value="aktif">Pending</option>
                                             <option value="pending_approval">Menunggu Approval</option>
                                             <option value="disetujui">Disetujui</option>
                                             <option value="ditolak">Ditolak</option>
-                                            <option value="selesai">Selesai</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3 mb-3">

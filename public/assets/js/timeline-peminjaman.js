@@ -556,7 +556,7 @@ $(document).ready(function () {
           <div class="d-flex align-items-center">
             <i class="bi bi-exclamation-circle-fill me-2" style="font-size: 1.5rem; color: #dc3545;"></i>
             <div>
-              <h5 class="mb-1">Hitungan Telat: <span class="fw-bold">${diffDays} Hari</span></h5>
+              <h5 class="mb-1">Hitungan Keterlambatan: <span class="fw-bold">${diffDays} Hari</span></h5>
               <div>Tanggal kembali seharusnya: <strong>${tanggalKembaliFormatted}</strong></div>
               <div>Tanggal pengembalian aktual: <strong>${todayFormatted}</strong></div>
             </div>

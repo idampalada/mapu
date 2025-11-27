@@ -127,6 +127,10 @@ $routes->post('user/barang/kembalikanById', 'User\Barang::kembalikanById');
 
     // 👇 TAMBAHKAN ROUTE AUTO-FILL DI SINI 👇
     $routes->get('getUserLatestBookingData', 'User\Ruangan::getUserLatestBookingData');
+
+        // 👇 TAMBAHKAN ROUTES BARU UNTUK DAFTAR BOOKING SAYA 👇
+    $routes->get('getDaftarBookingSaya', 'User\Ruangan::getDaftarBookingSaya');
+    $routes->post('requestConfirm', 'User\Ruangan::requestConfirm');
     
     
     // Form routes
