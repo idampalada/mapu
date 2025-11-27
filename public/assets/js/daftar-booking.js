@@ -259,10 +259,7 @@ function displayBookings(bookings, responseData) {
 function getStatusBadge(status) {
   const statusConfig = {
     aktif: { class: "bg-secondary", text: "Pending" }, // Status default dari database
-    pending_approval: {
-      class: "bg-warning text-dark",
-      text: "Menunggu Approval",
-    },
+    pending: { class: "bg-warning text-dark", text: "Menunggu Approval" }, // Ubah dari 'pending_approval'
     disetujui: { class: "bg-success", text: "Disetujui" },
     ditolak: { class: "bg-danger", text: "Ditolak" },
     // 'selesai' tidak akan muncul karena di-exclude di backend
@@ -275,56 +272,91 @@ function getStatusBadge(status) {
   return '<span class="badge ' + config.class + '">' + config.text + "</span>";
 }
 
-// Get action button HTML
+// Get action button HTML - Updated untuk handle 2 tabel
 function getActionButton(booking) {
   const safeId = escapeHtml(booking.id || "");
   const safeNamaRuangan = escapeHtml(booking.nama_ruangan || "").replace(
     /'/g,
     "\\'"
   );
+  const sourceTable = booking.source_table || "booking";
 
-  // Berdasarkan database: status default adalah 'aktif', bukan 'pending'
+  // Berdasarkan status dan source table
   switch (booking.status) {
     case "aktif":
+      // Hanya dari booking_ruangan yang bisa request confirm
+      if (sourceTable === "booking") {
+        return `
+                    <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Request Confirm
+                    </button>
+                `;
+      }
+      break;
+    case "pending":
+      // Dari pinjam_ruangan yang sudah di-request confirm
       return `
-                <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Request Confirm
-                </button>
-            `;
-    case "pending_approval":
-      return `
-                <button class="btn btn-secondary btn-sm w-100" disabled>
-                    <i class="bi bi-clock me-1"></i>
-                    Menunggu Approval Admin
-                </button>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-secondary btn-sm flex-grow-1" disabled>
+                        <i class="bi bi-clock me-1"></i>
+                        Menunggu Approval Admin
+                    </button>
+                    ${
+                      booking.surat_permohonan
+                        ? `
+                    <a href="/uploads/documents/${booking.surat_permohonan}" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="Lihat Surat">
+                        <i class="bi bi-file-pdf"></i>
+                    </a>`
+                        : ""
+                    }
+                </div>
             `;
     case "disetujui":
       return `
-                <button class="btn btn-info btn-sm w-100" onclick="lihatDetailBooking('${safeId}')">
-                    <i class="bi bi-eye me-1"></i>
-                    Lihat Detail
-                </button>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-success btn-sm flex-grow-1" onclick="lihatDetailBooking('${safeId}', '${sourceTable}')">
+                        <i class="bi bi-check2-circle me-1"></i>
+                        Disetujui
+                    </button>
+                    ${
+                      booking.surat_permohonan
+                        ? `
+                    <a href="/uploads/documents/${booking.surat_permohonan}" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="Lihat Surat">
+                        <i class="bi bi-file-pdf"></i>
+                    </a>`
+                        : ""
+                    }
+                </div>
             `;
     case "ditolak":
       return `
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-info btn-sm" onclick="lihatDetailBooking('${safeId}')">
-                        <i class="bi bi-eye me-1"></i>
-                        Lihat Detail
-                    </button>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-outline-danger btn-sm flex-grow-1" onclick="lihatDetailBooking('${safeId}', '${sourceTable}')">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Ditolak
+                        </button>
+                        ${
+                          booking.surat_permohonan
+                            ? `
+                        <a href="/uploads/documents/${booking.surat_permohonan}" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="Lihat Surat">
+                            <i class="bi bi-file-pdf"></i>
+                        </a>`
+                            : ""
+                        }
+                    </div>
                     <button class="btn btn-outline-primary btn-sm" onclick="bookingUlang('${safeId}')">
                         <i class="bi bi-arrow-repeat me-1"></i>
                         Booking Ulang
                     </button>
                 </div>
             `;
-    // Status 'selesai' tidak akan muncul karena di-exclude di backend
     default:
       return `
-                <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
-                    <i class="bi bi-check-circle me-1"></i>
-                    Request Confirm
+                <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                    <i class="bi bi-question-circle me-1"></i>
+                    Status: ${booking.status}
                 </button>
             `;
   }
@@ -563,3 +595,186 @@ window.lihatDetailBooking = lihatDetailBooking;
 window.bookingUlang = bookingUlang;
 window.resetFilterBookingSaya = resetFilterBookingSaya;
 window.loadDaftarBookingSaya = loadDaftarBookingSaya;
+
+// ===== REQUEST CONFIRM WITH FILE UPLOAD FUNCTIONS =====
+
+// Function untuk request confirm dengan modal upload file
+function requestConfirmBooking(bookingId, namaRuangan) {
+  console.log("Request confirm for booking:", bookingId);
+
+  // Create modal HTML untuk upload file
+  const modalHtml = `
+        <div class="modal fade" id="requestConfirmModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Request Confirm - ${namaRuangan}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="requestConfirmForm" enctype="multipart/form-data">
+                            <input type="hidden" name="booking_id" value="${bookingId}">
+                            
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Untuk melanjutkan request confirm, silakan upload surat permohonan dalam format PDF.
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="surat_permohonan" class="form-label">
+                                    <i class="bi bi-file-pdf me-1"></i>
+                                    Surat Permohonan <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" class="form-control" id="surat_permohonan" name="surat_permohonan" 
+                                       accept=".pdf" required>
+                                <div class="form-text">
+                                    Format: PDF, Maksimal 2MB
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-warning" onclick="submitRequestConfirm()">
+                            <i class="bi bi-upload me-1"></i>
+                            Upload & Request Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+  // Remove existing modal jika ada
+  const existingModal = document.getElementById("requestConfirmModal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Add modal ke body
+  document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+  // Show modal
+  const modal = new bootstrap.Modal(
+    document.getElementById("requestConfirmModal")
+  );
+  modal.show();
+}
+
+// Function untuk submit form request confirm dengan file
+function submitRequestConfirm() {
+  const form = document.getElementById("requestConfirmForm");
+  const fileInput = document.getElementById("surat_permohonan");
+  const submitBtn = document.querySelector("#requestConfirmModal .btn-warning");
+
+  // Validasi file
+  if (!fileInput.files.length) {
+    alert("Silakan pilih file surat permohonan terlebih dahulu.");
+    return;
+  }
+
+  const file = fileInput.files[0];
+
+  // Validasi format PDF
+  if (file.type !== "application/pdf") {
+    alert("File harus dalam format PDF.");
+    return;
+  }
+
+  // Validasi ukuran file (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert("Ukuran file tidak boleh lebih dari 2MB.");
+    return;
+  }
+
+  // Disable button dan show loading
+  const originalText = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML =
+    '<i class="spinner-border spinner-border-sm me-1"></i>Uploading...';
+
+  // Prepare FormData
+  const formData = new FormData(form);
+
+  // Check if baseUrl is defined
+  const apiUrl =
+    (typeof baseUrl !== "undefined" ? baseUrl : "/") +
+    "user/ruangan/requestConfirm";
+
+  // Submit form dengan file upload
+  fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: formData,
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok: " + response.status);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Request confirm response:", data);
+
+      if (data.success) {
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("requestConfirmModal")
+        );
+        modal.hide();
+
+        // Show success message
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+            title: "Berhasil!",
+            text: data.message,
+            icon: "success",
+            confirmButtonColor: "#28a745",
+          }).then(() => {
+            // Reload data booking
+            loadDaftarBookingSaya();
+          });
+        } else {
+          alert(data.message);
+          // Reload data booking
+          loadDaftarBookingSaya();
+        }
+      } else {
+        throw new Error(data.message || "Gagal melakukan request confirm");
+      }
+    })
+    .catch((error) => {
+      console.error("Error request confirm:", error);
+
+      if (typeof Swal !== "undefined") {
+        Swal.fire({
+          title: "Gagal!",
+          text: error.message,
+          icon: "error",
+          confirmButtonColor: "#dc3545",
+        });
+      } else {
+        alert("Error: " + error.message);
+      }
+    })
+    .finally(() => {
+      // Reset button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    });
+}
+
+// Update lihatDetailBooking untuk handle source table
+function lihatDetailBooking(bookingId, sourceTable) {
+  console.log("Lihat detail booking:", bookingId, "from table:", sourceTable);
+  // Implementation untuk detail booking
+  alert(
+    "Detail booking " + bookingId + " dari tabel " + (sourceTable || "booking")
+  );
+}
+
+// Ensure global access
+window.requestConfirmBooking = requestConfirmBooking;
+window.submitRequestConfirm = submitRequestConfirm;

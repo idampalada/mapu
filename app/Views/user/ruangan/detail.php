@@ -292,7 +292,7 @@ use App\Models\PinjamRuanganModel;
                                         <select class="form-select" id="filterStatusBookingSaya">
                                             <option value="">Semua Status</option>
                                             <option value="aktif">Pending</option>
-                                            <option value="pending_approval">Menunggu Approval</option>
+                                            <option value="pending">Menunggu Approval</option>
                                             <option value="disetujui">Disetujui</option>
                                             <option value="ditolak">Ditolak</option>
                                         </select>
