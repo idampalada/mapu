@@ -1450,60 +1450,131 @@ $(document).ready(function () {
     // Validasi field yang diperlukan untuk surat yang dipilih
     let isValid = true;
 
+    // FIX UNTUK MASALAH DUPLICATE ELEMENT nomor_surat
+    // Replace di homepage.js bagian validation
+
     if (buatSuratPenanggungJawab) {
       // Reset validasi terlebih dahulu
       $(".surat-penanggung-field").removeClass("is-invalid");
 
-      // Debug: log nilai field sebelum validasi
-      console.log(
-        "Nama PJ Kendaraan:",
-        $("#nama_penanggung_jawab_kendaraan").val()
-      );
-      console.log(
-        "NIP PJ Kendaraan:",
-        $("#nip_penanggung_jawab_kendaraan").val()
-      );
-      console.log("Nama Kepala:", $("#nama_kepala_satuan_kerja").val());
-      console.log("NIP Kepala:", $("#nip_kepala_satuan_kerja").val());
+      // PERBAIKAN: Smart selector untuk field yang mungkin duplicate
+      function getFieldValue(fieldIds, fieldName) {
+        for (const fieldId of fieldIds) {
+          // Coba selector ID dulu
+          const elementById = $("#" + fieldId);
+          if (elementById.length > 0) {
+            const value = elementById.val();
+            if (value && value.trim() !== "") {
+              console.log(
+                `✅ ${fieldName} found by ID #${fieldId}: "${value}"`
+              );
+              return { value, element: elementById, found: true };
+            }
+          }
 
-      // Cek field-field penting
+          // Jika kosong, coba selector by name yang visible dan tidak disabled
+          const elementsByName = $(`[name="${fieldId}"]:visible:enabled`);
+          if (elementsByName.length > 0) {
+            for (let i = 0; i < elementsByName.length; i++) {
+              const elem = $(elementsByName[i]);
+              const value = elem.val();
+              if (value && value.trim() !== "") {
+                console.log(
+                  `✅ ${fieldName} found by name [name="${fieldId}"] index ${i}: "${value}"`
+                );
+                return { value, element: elem, found: true };
+              }
+            }
+          }
+        }
+
+        console.log(`❌ ${fieldName} tidak ditemukan atau kosong`);
+        return { value: "", element: null, found: false };
+      }
+
       const fields = [
-        { id: "nomor_surat", name: "Nomor Surat" },
-        { id: "tanggal_surat", name: "Tanggal Surat" },
-        { id: "tempat_surat", name: "Tempat Surat" },
+        { ids: ["nomor_surat"], name: "Nomor Surat" },
+        { ids: ["tanggal_surat"], name: "Tanggal Surat" },
+        { ids: ["tempat_surat"], name: "Tempat Surat" },
         {
-          id: "nama_penanggung_jawab_kendaraan",
+          ids: ["nama_penanggung_jawab_kendaraan"],
           name: "Nama Penanggung Jawab Kendaraan",
         },
         {
-          id: "nip_penanggung_jawab_kendaraan",
+          ids: ["nip_penanggung_jawab_kendaraan"],
           name: "NIP Penanggung Jawab Kendaraan",
         },
-        { id: "nama_kepala_satuan_kerja", name: "Nama Kepala Satuan Kerja" },
-        { id: "nip_kepala_satuan_kerja", name: "NIP Kepala Satuan Kerja" },
+        { ids: ["nama_kepala_satuan_kerja"], name: "Nama Kepala Satuan Kerja" },
+        { ids: ["nip_kepala_satuan_kerja"], name: "NIP Kepala Satuan Kerja" },
       ];
 
       let missingFields = [];
+
+      console.log("=== VALIDASI SURAT PENANGGUNG JAWAB (SMART) ===");
+
       fields.forEach((field) => {
-        const value = $("#" + field.id).val();
-        if (!value || value.trim() === "") {
-          $("#" + field.id).addClass("is-invalid");
+        const result = getFieldValue(field.ids, field.name);
+
+        if (!result.found || !result.value) {
           missingFields.push(field.name);
-          console.log("Field kosong:", field.name, "ID:", field.id);
+          if (result.element) {
+            result.element.addClass("is-invalid");
+          }
         }
       });
 
+      // KHUSUS DEBUG UNTUK NOMOR SURAT
+      if (missingFields.includes("Nomor Surat")) {
+        console.log("🔍 SPECIAL DEBUG UNTUK NOMOR SURAT:");
+        console.log("All nomor_surat elements:");
+        $('[name="nomor_surat"]').each(function (index, element) {
+          console.log(`  Element ${index}:`, {
+            id: element.id,
+            value: $(element).val(),
+            visible: $(element).is(":visible"),
+            disabled: $(element).is(":disabled"),
+            inModal: $(element).closest(".modal").length > 0,
+            modalId: $(element).closest(".modal").attr("id"),
+          });
+        });
+
+        // LAST RESORT: Ambil yang pertama yang ada value
+        const allNomorSurat = $('[name="nomor_surat"]');
+        for (let i = 0; i < allNomorSurat.length; i++) {
+          const elem = $(allNomorSurat[i]);
+          const val = elem.val();
+          if (val && val.trim() !== "") {
+            console.log(
+              `🚀 FALLBACK: Using nomor_surat element ${i} with value: "${val}"`
+            );
+            missingFields = missingFields.filter(
+              (field) => field !== "Nomor Surat"
+            );
+            break;
+          }
+        }
+      }
+
       if (missingFields.length > 0) {
+        console.log("❌ Missing fields:", missingFields);
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Lengkapi semua field untuk Surat Penanggung Jawab KDF",
+          html: `
+        <p>Field yang bermasalah:</p>
+        <ul style="text-align: left;">
+          ${missingFields.map((field) => `<li>${field}</li>`).join("")}
+        </ul>
+        <p><small>Cek Console (F12) untuk detail debug</small></p>
+      `,
           confirmButtonText: "OK",
           confirmButtonColor: "#dc3545",
         });
         isValid = false;
         return;
       }
+
+      console.log("✅ VALIDATION SURAT PENANGGUNG JAWAB PASSED");
     }
 
     if (buatSuratJalan) {

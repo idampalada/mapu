@@ -53,7 +53,12 @@ class SuratJalanController extends BaseController
         }
 
         try {
-            // Generate PDF
+            // Include logo converter
+            if (file_exists(FCPATH . 'logo_converter_final.php')) {
+                require_once FCPATH . 'logo_converter_final.php';
+            }
+
+            // Generate HTML dengan logo integration
             $html = $this->generateSuratJalanHtml($pinjam, $kendaraan, [
                 'tanggal_mulai' => $tanggal_mulai,
                 'jam_mulai' => $jam_mulai,
@@ -64,22 +69,32 @@ class SuratJalanController extends BaseController
                 'nip_pemegang_surat' => $nip_pemegang_surat
             ]);
 
+            // Setup DOMPDF dengan konfigurasi yang sama seperti surat permohonan
             $options = new Options();
             $options->set('isHtml5ParserEnabled', true);
             $options->set('isPhpEnabled', true);
             $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Times-Roman');
+            $options->set('chroot', FCPATH);
 
             $dompdf = new Dompdf($options);
             $dompdf->loadHtml($html);
             $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
 
-            // Generate random filename
+            // Generate filename dan simpan
             $filename = 'surat_jalan_' . time() . '_' . uniqid() . '.pdf';
             $filePath = ROOTPATH . 'public/uploads/documents/' . $filename;
             
+            // Pastikan direktori ada
+            $dir = ROOTPATH . 'public/uploads/documents/';
+            if (!is_dir($dir)) {
+                mkdir($dir, 0777, true);
+            }
+            
             // Simpan file PDF
             file_put_contents($filePath, $dompdf->output());
+            @chmod($filePath, 0644);
 
             // Update database dengan file yang dihasilkan
             $this->pinjamModel->update($pinjamId, [
@@ -124,192 +139,68 @@ class SuratJalanController extends BaseController
     
     protected function generateSuratJalanHtml($pinjam, $kendaraan, $additionalData)
     {
+        // Include logo converter
+        if (file_exists(FCPATH . 'logo_converter_final.php')) {
+            require_once FCPATH . 'logo_converter_final.php';
+        }
+
         // Format tanggal untuk tampilan
         $tanggalMulaiFormatted = date('d/m/Y', strtotime($additionalData['tanggal_mulai']));
         $tanggalSelesaiFormatted = date('d/m/Y', strtotime($additionalData['tanggal_selesai']));
         
-        // Tanggal saat ini untuk dokumen
-        $currentDate = date('d-m-Y');
+        // Data untuk template
+        $data = [
+            'nama' => esc($pinjam['nama_penanggung_jawab']),
+            'nip' => esc($pinjam['nip_nrp']),
+            'pangkat' => esc($pinjam['pangkat_golongan']),
+            'jabatan' => esc($pinjam['jabatan']),
+            'unitOrganisasi' => esc($pinjam['unit_organisasi'] ?? 'Setjen Kementerian PUPR'),
+            'urusan' => esc($additionalData['urusan_kedinasan']),
+            'kodeBarang' => esc($kendaraan['kode_barang']),
+            'noPolisi' => esc($kendaraan['no_polisi']),
+            'merk' => esc($kendaraan['merk']),
+            'tanggalMulaiFormatted' => $tanggalMulaiFormatted,
+            'tanggalSelesaiFormatted' => $tanggalSelesaiFormatted,
+            'jamMulai' => esc($additionalData['jam_mulai']),
+            'jamSelesai' => esc($additionalData['jam_selesai']),
+            'namaPemegangSurat' => esc($additionalData['nama_pemegang_surat'] ?? 'Pak Udin'),
+            'nipPemegangSurat' => esc($additionalData['nip_pemegang_surat'] ?? '12345678')
+        ];
 
-        // Escape data untuk HTML
-        $nama = esc($pinjam['nama_penanggung_jawab']);
-        $nip = esc($pinjam['nip_nrp']);
-        $pangkat = esc($pinjam['pangkat_golongan']);
-        $jabatan = esc($pinjam['jabatan']);
-        $unitOrganisasi = esc($pinjam['unit_organisasi'] ?? 'PUPR');
-        $urusan = esc($additionalData['urusan_kedinasan']);
-        $kodeBarang = esc($kendaraan['kode_barang']);
-        $noPolisi = esc($kendaraan['no_polisi']);
-        $merk = esc($kendaraan['merk']);
+        // Logo processing (SAMA SEPERTI SURAT PERMOHONAN)
+        $logoPath = FCPATH . 'assets/images/logo-pu.svg';
         
-        // Ambil nilai dari form atau gunakan default jika tidak ada
-        $namaPemegangSurat = esc($additionalData['nama_pemegang_surat'] ?? 'Pak Udin');
-        $nipPemegangSurat = esc($additionalData['nip_pemegang_surat'] ?? '12345678');
+        if (class_exists('LogoConverter')) {
+            $logoResult = \LogoConverter::getLogoForDompdf($logoPath);
+            
+            if ($logoResult['success'] && strlen($logoResult['data']) > 1000) {
+                $data['logo_data'] = $logoResult['data'];
+                $data['logo_method'] = $logoResult['method'];
+                $data['logo_found'] = true;
+                $data['logo_message'] = $logoResult['message'];
+            } else {
+                $data['logo_data'] = $this->createSimpleFallbackLogo();
+                $data['logo_method'] = 'fallback';
+                $data['logo_found'] = false;
+            }
+        }
 
-        // Template HTML untuk PDF
-        return <<<HTML
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Surat Jalan Kendaraan Dinas</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    font-size: 12pt;
-                    line-height: 1.5;
-                    margin: 0;
-                    padding: 20px;
-                }
-                .header {
-                    text-align: center;
-                    margin-bottom: 20px;
-                }
-                .header h1 {
-                    font-size: 14pt;
-                    text-transform: uppercase;
-                    margin: 0;
-                }
-                .header h2 {
-                    font-size: 13pt;
-                    text-transform: uppercase;
-                    margin: 5px 0;
-                }
-                .content {
-                    margin: 15px 0;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                table td {
-                    padding: 5px;
-                    vertical-align: top;
-                }
-                .permission-text {
-                    font-weight: bold;
-                    text-align: center;
-                    margin: 15px 0;
-                }
-                .requirements {
-                    margin: 20px 0;
-                }
-                .requirements ol {
-                    margin-left: 20px;
-                    padding-left: 0;
-                }
-                .requirements li {
-                    margin-bottom: 5px;
-                }
-                .signature {
-                    width: 100%;
-                    margin-top: 40px;
-                    display: table;
-                }
-                .signature-left {
-                    width: 50%;
-                    display: table-cell;
-                    text-align: center;
-                }
-                .signature-right {
-                    width: 50%;
-                    display: table-cell;
-                    text-align: center;
-                }
-                .signature-name {
-                    margin-top: 60px;
-                    text-decoration: underline;
-                    font-weight: bold;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>SURAT JALAN KENDARAAN DINAS FUNGSIONAL</h1>
-                <h2>KEMENTERIAN PEKERJAAN UMUM DAN PERUMAHAN RAKYAT</h2>
-                <p>NOMOR: ...................(2)</p>
-            </div>
-            
-            <div class="content">
-                <p>Dalam rangka penggunaan Kendaraan Dinas Fungsional pada Satuan Kerja {$unitOrganisasi} Kementerian PUPR, dengan ini:</p>
-                <table>
-                    <tr>
-                        <td width="25%">Nama</td>
-                        <td width="2%">:</td>
-                        <td>{$nama}</td>
-                    </tr>
-                    <tr>
-                        <td>NIP/NRP</td>
-                        <td>:</td>
-                        <td>{$nip}</td>
-                    </tr>
-                    <tr>
-                        <td>Pangkat/Golongan</td>
-                        <td>:</td>
-                        <td>{$pangkat}</td>
-                    </tr>
-                    <tr>
-                        <td>Jabatan</td>
-                        <td>:</td>
-                        <td>{$jabatan}</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div class="permission-text">
-                DIIZINKAN
-            </div>
-            
-            <p>untuk memakai 1 (satu) unit kendaraan dinas fungsional dalam rangka melaksanakan tugas kedinasan {$urusan} mulai tanggal {$tanggalMulaiFormatted} Jam {$additionalData['jam_mulai']} sampai dengan tanggal {$tanggalSelesaiFormatted} jam {$additionalData['jam_selesai']}.</p>
-            
-            <div class="content">
-                <p><strong>Data Kendaraan Dinas Fungsional:</strong></p>
-                <table>
-                    <tr>
-                        <td width="25%">Kode Barang</td>
-                        <td width="2%">:</td>
-                        <td>{$kodeBarang}</td>
-                    </tr>
-                    <tr>
-                        <td>Nomor Polisi</td>
-                        <td>:</td>
-                        <td>{$noPolisi}</td>
-                    </tr>
-                    <tr>
-                        <td>Merk / Type</td>
-                        <td>:</td>
-                        <td>{$merk}</td>
-                    </tr>
-                </table>
-                
-                <p>Dengan ketentuan:</p>
-                <ol>
-                    <li>Pemakai bertanggung jawab atas keamanan kendaraan selama pemakaian;</li>
-                    <li>Pemakai bertanggung jawab atas kehilangan, bersedia dikenakan Tuntutan Ganti Rugi sesuai dengan ketentuan peraturan perundang-undangan;</li>
-                    <li>Kendaraan Dinas Fungsional hanya untuk keperluan dinas/tugas, dan tidak diperkenankan untuk keperluan pribadi/keluarga;</li>
-                    <li>Pemakai bersedia mengembalikan Kendaraan Dinas kepada Satuan Kerja selaku Kuasa Pengguna Barang.</li>
-                </ol>
-            </div>
-            
-            <p style="text-align: right; margin-top: 20px;">Jakarta, {$currentDate}</p>
-            
-            <div class="signature">
-                <div class="signature-left">
-                    <div>Pemakai Kendaraan</div>
-                    <div>Dinas Fungsional</div>
-                    <div class="signature-name">{$nama}</div>
-                    <div>NIP: {$nip}</div>
-                </div>
-                <div class="signature-right">
-                    <div>Pemegang Surat</div>
-                    <div>Penanggung Jawab</div>
-                    <div class="signature-name">{$namaPemegangSurat}</div>
-                    <div>NIP: {$nipPemegangSurat}</div>
-                </div>
-            </div>
-        </body>
-        </html>
-        HTML;
+        // Generate HTML dengan template baru yang ada logo
+        return view('templates/surat_jalan', $data);
+    }
+
+    // Method helper untuk fallback logo
+    private function createSimpleFallbackLogo()
+    {
+        $svg = '<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="200" fill="#FFC107" stroke="#1A237E" stroke-width="3"/>
+                <text x="100" y="70" text-anchor="middle" fill="#1A237E" font-size="36px" font-weight="bold">PU</text>
+                <text x="100" y="110" text-anchor="middle" fill="#1A237E" font-size="14px">REPUBLIK</text>
+                <text x="100" y="130" text-anchor="middle" fill="#1A237E" font-size="14px">INDONESIA</text>
+                <text x="100" y="160" text-anchor="middle" fill="#1A237E" font-size="14px">KEMENTERIAN PUPR</text>
+               </svg>';
+        
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     protected function getUserData($userId)

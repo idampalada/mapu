@@ -1997,56 +1997,71 @@ private function generateSuratPenanggungJawab($data)
 // Perbarui method generateSuratPermohonan
 private function generateSuratPermohonan($data, $isFinal = false)
 {
+    // Include logo converter jika tersedia
+    if (file_exists(FCPATH . 'logo_converter_final.php')) {
+        require_once FCPATH . 'logo_converter_final.php';
+    }
+    
     // Setup DOMPDF
     helper('dompdf');
     
     $options = new \Dompdf\Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isPhpEnabled', true);
+    $options->set('isRemoteEnabled', true);
+    $options->set('defaultFont', 'Times-Roman');
+    $options->set('chroot', FCPATH);
     
     $dompdf = new \Dompdf\Dompdf($options);
     
-    // HTML template surat permohonan
-    $html = view('templates/surat_permohonan', $data);
+    // 🖼️ LOGO PROCESSING
+    $logoPath = FCPATH . 'assets/images/logo-pu.svg';
     
+    if (class_exists('LogoConverter')) {
+        $logoResult = \LogoConverter::getLogoForDompdf($logoPath);
+        
+        if ($logoResult['success'] && strlen($logoResult['data']) > 1000) {
+            $data['logo_data'] = $logoResult['data'];
+            $data['logo_method'] = $logoResult['method'];
+            $data['logo_found'] = true;
+            $data['logo_message'] = $logoResult['message'];
+        } else {
+            $data['logo_data'] = $this->createSimpleFallbackLogo();
+            $data['logo_method'] = 'fallback';
+            $data['logo_found'] = false;
+        }
+    } else {
+        $data['logo_data'] = $this->createSimpleFallbackLogo();
+        $data['logo_method'] = 'no_converter';
+        $data['logo_found'] = false;
+    }
+    
+    // Generate PDF (TIDAK BERUBAH)
+    $html = view('templates/surat_permohonan', $data);
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
     
-    // Simpan PDF ke folder
     $output = $dompdf->output();
-    
-    // PENTING: Gunakan nama file tanpa duplikasi
-    // Hindari huruf besar di awal yang bisa menyebabkan masalah case-sensitive
     $timestamp = time();
     $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
     
-    if ($isFinal) {
-        $fileName = "surat_permohonan_{$timestamp}_{$cleanName}.pdf";
-    } else {
-        $fileName = "draft_surat_{$timestamp}_{$cleanName}.pdf"; 
-    }
+    $fileName = $isFinal ? "surat_permohonan_{$timestamp}_{$cleanName}.pdf" 
+                         : "draft_surat_{$timestamp}_{$cleanName}.pdf";
     
     $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
     
-    // Debug log
-    log_message('debug', 'Menyimpan PDF: ' . $filePath);
-    
-    // Pastikan direktori ada
     $dir = ROOTPATH . 'public/uploads/documents/';
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
     
-    // Simpan file dan set permission
     file_put_contents($filePath, $output);
     @chmod($filePath, 0644);
     
-    // Debug log konfirmasi
-    log_message('debug', 'File PDF berhasil disimpan: ' . $fileName);
-    
     return $fileName;
 }
+
 // Tambahkan function ini ke controller AsetKendaraan
 public function checkFile($filename = null)
 {
