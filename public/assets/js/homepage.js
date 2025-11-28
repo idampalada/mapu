@@ -1633,10 +1633,17 @@ $(document).ready(function () {
 
     // Proses Surat Penanggung Jawab jika dipilih
     if (buatSuratPenanggungJawab) {
+      const nomorSurat =
+        $("#nomor_surat").val() ||
+        $('input[name="nomor_surat"]:visible').val() ||
+        "";
+      console.log("NOMOR SURAT yang dikirim:", nomorSurat); // 👈 debug untuk pastikan terisi
+
       const suratPenanggungData = new FormData();
       suratPenanggungData.append("pinjam_id", pinjamId);
-      suratPenanggungData.append("nomor_surat", $("#nomor_surat").val());
+      suratPenanggungData.append("nomor_surat", nomorSurat);
       suratPenanggungData.append("tanggal_surat", $("#tanggal_surat").val());
+
       suratPenanggungData.append("tempat_surat", $("#tempat_surat").val());
       suratPenanggungData.append(
         "nama_penanggung_jawab_kendaraan",

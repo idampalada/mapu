@@ -1278,13 +1278,13 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-2">
                                     <label for="nama_kepala_satuan_kerja" class="form-label">Nama Kepala Satuan Kerja</label>
-                                    <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja" value="Udin">
+                                    <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja" value="Suherman">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group mb-2">
                                     <label for="nip_kepala_satuan_kerja" class="form-label">NIP Kepala Satuan Kerja</label>
-                                    <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja" value="083478">
+                                    <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja" value="13579">
                                 </div>
                             </div>
                         </div>
