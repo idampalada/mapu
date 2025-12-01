@@ -422,49 +422,68 @@ public function generateSuratJalan()
 // Method untuk generate PDF surat jalan
 private function generateSuratJalanPdf($data)
 {
-    // Setup DOMPDF
+    // Include logo converter jika tersedia
+    if (file_exists(FCPATH . 'logo_converter_final.php')) {
+        require_once FCPATH . 'logo_converter_final.php';
+    }
+
     helper('dompdf');
-    
+
     $options = new \Dompdf\Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isPhpEnabled', true);
-    
+    $options->set('isRemoteEnabled', true);
+    $options->set('defaultFont', 'Times-Roman');
+    $options->set('chroot', FCPATH);
+
     $dompdf = new \Dompdf\Dompdf($options);
-    
-    // HTML template surat jalan
+
+    // === LOGO PROCESSING (SAMA SEPERTI SURAT LAIN) ===
+    $logoPath = FCPATH . 'assets/images/logo-pu.svg';
+
+    if (class_exists('LogoConverter')) {
+        $logoResult = \LogoConverter::getLogoForDompdf($logoPath);
+
+        if ($logoResult['success'] && strlen($logoResult['data']) > 1000) {
+            $data['logo_data'] = $logoResult['data'];
+            $data['logo_method'] = $logoResult['method'];
+            $data['logo_found'] = true;
+        } else {
+            $data['logo_data'] = $this->createSimpleFallbackLogo();
+            $data['logo_method'] = 'fallback';
+            $data['logo_found'] = false;
+        }
+    } else {
+        $data['logo_data'] = $this->createSimpleFallbackLogo();
+        $data['logo_method'] = 'no_converter';
+        $data['logo_found'] = false;
+    }
+
+    // Load template header baru
     $html = view('templates/surat_jalan', $data);
-    
+
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
-    
-    // Simpan PDF ke folder
+
     $output = $dompdf->output();
-    
+
     $timestamp = time();
     $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
     $fileName = "surat_jalan_{$timestamp}_{$cleanName}.pdf";
-    
+
     $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
-    
-    // Debug log
-    log_message('debug', 'Menyimpan Surat Jalan: ' . $filePath);
-    
-    // Pastikan direktori ada
-    $dir = ROOTPATH . 'public/uploads/documents/';
-    if (!is_dir($dir)) {
-        mkdir($dir, 0777, true);
+
+    if (!is_dir(ROOTPATH . 'public/uploads/documents/')) {
+        mkdir(ROOTPATH . 'public/uploads/documents/', 0777, true);
     }
-    
-    // Simpan file dan set permission
+
     file_put_contents($filePath, $output);
     @chmod($filePath, 0644);
-    
-    // Debug log konfirmasi
-    log_message('debug', 'File Surat Jalan berhasil disimpan: ' . $fileName);
-    
+
     return $fileName;
 }
+
 
 // Method untuk upload file surat jalan
 public function uploadSuratJalan()
