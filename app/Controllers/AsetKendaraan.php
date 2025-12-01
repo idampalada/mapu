@@ -1950,49 +1950,71 @@ public function generateSuratPenanggungJawabKdf()
 // Method untuk generate PDF surat penanggung jawab
 private function generateSuratPenanggungJawab($data)
 {
-    // Setup DOMPDF
+    // Include logo converter jika tersedia
+    if (file_exists(FCPATH . 'logo_converter_final.php')) {
+        require_once FCPATH . 'logo_converter_final.php';
+    }
+
     helper('dompdf');
-    
+
     $options = new \Dompdf\Options();
     $options->set('isHtml5ParserEnabled', true);
     $options->set('isPhpEnabled', true);
-    
+    $options->set('isRemoteEnabled', true);
+    $options->set('defaultFont', 'Times-Roman');
+    $options->set('chroot', FCPATH);
+
     $dompdf = new \Dompdf\Dompdf($options);
-    
-    // HTML template surat penanggung jawab
+
+    // 🖼️ LOGO PROCESSING
+    $logoPath = FCPATH . 'assets/images/logo-pu.svg';
+
+    if (class_exists('LogoConverter')) {
+        $logoResult = \LogoConverter::getLogoForDompdf($logoPath);
+
+        if ($logoResult['success'] && strlen($logoResult['data']) > 1000) {
+            $data['logo_data'] = $logoResult['data'];
+            $data['logo_method'] = $logoResult['method'];
+            $data['logo_found'] = true;
+            $data['logo_message'] = $logoResult['message'];
+        } else {
+            $data['logo_data'] = $this->createSimpleFallbackLogo();
+            $data['logo_method'] = 'fallback';
+            $data['logo_found'] = false;
+        }
+    } else {
+        $data['logo_data'] = $this->createSimpleFallbackLogo();
+        $data['logo_method'] = 'no_converter';
+        $data['logo_found'] = false;
+    }
+
+    // Load HTML template
     $html = view('templates/surat_penanggung_jawab', $data);
-    
+
     $dompdf->loadHtml($html);
     $dompdf->setPaper('A4', 'portrait');
     $dompdf->render();
-    
+
     // Simpan PDF
     $output = $dompdf->output();
-    
     $timestamp = time();
     $cleanName = str_replace(' ', '_', strtolower($data['nama_penanggung_jawab']));
     $fileName = "surat_penanggung_jawab_{$timestamp}_{$cleanName}.pdf";
-    
+
     $filePath = ROOTPATH . 'public/uploads/documents/' . $fileName;
-    
-    // Debug log
-    log_message('debug', 'Menyimpan Surat Penanggung Jawab: ' . $filePath);
-    
-    // Pastikan direktori ada
+
+    // Simpan file
     $dir = ROOTPATH . 'public/uploads/documents/';
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
-    
-    // Simpan file dan set permission
+
     file_put_contents($filePath, $output);
     @chmod($filePath, 0644);
-    
-    // Debug log konfirmasi
-    log_message('debug', 'File Surat Penanggung Jawab berhasil disimpan: ' . $fileName);
-    
+
     return $fileName;
 }
+
 
 // Perbarui method generateSuratPermohonan
 private function generateSuratPermohonan($data, $isFinal = false)

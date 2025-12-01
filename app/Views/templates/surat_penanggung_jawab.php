@@ -1,85 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>SURAT PENANGGUNG JAWAB KENDARAAN DINAS FUNGSIONAL</title>
+    <meta charset="UTF-8">
+    <title>Surat Penanggung Jawab KDF</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            font-size: 11pt;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
             line-height: 1.5;
-            margin: 20px;
+            margin: 0;
+            padding: 20px;
+            color: #000;
         }
-        h1, h2, h3 {
-            text-align: center;
-            margin: 5px 0;
-        }
+
         .header {
             text-align: center;
-            border-bottom: 2px solid black;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            min-height: 120px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 20px;
         }
+
+        .logo-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-container img {
+            max-width: 90px;
+            max-height: 90px;
+            object-fit: contain;
+        }
+
+        .logo-fallback {
+            font-size: 8pt;
+            color: #0066CC;
+            text-align: center;
+            line-height: 1.2;
+            font-weight: bold;
+            padding: 5px;
+        }
+
+        .header-text {
+            margin-left: 120px;
+            text-align: center;
+        }
+
+        .header-text h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        .header-text h2 {
+            font-size: 16pt;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            color: #000;
+            text-transform: uppercase;
+        }
+
+        .header-text .address {
+            font-size: 11pt;
+            margin: 10px 0;
+            line-height: 1.3;
+        }
+
+        .letter-title {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 30px 0 10px;
+            text-transform: uppercase;
+        }
+
+        .letter-number {
+            text-align: center;
+            font-size: 12pt;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
         .content {
-            margin-bottom: 20px;
+            margin: 20px 0;
+            text-align: justify;
         }
+
         table {
             width: 100%;
-            margin: 10px 0;
+            margin: 15px 0;
+            border-collapse: collapse;
         }
+
         table td {
-            padding: 3px;
+            padding: 5px 0;
             vertical-align: top;
         }
-        table td:first-child {
-            width: 200px;
-        }
-        .ketentuan {
-            margin-bottom: 20px;
-        }
-        .ketentuan ol {
-            margin-top: 5px;
-            padding-left: 25px;
-        }
+
         .signature-section {
             margin-top: 50px;
             page-break-inside: avoid;
         }
+
         .signature-date {
             text-align: right;
             margin-bottom: 30px;
         }
+
         .signature-container {
             display: flex;
-            width: 100%;
+            justify-content: space-between;
         }
+
         .signature-left, .signature-right {
-            width: 50%;
+            width: 45%;
             text-align: center;
         }
+
         .signature-name {
-            text-decoration: underline;
             margin-top: 60px;
             font-weight: bold;
+            text-decoration: underline;
         }
-        .footer {
-            margin-top: 30px;
-            font-size: 10pt;
-        }
-        .footer p {
-            margin: 3px 0;
+
+        .signature-nip {
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>SURAT PENANGGUNG JAWAB KENDARAAN DINAS FUNGSIONAL</h2>
-        <h3>KEMENTERIAN PEKERJAAN UMUM DAN PERUMAHAN RAKYAT</h3>
-        <p>NOMOR: <?= isset($nomor_surat) ? $nomor_surat : '................................................' ?></p>
+
+<!-- Kop Surat -->
+<div class="header">
+    <div class="logo-container">
+        <?php if (!empty($logo_data)): ?>
+            <img src="<?= htmlspecialchars($logo_data) ?>" alt="Logo PUPR">
+        <?php else: ?>
+            <div class="logo-fallback">
+                <div>REPUBLIK</div>
+                <div>INDONESIA</div>
+                <div style="font-size: 10pt; margin-top: 5px;">PUPR</div>
+            </div>
+        <?php endif; ?>
     </div>
-    
-    <div class="content">
-        <p>Dalam rangka penggunaan Kendaraan Dinas Fungsional pada Satuan Kerja <?= $unit_organisasi ?> Kementerian PUPR, dengan ini:</p>
-        
+
+    <div class="header-text">
+        <h1>KEMENTERIAN PEKERJAAN UMUM</h1>
+        <h2>SEKRETARIAT JENDERAL</h2>
+        <div class="address">
+            Jl. Pattimura Nomor 20, Selong, Kebayoran Baru, Jakarta Selatan, DKI Jakarta 12110<br>
+            Telepon (021) 7392681
+        </div>
+    </div>
+</div>
+
+<!-- Judul Surat -->
+<div class="letter-title">
+    SURAT PENANGGUNG JAWAB KENDARAAN DINAS FUNGSIONAL
+</div>
+
+<div class="letter-number">
+    NOMOR: <?= isset($nomor_surat) ? htmlspecialchars($nomor_surat) : '.................................................' ?>
+</div>
+
+<!-- Konten selanjutnya -->
+<div class="content">
+    <p>Dalam rangka penggunaan Kendaraan Dinas Fungsional pada Satuan Kerja <?= $unit_organisasi ?> Kementerian PUPR, dengan ini:</p>
+</div>
+
+
         <table>
             <tr>
                 <td>Nama</td>
