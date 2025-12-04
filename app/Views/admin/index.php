@@ -949,7 +949,7 @@
     </div>
 <?php endif; ?>
 
-<!-- Update Modal Edit Surat - Tambahkan TTE Options -->
+<!-- Modal Edit Surat dengan TTE Credential Input -->
 <div class="modal fade" id="modalEditSurat" tabindex="-1" aria-labelledby="modalEditSuratLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -997,7 +997,7 @@
                             </div>
                         </div>
 
-                        <!-- KOLOM KANAN: TTE Options -->
+                        <!-- KOLOM KANAN: TTE Options dengan Credential Input -->
                         <div class="col-md-5">
                             <h6 class="mb-3 text-success"><i class="bi bi-shield-check"></i> Tanda Tangan Elektronik</h6>
                             
@@ -1011,61 +1011,119 @@
                                     </div>
 
                                     <div id="tteOptions">
-                                        <div class="alert alert-info py-2 mb-3">
-                                            <small>
-                                                <i class="bi bi-info-circle"></i>
-                                                <strong>Info:</strong> Credential TTE diambil dari konfigurasi sistem.
-                                                <br>NIK: <?= substr(getenv('TTE_NIK'), 0, 4); ?>***********
-                                            </small>
-                                        </div>
-
-                                        <div class="form-group mb-3">
-                                            <label for="tte_position" class="form-label">Posisi Tanda Tangan</label>
-                                            <select class="form-select" name="tte_position" id="tte_position">
-                                                <option value="visible_bottom" selected>Halaman 2 - Posisi Default</option>
-                                                <option value="visible_custom">Halaman 2 - Posisi Kustom</option>
-                                                <option value="invisible">Invisible (Tidak Terlihat)</option>
-                                            </select>
-                                        </div>
-
-                                        <div id="customPosition" style="display:none;">
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Posisi X</label>
-                                                    <input type="number" class="form-control form-control-sm" name="tte_x" value="250" min="0" max="2000">
-                                                </div>
-                                                <div class="col-6">
-                                                    <label class="form-label">Posisi Y</label>
-                                                    <input type="number" class="form-control form-control-sm" name="tte_y" value="730" min="0" max="2000">
-                                                </div>
+                                        <!-- SECTION CREDENTIAL TTE -->
+                                        <div class="card border-warning mb-3">
+                                            <div class="card-header bg-warning bg-opacity-10 py-2">
+                                                <h6 class="mb-0 text-warning">
+                                                    <i class="bi bi-key"></i> Credential Penandatangan
+                                                </h6>
                                             </div>
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Lebar</label>
-                                                    <input type="number" class="form-control form-control-sm" name="tte_width" value="150" min="50" max="2000">
+                                            <div class="card-body py-2">
+                                                <div class="mb-3">
+                                                    <label for="tte_nik" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_nik" name="tte_nik" 
+                                                           placeholder="Masukkan NIK 16 digit" maxlength="16" required>
+                                                    <div class="form-text">NIK harus sudah terdaftar di sistem BSrE</div>
                                                 </div>
-                                                <div class="col-6">
-                                                    <label class="form-label">Tinggi</label>
-                                                    <input type="number" class="form-control form-control-sm" name="tte_height" value="55" min="30" max="2000">
+                                                
+                                                <div class="mb-3">
+                                                    <label for="tte_passphrase" class="form-label">Passphrase <span class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="password" class="form-control form-control-sm" id="tte_passphrase" name="tte_passphrase" 
+                                                               placeholder="Masukkan passphrase TTE" required>
+                                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphrase">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="form-text">Passphrase untuk akses sertifikat elektronik</div>
+                                                </div>
+                                                
+                                                <div class="mb-3">
+                                                    <label for="tte_qr_link" class="form-label">Link QR Code <span class="text-danger">*</span></label>
+                                                    <input type="url" class="form-control form-control-sm" id="tte_qr_link" name="tte_qr_link" 
+                                                           placeholder="https://example.com" value="https://s.pu.go.id" required>
+                                                    <div class="form-text">Link yang akan ditampilkan pada QR code</div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="form-group mb-3">
-                                            <label for="tte_reason" class="form-label">Alasan Penandatanganan</label>
-                                            <input type="text" class="form-control form-control-sm" id="tte_reason" name="tte_reason" 
-                                                   value="Dokumen telah disetujui dan ditandatangani">
-                                        </div>
+                                        <!-- SECTION POSISI SIGNATURE -->
+                                        <div class="card border-info mb-3">
+                                            <div class="card-header bg-info bg-opacity-10 py-2">
+                                                <h6 class="mb-0 text-info">
+                                                    <i class="bi bi-crosshair"></i> Posisi Tanda Tangan
+                                                </h6>
+                                            </div>
+                                            <div class="card-body py-2">
+                                                <div class="form-group mb-3">
+                                                    <label for="tte_position" class="form-label">Posisi Tanda Tangan</label>
+                                                    <select class="form-select form-select-sm" name="tte_position" id="tte_position">
+                                                        <option value="visible_bottom" selected>Halaman 2 - Posisi Default</option>
+                                                        <option value="visible_custom">Halaman 2 - Posisi Kustom</option>
+                                                        <option value="invisible">Invisible (Tidak Terlihat)</option>
+                                                    </select>
+                                                </div>
 
-                                        <div class="form-group mb-3">
-                                            <label for="tte_location" class="form-label">Lokasi Penandatanganan</label>
-                                            <input type="text" class="form-control form-control-sm" id="tte_location" name="tte_location" value="Jakarta">
+                                                <div id="customPosition" style="display:none;">
+                                                    <div class="row mb-3">
+                                                        <div class="col-6">
+                                                            <label class="form-label">Posisi X</label>
+                                                            <input type="number" class="form-control form-control-sm" 
+                                                                   name="tte_x" value="250" min="0" max="2000">
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <label class="form-label">Posisi Y</label>
+                                                            <input type="number" class="form-control form-control-sm" 
+                                                                   name="tte_y" value="730" min="0" max="2000">
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-6">
+                                                            <label class="form-label">Lebar</label>
+                                                            <input type="number" class="form-control form-control-sm" 
+                                                                   name="tte_width" value="150" min="50" max="500">
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <label class="form-label">Tinggi</label>
+                                                            <input type="number" class="form-control form-control-sm" 
+                                                                   name="tte_height" value="55" min="30" max="300">
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="alert alert-info py-2">
+                                                        <small>
+                                                            <i class="bi bi-info-circle"></i>
+                                                            <strong>Panduan Koordinat:</strong><br>
+                                                            • X, Y: 0-2000 (koordinat dalam PDF)<br>
+                                                            • Halaman A4 ≈ 595x842 points<br>
+                                                            • Test dengan nilai kecil dulu, lalu adjust
+                                                        </small>
+                                                    </div>
+                                                </div>
+
+                                                <div class="form-group mb-3">
+                                                    <label for="tte_reason" class="form-label">Alasan Penandatanganan</label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_reason" name="tte_reason" 
+                                                           value="Dokumen telah disetujui dan ditandatangani">
+                                                </div>
+
+                                                <div class="form-group mb-3">
+                                                    <label for="tte_location" class="form-label">Lokasi Penandatanganan</label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_location" name="tte_location" 
+                                                           value="Jakarta">
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="alert alert-warning py-2">
                                             <small>
                                                 <i class="bi bi-exclamation-triangle"></i>
-                                                <strong>Perhatian:</strong> Proses TTE membutuhkan waktu 30-60 detik.
+                                                <strong>Perhatian:</strong> 
+                                                <ul class="mb-0 mt-1">
+                                                    <li>Proses TTE membutuhkan waktu 30-60 detik</li>
+                                                    <li>Pastikan NIK sudah terdaftar di BSrE dengan status AKTIF</li>
+                                                    <li>Credential akan digunakan sekali saja, tidak disimpan</li>
+                                                </ul>
                                             </small>
                                         </div>
                                     </div>
@@ -1087,179 +1145,6 @@
         </div>
     </div>
 </div>
-<style>
-/* CSS untuk Modal TTE - Tambahkan ke file CSS utama Anda */
-
-/* Modal TTE Styles */
-.modal-xl {
-  max-width: 1100px;
-}
-
-/* TTE Card Styling */
-.card.border-success {
-  border-width: 2px !important;
-  transition: all 0.3s ease;
-}
-
-.card.border-success:hover {
-  box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2) !important;
-}
-
-/* Form Switch for TTE */
-.form-check-input:checked {
-  background-color: #198754;
-  border-color: #198754;
-}
-
-.form-check-input:focus {
-  border-color: #86b7fe;
-  outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
-}
-
-/* Alert Styling */
-.alert-info {
-  background-color: #e7f3ff;
-  border-color: #b6d7ff;
-  color: #004085;
-}
-
-.alert-warning {
-  background-color: #fff3cd;
-  border-color: #ffecb5;
-  color: #664d03;
-}
-
-/* Form Control Small */
-.form-control-sm {
-  font-size: 0.875rem;
-  padding: 0.375rem 0.75rem;
-}
-
-/* Button Loading State */
-.btn-loading {
-  position: relative;
-}
-
-.btn-loading:disabled {
-  opacity: 0.7;
-}
-
-.spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Animation untuk collapse */
-.tte-collapse {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Custom Position Inputs */
-#customPosition .form-control-sm {
-  text-align: center;
-  font-weight: 500;
-}
-
-/* TTE Status Badge */
-.tte-status-badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-}
-
-.tte-signed {
-  background-color: #d1e7dd;
-  color: #0f5132;
-  border: 1px solid #a3d9a5;
-}
-
-.tte-not-signed {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f1aeb5;
-}
-
-/* Modal Header dengan gradient */
-.modal-header {
-  background: linear-gradient(90deg, #0d6efd 0%, #198754 100%);
-  color: white;
-}
-
-.modal-header .btn-close {
-  filter: invert(1);
-}
-
-/* Section Headers */
-.section-header {
-  border-bottom: 2px solid #dee2e6;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.text-primary {
-  color: #0d6efd !important;
-}
-
-.text-success {
-  color: #198754 !important;
-}
-
-/* Responsive untuk mobile */
-@media (max-width: 768px) {
-  .modal-xl {
-    max-width: 95%;
-    margin: 1rem;
-  }
-  
-  .row > .col-md-7,
-  .row > .col-md-5 {
-    margin-bottom: 1rem;
-  }
-  
-  #customPosition .row > .col-6 {
-    margin-bottom: 0.5rem;
-  }
-}
-
-/* Form validation styles */
-.is-valid {
-  border-color: #198754;
-}
-
-.is-invalid {
-  border-color: #dc3545;
-}
-
-/* Loading overlay untuk modal */
-.modal-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
-  border-radius: 0.375rem;
-}
-
-/* Icon styles */
-.bi {
-  margin-right: 0.25rem;
-}
-
-/* Card hover effect */
-.card {
-  transition: transform 0.2s ease-in-out;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-}
-
-    </style>
 
 <div class="modal fade" id="modalPilihTambah" tabindex="-1" aria-labelledby="modalPilihTambahLabel" aria-hidden="true">
     <div class="modal-dialog">

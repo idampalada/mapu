@@ -2509,9 +2509,6 @@ private function getJenisKendaraan($kategoriId)
     }
 }
 
-/**
- * Update method updateSuratWithTTE yang sudah diperbaiki
- */
 public function updateSuratWithTTE()
 {
     try {
@@ -2546,8 +2543,6 @@ public function updateSuratWithTTE()
             ]);
         }
         
-        log_message('debug', 'Pinjam data loaded: ' . json_encode($pinjam));
-        
         $asset = $asetModel->find($pinjam['kendaraan_id']);
         if (!$asset) {
             return $this->response->setJSON([
@@ -2555,8 +2550,6 @@ public function updateSuratWithTTE()
                 'error' => 'Data kendaraan tidak ditemukan'
             ]);
         }
-        
-        log_message('debug', 'Asset data loaded: ' . json_encode($asset));
         
         // Hapus file surat permohonan DRAFT lama jika ada
         if (!empty($pinjam['surat_permohonan'])) {
@@ -2568,7 +2561,6 @@ public function updateSuratWithTTE()
         }
         
         // Siapkan data PDF dengan nomor surat yang baru
-        log_message('debug', 'About to call preparePDFData...');
         $pdfData = $this->preparePDFData($pinjam, $asset, [
             'nomor_surat' => $nomorSurat,
             'tanggal_surat' => $tanggalSurat,
@@ -2576,10 +2568,8 @@ public function updateSuratWithTTE()
             'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
             'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
         ]);
-        log_message('debug', 'preparePDFData completed successfully');
         
         // Generate surat permohonan PDF FINAL (dengan nomor)
-        log_message('debug', 'About to generate PDF...');
         $suratPermohonanName = $this->generateSuratPermohonan($pdfData, true);
         if (!$suratPermohonanName) {
             return $this->response->setJSON([
@@ -2587,7 +2577,6 @@ public function updateSuratWithTTE()
                 'error' => 'Gagal generate surat permohonan PDF'
             ]);
         }
-        log_message('debug', 'PDF generated: ' . $suratPermohonanName);
         
         $pdfPath = ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName;
         $finalFileName = $suratPermohonanName;
@@ -2596,28 +2585,56 @@ public function updateSuratWithTTE()
         if ($enableTTE) {
             log_message('debug', 'TTE enabled, processing signature...');
             
+            // AMBIL CREDENTIAL DARI INPUT ADMIN (BUKAN DARI .ENV)
+            $tteNik = $this->request->getPost('tte_nik');
+            $ttePassphrase = $this->request->getPost('tte_passphrase');
+            $tteQrLink = $this->request->getPost('tte_qr_link');
+            
+            // Validasi credential TTE dari input
+            if (empty($tteNik) || strlen($tteNik) !== 16) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'NIK TTE harus 16 digit'
+                ]);
+            }
+            
+            if (empty($ttePassphrase) || strlen($ttePassphrase) < 6) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Passphrase TTE minimal 6 karakter'
+                ]);
+            }
+            
+            if (empty($tteQrLink) || !filter_var($tteQrLink, FILTER_VALIDATE_URL)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Link QR TTE harus berupa URL yang valid'
+                ]);
+            }
+            
             $tteData = [
-                'nik' => getenv('TTE_NIK'),
-                'passphrase' => getenv('TTE_PASSPHRASE'),
+                'nik' => $tteNik,                                                    // DARI INPUT
+                'passphrase' => $ttePassphrase,                                      // DARI INPUT
+                'qr_link' => $tteQrLink,                                            // DARI INPUT
                 'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
-                'x' => $this->request->getPost('tte_x') ?: 650,
-                'y' => $this->request->getPost('tte_y') ?: 250,
-                'width' => $this->request->getPost('tte_width') ?: 200,
-                'height' => $this->request->getPost('tte_height') ?: 200,
+                'x' => $this->request->getPost('tte_x') ?: 250,
+                'y' => $this->request->getPost('tte_y') ?: 730,
+                'width' => $this->request->getPost('tte_width') ?: 150,
+                'height' => $this->request->getPost('tte_height') ?: 55,
                 'reason' => $this->request->getPost('tte_reason') ?: 'Dokumen telah ditandatangani secara elektronik',
                 'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
             ];
             
-            // Validasi credential TTE
-            if (!$tteData['nik'] || !$tteData['passphrase']) {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'error' => 'Credential TTE tidak ditemukan di konfigurasi sistem'
-                ]);
-            }
+            // Log credential info (tanpa password untuk keamanan)
+            log_message('debug', 'TTE Data: ' . json_encode([
+                'nik' => $tteNik,
+                'qr_link' => $tteQrLink,
+                'position' => $tteData['position'],
+                'x' => $tteData['x'],
+                'y' => $tteData['y']
+            ]));
             
             // Panggil TTE service
-            log_message('debug', 'Calling signPDFWithTTE...');
             $signedResult = $this->signPDFWithTTE($pdfPath, $tteData);
             
             if ($signedResult['success']) {
@@ -2625,9 +2642,8 @@ public function updateSuratWithTTE()
                 @unlink($pdfPath);
                 $finalFileName = $signedResult['filename'];
                 
-                log_message('info', 'TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId);
+                log_message('info', 'TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
             } else {
-                // TTE gagal
                 log_message('error', 'TTE gagal untuk Pinjam ID: ' . $pinjamId . ' - Error: ' . $signedResult['error']);
                 
                 return $this->response->setJSON([
@@ -2651,23 +2667,21 @@ public function updateSuratWithTTE()
         
         if ($enableTTE) {
             $updateData['tte_signed_at'] = date('Y-m-d H:i:s');
-            $updateData['tte_signer_nik'] = getenv('TTE_NIK');
+            $updateData['tte_signer_nik'] = $tteNik;      // SIMPAN NIK DARI INPUT
         }
         
         $result = $model->update($pinjamId, $updateData);
-        log_message('debug', 'Database updated: ' . ($result ? 'Success' : 'Failed'));
         
         return $this->response->setJSON([
             'success' => true,
             'message' => $enableTTE ? 'Surat berhasil dinomori dan ditandatangani elektronik' : 'Surat berhasil dinomori',
             'file_name' => $finalFileName,
             'tte_applied' => $enableTTE,
-            'tte_signer' => $enableTTE ? getenv('TTE_NIK') : null
+            'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null  // MASK NIK UNTUK KEAMANAN
         ]);
         
     } catch (\Exception $e) {
         log_message('error', 'Error updateSuratWithTTE: ' . $e->getMessage());
-        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
         return $this->response->setJSON([
             'success' => false,
             'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
@@ -2676,7 +2690,7 @@ public function updateSuratWithTTE()
 }
 
 /**
- * Sign PDF menggunakan TTE API PUPR
+ * UPDATE METHOD signPDFWithTTE() - GUNAKAN QR LINK DARI INPUT
  */
 private function signPDFWithTTE($pdfPath, $tteData)
 {
@@ -2688,33 +2702,31 @@ private function signPDFWithTTE($pdfPath, $tteData)
             throw new \Exception('File PDF tidak ditemukan: ' . $pdfPath);
         }
         
-        // Konfigurasi TTE dari environment
+        // Konfigurasi TTE dari environment (URL dan AUTH tetap dari .env)
         $tteConfig = [
             'base_url' => getenv('TTE_BASE_URL') ?: 'https://tte.pu.go.id',
             'username' => getenv('TTE_USERNAME') ?: 'esign_manajemenAset',
             'password' => getenv('TTE_PASSWORD') ?: 'esign_manajemenAset'
         ];
         
-        log_message('debug', 'TTE Config: ' . json_encode($tteConfig));
-        
-        // Siapkan data untuk cURL
+        // Siapkan data untuk cURL - GUNAKAN CREDENTIAL DARI INPUT
         $postFields = [
             'file' => new \CURLFile($pdfPath, 'application/pdf', basename($pdfPath)),
-            'nik' => $tteData['nik'],
-            'passphrase' => $tteData['passphrase'],
+            'nik' => $tteData['nik'],                                    // DARI INPUT
+            'passphrase' => $tteData['passphrase'],                      // DARI INPUT
             'tampilan' => 'visible',
-            'page' => '2', // Halaman ke-2 untuk tanda tangan
+            'page' => '2',
             'xAxis' => (string)$tteData['x'],
             'yAxis' => (string)$tteData['y'], 
             'width' => (string)$tteData['width'],
             'height' => (string)$tteData['height'],
-            'image' => 'false', // Menggunakan QR code
-            'linkQR' => getenv('TTE_QR_LINK') ?: 'https://s.pu.go.id',
+            'image' => 'false',
+            'linkQR' => $tteData['qr_link'],                            // DARI INPUT (BUKAN HARDCODE)
             'reason' => $tteData['reason'],
             'location' => $tteData['location']
         ];
         
-        log_message('debug', 'TTE POST fields prepared (without file content)');
+        log_message('debug', 'TTE POST fields prepared with custom QR link: ' . $tteData['qr_link']);
         
         // Initialize cURL
         $ch = curl_init();
@@ -2728,19 +2740,16 @@ private function signPDFWithTTE($pdfPath, $tteData)
                 'Authorization: Basic ' . base64_encode($tteConfig['username'] . ':' . $tteConfig['password'])
             ],
             CURLOPT_TIMEOUT => 60,
-            CURLOPT_SSL_VERIFYPEER => false, // Untuk development
+            CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_VERBOSE => false
         ]);
         
-        log_message('debug', 'Executing TTE API request...');
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
         
         curl_close($ch);
-        
-        log_message('debug', 'TTE API Response: HTTP ' . $httpCode);
         
         if ($error) {
             throw new \Exception('CURL Error: ' . $error);
@@ -2752,15 +2761,12 @@ private function signPDFWithTTE($pdfPath, $tteData)
         
         // Cek apakah response adalah PDF (binary data)
         if (strpos($response, '%PDF') === 0) {
-            // Response adalah PDF yang sudah ditandatangani
             $timestamp = time();
             $originalName = pathinfo(basename($pdfPath), PATHINFO_FILENAME);
             $signedFileName = $originalName . '_tte_' . $timestamp . '.pdf';
             $signedPdfPath = ROOTPATH . 'public/uploads/documents/' . $signedFileName;
             
-            // Simpan file yang sudah ditandatangani
             if (file_put_contents($signedPdfPath, $response)) {
-                // Set permission file
                 chmod($signedPdfPath, 0644);
                 
                 log_message('debug', 'TTE signed file saved: ' . $signedFileName);
@@ -2775,7 +2781,6 @@ private function signPDFWithTTE($pdfPath, $tteData)
                 throw new \Exception('Gagal menyimpan file yang sudah ditandatangani');
             }
         } else {
-            // Response mungkin JSON error
             $jsonResponse = json_decode($response, true);
             if ($jsonResponse && isset($jsonResponse['error'])) {
                 throw new \Exception('TTE Error: ' . $jsonResponse['error']);

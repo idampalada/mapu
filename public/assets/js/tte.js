@@ -1,9 +1,68 @@
-/* JavaScript untuk Modal TTE - Tambahkan ke file JS utama atau homepage.js */
+/* JavaScript untuk Modal TTE dengan Credential Input */
 
 $(document).ready(function () {
   // ================================================
-  // TTE MODAL FUNCTIONS
+  // TTE MODAL FUNCTIONS WITH CREDENTIAL INPUT
   // ================================================
+
+  /**
+   * Toggle password visibility
+   */
+  $("#togglePassphrase").click(function () {
+    const passInput = $("#tte_passphrase");
+    const icon = $(this).find("i");
+
+    if (passInput.attr("type") === "password") {
+      passInput.attr("type", "text");
+      icon.removeClass("bi-eye").addClass("bi-eye-slash");
+    } else {
+      passInput.attr("type", "password");
+      icon.removeClass("bi-eye-slash").addClass("bi-eye");
+    }
+  });
+
+  /**
+   * Validasi NIK (harus 16 digit)
+   */
+  $("#tte_nik").on("input", function () {
+    let value = $(this).val().replace(/\D/g, ""); // Hanya angka
+
+    if (value.length > 16) {
+      value = value.substring(0, 16);
+    }
+
+    $(this).val(value);
+
+    // Visual feedback
+    if (value.length === 16) {
+      $(this).removeClass("is-invalid").addClass("is-valid");
+    } else {
+      $(this).removeClass("is-valid").addClass("is-invalid");
+    }
+  });
+
+  /**
+   * Validasi URL QR Link
+   */
+  $("#tte_qr_link").on("blur", function () {
+    const url = $(this).val();
+    const urlPattern =
+      /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+
+    if (url && !urlPattern.test(url)) {
+      $(this).addClass("is-invalid");
+      $(this)
+        .siblings(".form-text")
+        .text("Format URL tidak valid")
+        .addClass("text-danger");
+    } else {
+      $(this).removeClass("is-invalid");
+      $(this)
+        .siblings(".form-text")
+        .text("Link yang akan ditampilkan pada QR code")
+        .removeClass("text-danger");
+    }
+  });
 
   /**
    * Toggle TTE Options berdasarkan checkbox
@@ -39,13 +98,87 @@ $(document).ready(function () {
   });
 
   /**
-   * Form Submit Handler with TTE
+   * Enhanced form validation untuk TTE dengan credential
+   */
+  function validateTTECredentials() {
+    let isValid = true;
+
+    // Validasi NIK
+    const nik = $("#tte_nik").val().trim();
+    if (!nik || nik.length !== 16) {
+      showFieldError("#tte_nik", "NIK harus 16 digit");
+      isValid = false;
+    }
+
+    // Validasi Passphrase
+    const passphrase = $("#tte_passphrase").val().trim();
+    if (!passphrase || passphrase.length < 6) {
+      showFieldError("#tte_passphrase", "Passphrase minimal 6 karakter");
+      isValid = false;
+    }
+
+    // Validasi QR Link
+    const qrLink = $("#tte_qr_link").val().trim();
+    if (!qrLink || !qrLink.startsWith("http")) {
+      showFieldError("#tte_qr_link", "Link QR harus valid (http/https)");
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  /**
+   * Validasi form umum
+   */
+  function validateTTEForm() {
+    let isValid = true;
+
+    // Validasi nomor surat
+    const nomorSurat = $("#nomor_surat").val().trim();
+    if (!nomorSurat) {
+      showFieldError("#nomor_surat", "Nomor surat harus diisi");
+      isValid = false;
+    }
+
+    // Validasi nama kepala satuan kerja
+    const namaKepala = $("#nama_kepala_satuan_kerja").val().trim();
+    if (!namaKepala) {
+      showFieldError(
+        "#nama_kepala_satuan_kerja",
+        "Nama kepala satuan kerja harus diisi"
+      );
+      isValid = false;
+    }
+
+    // Validasi NIP
+    const nipKepala = $("#nip_kepala_satuan_kerja").val().trim();
+    if (!nipKepala) {
+      showFieldError(
+        "#nip_kepala_satuan_kerja",
+        "NIP kepala satuan kerja harus diisi"
+      );
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  /**
+   * Form Submit Handler with TTE Credentials
    */
   $("#formEditSurat").on("submit", function (e) {
     e.preventDefault();
 
-    // Validasi form
+    // Clear previous errors
+    clearFieldErrors();
+
+    // Validasi form umum
     if (!validateTTEForm()) {
+      return false;
+    }
+
+    // Validasi TTE credentials jika diaktifkan
+    if ($("#enableTTE").is(":checked") && !validateTTECredentials()) {
       return false;
     }
 
@@ -80,42 +213,6 @@ $(document).ready(function () {
       },
     });
   });
-
-  /**
-   * Validasi form TTE
-   */
-  function validateTTEForm() {
-    let isValid = true;
-
-    // Validasi nomor surat
-    const nomorSurat = $("#nomor_surat").val().trim();
-    if (!nomorSurat) {
-      showFieldError("#nomor_surat", "Nomor surat harus diisi");
-      isValid = false;
-    }
-
-    // Validasi nama kepala satuan kerja
-    const namaKepala = $("#nama_kepala_satuan_kerja").val().trim();
-    if (!namaKepala) {
-      showFieldError(
-        "#nama_kepala_satuan_kerja",
-        "Nama kepala satuan kerja harus diisi"
-      );
-      isValid = false;
-    }
-
-    // Validasi NIP
-    const nipKepala = $("#nip_kepala_satuan_kerja").val().trim();
-    if (!nipKepala) {
-      showFieldError(
-        "#nip_kepala_satuan_kerja",
-        "NIP kepala satuan kerja harus diisi"
-      );
-      isValid = false;
-    }
-
-    return isValid;
-  }
 
   /**
    * Show field error
@@ -210,6 +307,19 @@ $(document).ready(function () {
                 `;
       }
 
+      // Save credentials untuk next time (tanpa passphrase)
+      if (isEnable) {
+        const credentials = {
+          nik: $("#tte_nik").val(),
+          qr_link: $("#tte_qr_link").val(),
+          // Tidak simpan passphrase untuk keamanan
+        };
+        localStorage.setItem(
+          "tte_last_credentials",
+          JSON.stringify(credentials)
+        );
+      }
+
       Swal.fire({
         icon: icon,
         title: title,
@@ -264,7 +374,7 @@ $(document).ready(function () {
   }
 
   /**
-   * Function untuk membuka modal edit (dipanggil dari button edit)
+   * Function untuk membuka modal edit dengan auto-populate credentials
    */
   window.openEditSuratModal = function (pinjamId) {
     // Clear form dan errors
@@ -280,6 +390,20 @@ $(document).ready(function () {
     // Reset TTE options
     $("#enableTTE").prop("checked", true).trigger("change");
     $("#tte_position").val("visible_bottom").trigger("change");
+
+    // Auto-populate dari data sebelumnya jika ada (localStorage)
+    const savedCredentials = localStorage.getItem("tte_last_credentials");
+    if (savedCredentials) {
+      const data = JSON.parse(savedCredentials);
+      if (confirm("Gunakan credential TTE terakhir yang digunakan?")) {
+        $("#tte_nik")
+          .val(data.nik || "")
+          .trigger("input");
+        $("#tte_qr_link").val(data.qr_link || "https://s.pu.go.id");
+        // Note: Tidak auto-fill passphrase untuk keamanan
+        showToast("info", "Credential TTE berhasil dimuat dari sesi terakhir");
+      }
+    }
 
     // Show modal
     $("#modalEditSurat").modal("show");
@@ -318,6 +442,12 @@ $(document).ready(function () {
   $(".form-control").on("input", function () {
     $(this).removeClass("is-invalid");
     $(this).siblings(".invalid-feedback").remove();
+  });
+
+  // Clear localStorage pada logout (jika ada event listener)
+  $(window).on("beforeunload", function () {
+    // Optional: Clear sensitive data saat tutup browser
+    // localStorage.removeItem('tte_last_credentials');
   });
 });
 
@@ -378,7 +508,12 @@ function copyToClipboard(text) {
  * Show toast notification
  */
 function showToast(type, message) {
-  const toastClass = type === "success" ? "bg-success" : "bg-danger";
+  const toastClass =
+    type === "success"
+      ? "bg-success"
+      : type === "error"
+      ? "bg-danger"
+      : "bg-info";
   const toast = `
         <div class="toast ${toastClass} text-white position-fixed top-0 end-0 m-3" style="z-index: 1060">
             <div class="toast-body">
@@ -395,4 +530,27 @@ function showToast(type, message) {
   $toast.on("hidden.bs.toast", function () {
     $(this).remove();
   });
+}
+
+/**
+ * Validate NIK format (additional utility)
+ */
+function validateNIKFormat(nik) {
+  return /^[0-9]{16}$/.test(nik);
+}
+
+/**
+ * Mask NIK for display
+ */
+function maskNIK(nik) {
+  if (!nik || nik.length < 4) return nik;
+  return nik.substring(0, 4) + "*".repeat(nik.length - 4);
+}
+
+/**
+ * Clear TTE credentials from localStorage
+ */
+function clearTTECredentials() {
+  localStorage.removeItem("tte_last_credentials");
+  showToast("info", "Credential TTE telah dibersihkan");
 }
