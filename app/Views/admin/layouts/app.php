@@ -79,6 +79,7 @@
     <script src="<?= base_url(); ?>/assets/js/daftar-booking.js"></script>
     <script src="<?= base_url(); ?>/assets/js/letterhead-surat.js"></script>
     <script src="<?= base_url(); ?>/assets/js/booking-ruangan.js"></script>
+    <script src="<?= base_url(); ?>/assets/js/tte.js"></script>
     <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>
     <script src="<?= base_url(); ?>/assets/js/mainpage.js"></script>
 

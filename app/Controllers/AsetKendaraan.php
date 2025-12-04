@@ -2426,6 +2426,371 @@ public function getPenolakanHistory($kendaraanId)
                              ->setJSON(['error' => 'Terjadi kesalahan saat mengambil data']);
     }
 }
+private function preparePDFData($pinjam, $asset, $suratData = [])
+{
+    // Data default jika tidak ada di parameter
+    $defaultSuratData = [
+        'nomor_surat' => $pinjam['nomor_surat'] ?? '.................',
+        'tanggal_surat' => $pinjam['tanggal_surat'] ?? date('Y-m-d'),
+        'tempat_surat' => $pinjam['tempat_surat'] ?? 'Jakarta',
+        'nama_kepala_satuan_kerja' => $pinjam['nama_kepala_satuan_kerja'] ?? null,
+        'nip_kepala_satuan_kerja' => $pinjam['nip_kepala_satuan_kerja'] ?? null
+    ];
+    
+    // Merge dengan data yang diberikan
+    $finalSuratData = array_merge($defaultSuratData, $suratData);
+    
+    return [
+        // Data peminjaman - FIELD CHECKED ADA SEMUA
+        'pinjam_id' => $pinjam['id'] ?? 0,
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'] ?? 'Unknown',
+        'user_name' => $pinjam['nama_penanggung_jawab'] ?? 'Unknown',
+        'nip_nrp' => $pinjam['nip_nrp'] ?? '-',
+        'no_ktp' => $pinjam['no_ktp'] ?? '-',
+        'alamat_rumah' => $pinjam['alamat_rumah'] ?? '-',
+        'pangkat_golongan' => $pinjam['pangkat_golongan'] ?? '-',
+        'jabatan' => $pinjam['jabatan'] ?? '-',
+        'unit_organisasi' => $pinjam['unit_organisasi'] ?? '-',
+        'pengemudi' => $pinjam['pengemudi'] ?? '-',
+        'no_hp' => $pinjam['no_hp'] ?? '-',
+        'tanggal_pinjam' => $pinjam['tanggal_pinjam'] ?? date('Y-m-d'),
+        'tanggal_kembali' => $pinjam['tanggal_kembali'] ?? date('Y-m-d'),
+        'urusan_kedinasan' => $pinjam['urusan_kedinasan'] ?? '-',
+        
+        // Data kendaraan - FIELD CHECKED ADA SEMUA
+        'kendaraan_name' => $asset['merk'] ?? '-',
+        'kendaraan_merk' => $asset['merk'] ?? '-',
+        'kendaraan_type' => $asset['type'] ?? '-',
+        'kendaraan_plat' => $asset['no_polisi'] ?? '-',
+        'kendaraan_tahun' => $asset['tahun_pembuatan'] ?? '-',
+        'kendaraan_warna' => $asset['warna'] ?? '-',
+        'kendaraan_no_rangka' => $asset['no_rangka'] ?? '-',
+        'kendaraan_no_mesin' => $asset['nomor_mesin'] ?? '-',
+        'kendaraan_kapasitas' => $asset['kapasitas'] ?? '-',
+        'kendaraan_kondisi' => $asset['kondisi'] ?? '-',
+        'kode_barang' => $asset['kode_barang'] ?? '-',
+        'merk' => $asset['merk'] ?? '-',
+        'no_polisi' => $asset['no_polisi'] ?? '-',
+        'warna' => $asset['warna'] ?? '-',
+        'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+        'no_rangka' => $asset['no_rangka'] ?? '-',
+        'nup' => $asset['nup'] ?? '-',
+        'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+        
+        // Data surat
+        'nomor_surat' => $finalSuratData['nomor_surat'],
+        'tanggal_surat' => $finalSuratData['tanggal_surat'],
+        'tempat_surat' => $finalSuratData['tempat_surat'],
+        'nama_kepala_satuan_kerja' => $finalSuratData['nama_kepala_satuan_kerja'],
+        'nip_kepala_satuan_kerja' => $finalSuratData['nip_kepala_satuan_kerja'],
+        
+        // Data tambahan untuk template
+        'jenis_kendaraan' => $this->getJenisKendaraan($asset['kategori_id'] ?? ''),
+        'tanggal_pengajuan' => $pinjam['created_at'] ?? date('Y-m-d H:i:s'),
+        'created_at' => $pinjam['created_at'] ?? date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+}
 
+/**
+ * Helper method untuk konversi kategori ke jenis kendaraan
+ */
+private function getJenisKendaraan($kategoriId)
+{
+    switch($kategoriId) {
+        case "KDJ":
+            return "Kendaraan Dinamis Jalan (KDJ)";
+        case "KDO":
+            return "Kendaraan Dinamis Off-road (KDO)";
+        case "KDF":
+            return "Kendaraan Dinamis Fasilitas (KDF)";
+        default:
+            return $kategoriId ?? "Tidak Diketahui";
+    }
+}
+
+/**
+ * Update method updateSuratWithTTE yang sudah diperbaiki
+ */
+public function updateSuratWithTTE()
+{
+    try {
+        log_message('debug', '=== START TTE Process ===');
+        log_message('debug', 'POST Data: ' . json_encode($this->request->getPost()));
+        
+        $pinjamId = $this->request->getPost('pinjam_id');
+        $nomorSurat = $this->request->getPost('nomor_surat');
+        $tanggalSurat = $this->request->getPost('tanggal_surat');
+        $tempatSurat = $this->request->getPost('tempat_surat') ?? 'Jakarta';
+        $namaKepalaSatuanKerja = $this->request->getPost('nama_kepala_satuan_kerja');
+        $nipKepalaSatuanKerja = $this->request->getPost('nip_kepala_satuan_kerja');
+        $enableTTE = $this->request->getPost('enable_tte');
+        
+        // Validasi input
+        if (!$pinjamId || !$nomorSurat || !$namaKepalaSatuanKerja || !$nipKepalaSatuanKerja) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data yang dimasukkan tidak lengkap'
+            ]);
+        }
+        
+        $model = new PinjamModel();
+        $asetModel = new AsetModel();
+        
+        // Ambil data pinjam dan aset
+        $pinjam = $model->find($pinjamId);
+        if (!$pinjam) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data peminjaman tidak ditemukan'
+            ]);
+        }
+        
+        log_message('debug', 'Pinjam data loaded: ' . json_encode($pinjam));
+        
+        $asset = $asetModel->find($pinjam['kendaraan_id']);
+        if (!$asset) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data kendaraan tidak ditemukan'
+            ]);
+        }
+        
+        log_message('debug', 'Asset data loaded: ' . json_encode($asset));
+        
+        // Hapus file surat permohonan DRAFT lama jika ada
+        if (!empty($pinjam['surat_permohonan'])) {
+            $oldFilePath = ROOTPATH . 'public/uploads/documents/' . $pinjam['surat_permohonan'];
+            if (file_exists($oldFilePath)) {
+                @unlink($oldFilePath);
+                log_message('debug', 'Old file deleted: ' . $oldFilePath);
+            }
+        }
+        
+        // Siapkan data PDF dengan nomor surat yang baru
+        log_message('debug', 'About to call preparePDFData...');
+        $pdfData = $this->preparePDFData($pinjam, $asset, [
+            'nomor_surat' => $nomorSurat,
+            'tanggal_surat' => $tanggalSurat,
+            'tempat_surat' => $tempatSurat,
+            'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+            'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
+        ]);
+        log_message('debug', 'preparePDFData completed successfully');
+        
+        // Generate surat permohonan PDF FINAL (dengan nomor)
+        log_message('debug', 'About to generate PDF...');
+        $suratPermohonanName = $this->generateSuratPermohonan($pdfData, true);
+        if (!$suratPermohonanName) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal generate surat permohonan PDF'
+            ]);
+        }
+        log_message('debug', 'PDF generated: ' . $suratPermohonanName);
+        
+        $pdfPath = ROOTPATH . 'public/uploads/documents/' . $suratPermohonanName;
+        $finalFileName = $suratPermohonanName;
+        
+        // Jika TTE diaktifkan, lakukan penandatanganan
+        if ($enableTTE) {
+            log_message('debug', 'TTE enabled, processing signature...');
+            
+            $tteData = [
+                'nik' => getenv('TTE_NIK'),
+                'passphrase' => getenv('TTE_PASSPHRASE'),
+                'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
+                'x' => $this->request->getPost('tte_x') ?: 650,
+                'y' => $this->request->getPost('tte_y') ?: 250,
+                'width' => $this->request->getPost('tte_width') ?: 200,
+                'height' => $this->request->getPost('tte_height') ?: 200,
+                'reason' => $this->request->getPost('tte_reason') ?: 'Dokumen telah ditandatangani secara elektronik',
+                'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
+            ];
+            
+            // Validasi credential TTE
+            if (!$tteData['nik'] || !$tteData['passphrase']) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Credential TTE tidak ditemukan di konfigurasi sistem'
+                ]);
+            }
+            
+            // Panggil TTE service
+            log_message('debug', 'Calling signPDFWithTTE...');
+            $signedResult = $this->signPDFWithTTE($pdfPath, $tteData);
+            
+            if ($signedResult['success']) {
+                // Hapus file asli dan gunakan yang sudah ditandatangani
+                @unlink($pdfPath);
+                $finalFileName = $signedResult['filename'];
+                
+                log_message('info', 'TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId);
+            } else {
+                // TTE gagal
+                log_message('error', 'TTE gagal untuk Pinjam ID: ' . $pinjamId . ' - Error: ' . $signedResult['error']);
+                
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Gagal melakukan tanda tangan elektronik: ' . $signedResult['error']
+                ]);
+            }
+        }
+        
+        // Update database
+        $updateData = [
+            'surat_permohonan' => $finalFileName,
+            'nomor_surat' => $nomorSurat,
+            'tanggal_surat' => $tanggalSurat,
+            'tempat_surat' => $tempatSurat,
+            'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+            'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja,
+            'is_tte_signed' => $enableTTE ? 1 : 0,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        
+        if ($enableTTE) {
+            $updateData['tte_signed_at'] = date('Y-m-d H:i:s');
+            $updateData['tte_signer_nik'] = getenv('TTE_NIK');
+        }
+        
+        $result = $model->update($pinjamId, $updateData);
+        log_message('debug', 'Database updated: ' . ($result ? 'Success' : 'Failed'));
+        
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => $enableTTE ? 'Surat berhasil dinomori dan ditandatangani elektronik' : 'Surat berhasil dinomori',
+            'file_name' => $finalFileName,
+            'tte_applied' => $enableTTE,
+            'tte_signer' => $enableTTE ? getenv('TTE_NIK') : null
+        ]);
+        
+    } catch (\Exception $e) {
+        log_message('error', 'Error updateSuratWithTTE: ' . $e->getMessage());
+        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+        ]);
+    }
+}
+
+/**
+ * Sign PDF menggunakan TTE API PUPR
+ */
+private function signPDFWithTTE($pdfPath, $tteData)
+{
+    try {
+        log_message('debug', 'Starting TTE signing process for: ' . $pdfPath);
+        
+        // Validasi file PDF exists
+        if (!file_exists($pdfPath)) {
+            throw new \Exception('File PDF tidak ditemukan: ' . $pdfPath);
+        }
+        
+        // Konfigurasi TTE dari environment
+        $tteConfig = [
+            'base_url' => getenv('TTE_BASE_URL') ?: 'https://tte.pu.go.id',
+            'username' => getenv('TTE_USERNAME') ?: 'esign_manajemenAset',
+            'password' => getenv('TTE_PASSWORD') ?: 'esign_manajemenAset'
+        ];
+        
+        log_message('debug', 'TTE Config: ' . json_encode($tteConfig));
+        
+        // Siapkan data untuk cURL
+        $postFields = [
+            'file' => new \CURLFile($pdfPath, 'application/pdf', basename($pdfPath)),
+            'nik' => $tteData['nik'],
+            'passphrase' => $tteData['passphrase'],
+            'tampilan' => 'visible',
+            'page' => '2', // Halaman ke-2 untuk tanda tangan
+            'xAxis' => (string)$tteData['x'],
+            'yAxis' => (string)$tteData['y'], 
+            'width' => (string)$tteData['width'],
+            'height' => (string)$tteData['height'],
+            'image' => 'false', // Menggunakan QR code
+            'linkQR' => getenv('TTE_QR_LINK') ?: 'https://s.pu.go.id',
+            'reason' => $tteData['reason'],
+            'location' => $tteData['location']
+        ];
+        
+        log_message('debug', 'TTE POST fields prepared (without file content)');
+        
+        // Initialize cURL
+        $ch = curl_init();
+        
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $tteConfig['base_url'] . '/api/sign/pdf',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $postFields,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Basic ' . base64_encode($tteConfig['username'] . ':' . $tteConfig['password'])
+            ],
+            CURLOPT_TIMEOUT => 60,
+            CURLOPT_SSL_VERIFYPEER => false, // Untuk development
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_VERBOSE => false
+        ]);
+        
+        log_message('debug', 'Executing TTE API request...');
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        
+        curl_close($ch);
+        
+        log_message('debug', 'TTE API Response: HTTP ' . $httpCode);
+        
+        if ($error) {
+            throw new \Exception('CURL Error: ' . $error);
+        }
+        
+        if ($httpCode !== 200) {
+            throw new \Exception('TTE API Error: HTTP ' . $httpCode . ' - ' . substr($response, 0, 500));
+        }
+        
+        // Cek apakah response adalah PDF (binary data)
+        if (strpos($response, '%PDF') === 0) {
+            // Response adalah PDF yang sudah ditandatangani
+            $timestamp = time();
+            $originalName = pathinfo(basename($pdfPath), PATHINFO_FILENAME);
+            $signedFileName = $originalName . '_tte_' . $timestamp . '.pdf';
+            $signedPdfPath = ROOTPATH . 'public/uploads/documents/' . $signedFileName;
+            
+            // Simpan file yang sudah ditandatangani
+            if (file_put_contents($signedPdfPath, $response)) {
+                // Set permission file
+                chmod($signedPdfPath, 0644);
+                
+                log_message('debug', 'TTE signed file saved: ' . $signedFileName);
+                
+                return [
+                    'success' => true,
+                    'filename' => $signedFileName,
+                    'path' => $signedPdfPath,
+                    'size' => strlen($response)
+                ];
+            } else {
+                throw new \Exception('Gagal menyimpan file yang sudah ditandatangani');
+            }
+        } else {
+            // Response mungkin JSON error
+            $jsonResponse = json_decode($response, true);
+            if ($jsonResponse && isset($jsonResponse['error'])) {
+                throw new \Exception('TTE Error: ' . $jsonResponse['error']);
+            } else {
+                throw new \Exception('Invalid response from TTE API. Response: ' . substr($response, 0, 200));
+            }
+        }
+        
+    } catch (\Exception $e) {
+        log_message('error', 'TTE Signing Error: ' . $e->getMessage() . ' - File: ' . $pdfPath);
+        return [
+            'success' => false,
+            'error' => $e->getMessage()
+        ];
+    }
+}
 
 }
