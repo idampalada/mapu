@@ -246,6 +246,8 @@ $routes->group('admin', ['filter' => 'role:admin,admin_gedungutama,admin_pusdati
         $routes->post('edit/(:num)', 'AsetKendaraan::edit/$1');
         $routes->post('updateSurat', 'AsetKendaraan::updateSurat');
             $routes->post('updateSuratWithTTE', 'AsetKendaraan::updateSuratWithTTE');
+            // Di Routes.php, tambahkan:
+$routes->post('generateSuratPenanggungJawabKdfWithTTE', 'AsetKendaraan::generateSuratPenanggungJawabKdfWithTTE');
                 $routes->post('getPeminjamanData', 'AsetKendaraan::getPeminjamanData');
         $routes->post('generateSuratJalan', 'AsetKendaraan::generateSuratJalan');
         $routes->post('uploadSuratJalan', 'AsetKendaraan::uploadSuratJalan');

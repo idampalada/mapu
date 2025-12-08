@@ -1820,115 +1820,208 @@ public function updateSurat()
 }
 public function generateSuratPenanggungJawabKdf()
 {
-    log_message('debug', '==== generateSuratPenanggungJawabKdf DIPANGGIL ====');
-    log_message('debug', 'POST DATA: ' . json_encode($this->request->getPost()));
-    
-    $pinjamId = $this->request->getPost('pinjam_id');
-    $nomorSurat = $this->request->getPost('nomor_surat');
-    $tanggalSurat = $this->request->getPost('tanggal_surat');
-    $tempatSurat = $this->request->getPost('tempat_surat');
-    
-    // Data untuk kedua penandatangan
-    $namaPenanggungJawabKendaraan = $this->request->getPost('nama_penanggung_jawab_kendaraan');
-    $nipPenanggungJawabKendaraan = $this->request->getPost('nip_penanggung_jawab_kendaraan');
-    $namaKepalaSatuanKerja = $this->request->getPost('nama_kepala_satuan_kerja');
-    $nipKepalaSatuanKerja = $this->request->getPost('nip_kepala_satuan_kerja');
-    
-    $model = new PinjamModel();
-    $asetModel = new AsetModel();
-    
-    // Ambil data peminjaman
-    $pinjam = $model->find($pinjamId);
-    if (!$pinjam) {
-        return $this->response->setJSON([
-            'success' => false,
-            'error' => 'Data peminjaman tidak ditemukan'
-        ]);
-    }
-    
-    // Ambil data kendaraan
-    $asset = $asetModel->find($pinjam['kendaraan_id']);
-    if (!$asset) {
-        return $this->response->setJSON([
-            'success' => false,
-            'error' => 'Data kendaraan tidak ditemukan'
-        ]);
-    }
-    
-    // Konversi kategori_id ke jenis kendaraan
-    $jenisKendaraan = "Tidak Diketahui";
-    switch($asset['kategori_id']) {
-        case "KDJ":
-            $jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
-            break;
-        case "KDO":
-            $jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
-            break;
-        case "KDF":
-            $jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
-            break;
-        default:
-            $jenisKendaraan = $asset['kategori_id'] ?? "Tidak Diketahui";
-    }
-    
-    // Data untuk PDF surat penanggung jawab
-    $pdfData = [
-        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
-        'nip_nrp' => $pinjam['nip_nrp'],
-        'no_ktp' => $pinjam['no_ktp'] ?? '-',
-        'alamat_rumah' => $pinjam['alamat_rumah'] ?? '-',
-        'no_hp' => $pinjam['no_hp'] ?? '-', 
-        'pangkat_golongan' => $pinjam['pangkat_golongan'],
-        'jabatan' => $pinjam['jabatan'],
-        'unit_organisasi' => $pinjam['unit_organisasi'],
-        'jenis_kendaraan' => $jenisKendaraan,
-        'merk' => $asset['merk'],
-        'no_polisi' => $asset['no_polisi'],
-        'warna' => $asset['warna'] ?? '-',
-        'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
-        'no_rangka' => $asset['no_rangka'] ?? '-',
-        'nup' => $asset['nup'] ?? '-',
-        'kode_barang' => $asset['kode_barang'],
-        'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
-        // Data penomoran surat
-        'nomor_surat' => $nomorSurat,
-        'tanggal_surat' => $tanggalSurat,
-        'tempat_surat' => $tempatSurat,
-        // Data kepala satuan kerja
-        'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
-        'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
-        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
-        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja,
-    ];
-    
-    // Hapus file surat lama jika ada
-    if (!empty($pinjam['surat_penanggung_jawab'])) {
-        $oldPath = ROOTPATH . 'public/uploads/documents/' . $pinjam['surat_penanggung_jawab'];
-        if (file_exists($oldPath)) {
-            @unlink($oldPath);
-        }
-    }
-    
-    // Generate surat penanggung jawab PDF
-    log_message('debug', '==== Memanggil generateSuratPenanggungJawab ====');
-    $suratName = $this->generateSuratPenanggungJawab($pdfData);
-    log_message('debug', '==== Hasil generateSuratPenanggungJawab: ' . $suratName . ' ====');
-    
-    // Update data peminjaman
-    log_message('debug', '==== Mencoba update database dengan pinjam_id: ' . $pinjamId . ' ====');
-    log_message('debug', 'Data update: ' . json_encode([
-        'surat_penanggung_jawab' => $suratName,
-        'nomor_surat' => $nomorSurat,
-        'tanggal_surat' => $tanggalSurat,
-        'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
-        'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
-        'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
-        'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
-    ]));
-    
     try {
-        $result = $model->update($pinjamId, [
-            'surat_penanggung_jawab' => $suratName,
+        log_message('debug', '==== generateSuratPenanggungJawabKdf DIPANGGIL (WITH TTE SUPPORT) ====');
+        log_message('debug', 'POST DATA: ' . json_encode($this->request->getPost()));
+        
+        $pinjamId = $this->request->getPost('pinjam_id');
+        $nomorSurat = $this->request->getPost('nomor_surat');
+        $tanggalSurat = $this->request->getPost('tanggal_surat');
+        $tempatSurat = $this->request->getPost('tempat_surat') ?? 'Jakarta';
+        
+        // Data untuk kedua penandatangan
+        $namaPenanggungJawabKendaraan = $this->request->getPost('nama_penanggung_jawab_kendaraan');
+        $nipPenanggungJawabKendaraan = $this->request->getPost('nip_penanggung_jawab_kendaraan');
+        $namaKepalaSatuanKerja = $this->request->getPost('nama_kepala_satuan_kerja');
+        $nipKepalaSatuanKerja = $this->request->getPost('nip_kepala_satuan_kerja');
+        
+        // TTE Parameters
+        $enableTTE = $this->request->getPost('enable_tte');
+        
+        // Validasi input basic
+        if (!$pinjamId || !$nomorSurat || !$namaPenanggungJawabKendaraan || 
+            !$nipPenanggungJawabKendaraan || !$namaKepalaSatuanKerja || !$nipKepalaSatuanKerja) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data KDF yang dimasukkan tidak lengkap'
+            ]);
+        }
+        
+        $model = new PinjamModel();
+        $asetModel = new AsetModel();
+        
+        // Ambil data peminjaman
+        $pinjam = $model->find($pinjamId);
+        if (!$pinjam) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data peminjaman tidak ditemukan'
+            ]);
+        }
+        
+        // Ambil data kendaraan
+        $asset = $asetModel->find($pinjam['kendaraan_id']);
+        if (!$asset) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data kendaraan tidak ditemukan'
+            ]);
+        }
+        
+        // Validasi khusus untuk KDF
+        if ($asset['kategori_id'] !== 'KDF') {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Surat Penanggung Jawab hanya untuk kendaraan KDF'
+            ]);
+        }
+        
+        // Konversi kategori_id ke jenis kendaraan (keep existing logic)
+        $jenisKendaraan = "Tidak Diketahui";
+        switch($asset['kategori_id']) {
+            case "KDJ":
+                $jenisKendaraan = "Kendaraan Dinamis Jalan (KDJ)";
+                break;
+            case "KDO":
+                $jenisKendaraan = "Kendaraan Dinamis Off-road (KDO)";
+                break;
+            case "KDF":
+                $jenisKendaraan = "Kendaraan Dinamis Fasilitas (KDF)";
+                break;
+            default:
+                $jenisKendaraan = $asset['kategori_id'] ?? "Tidak Diketahui";
+        }
+        
+        // Data untuk PDF surat penanggung jawab (keep existing structure)
+        $pdfData = [
+            'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+            'nip_nrp' => $pinjam['nip_nrp'],
+            'no_ktp' => $pinjam['no_ktp'] ?? '-',
+            'alamat_rumah' => $pinjam['alamat_rumah'] ?? '-',
+            'no_hp' => $pinjam['no_hp'] ?? '-', 
+            'pangkat_golongan' => $pinjam['pangkat_golongan'],
+            'jabatan' => $pinjam['jabatan'],
+            'unit_organisasi' => $pinjam['unit_organisasi'],
+            'jenis_kendaraan' => $jenisKendaraan,
+            'merk' => $asset['merk'],
+            'no_polisi' => $asset['no_polisi'],
+            'warna' => $asset['warna'] ?? '-',
+            'nomor_mesin' => $asset['nomor_mesin'] ?? '-',
+            'no_rangka' => $asset['no_rangka'] ?? '-',
+            'nup' => $asset['nup'] ?? '-',
+            'kode_barang' => $asset['kode_barang'],
+            'tahun_pembuatan' => $asset['tahun_pembuatan'] ?? '-',
+            // Data penomoran surat
+            'nomor_surat' => $nomorSurat,
+            'tanggal_surat' => $tanggalSurat,
+            'tempat_surat' => $tempatSurat,
+            // Data kepala satuan kerja
+            'nama_penanggung_jawab_kendaraan' => $namaPenanggungJawabKendaraan,
+            'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
+            'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
+            'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja,
+        ];
+        
+        // Hapus file surat lama jika ada (keep existing logic)
+        if (!empty($pinjam['surat_penanggung_jawab'])) {
+            $oldPath = ROOTPATH . 'public/uploads/documents/' . $pinjam['surat_penanggung_jawab'];
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+                log_message('debug', 'Old KDF file deleted: ' . $oldPath);
+            }
+        }
+        
+        // Generate surat penanggung jawab PDF (keep existing call)
+        log_message('debug', '==== Memanggil generateSuratPenanggungJawab ====');
+        $suratName = $this->generateSuratPenanggungJawab($pdfData);
+        log_message('debug', '==== Hasil generateSuratPenanggungJawab: ' . $suratName . ' ====');
+        
+        if (!$suratName) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal generate surat penanggung jawab KDF'
+            ]);
+        }
+        
+        $pdfPath = ROOTPATH . 'public/uploads/documents/' . $suratName;
+        $finalFileName = $suratName;
+        
+        // ===== NEW: TTE PROCESSING =====
+        if ($enableTTE) {
+            log_message('debug', 'KDF TTE enabled, processing signature...');
+            
+            // AMBIL CREDENTIAL TTE DARI INPUT
+            $tteNik = $this->request->getPost('tte_nik');
+            $ttePassphrase = $this->request->getPost('tte_passphrase');
+            $tteQrLink = $this->request->getPost('tte_qr_link');
+            
+            // Validasi credential TTE KDF
+            if (empty($tteNik) || strlen($tteNik) !== 16) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'NIK TTE KDF harus 16 digit'
+                ]);
+            }
+            
+            if (empty($ttePassphrase) || strlen($ttePassphrase) < 6) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Passphrase TTE KDF minimal 6 karakter'
+                ]);
+            }
+            
+            if (empty($tteQrLink) || !filter_var($tteQrLink, FILTER_VALIDATE_URL)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Link QR TTE KDF harus berupa URL yang valid'
+                ]);
+            }
+            
+            $tteData = [
+                'nik' => $tteNik,
+                'passphrase' => $ttePassphrase,
+                'qr_link' => $tteQrLink,
+                'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
+                'x' => $this->request->getPost('tte_x') ?: 650,
+                'y' => $this->request->getPost('tte_y') ?: 250,
+                'width' => $this->request->getPost('tte_width') ?: 200,
+                'height' => $this->request->getPost('tte_height') ?: 200,
+                'reason' => $this->request->getPost('tte_reason') ?: 'Surat Penanggung Jawab KDF telah ditandatangani secara elektronik',
+                'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
+            ];
+            
+            // Log credential info untuk KDF (tanpa password)
+            log_message('debug', 'KDF TTE Data: ' . json_encode([
+                'nik' => $tteNik,
+                'qr_link' => $tteQrLink,
+                'position' => $tteData['position'],
+                'reason' => $tteData['reason']
+            ]));
+            
+            // Panggil TTE service untuk KDF (reuse existing method)
+            $signedResult = $this->signPDFWithTTE($pdfPath, $tteData);
+            
+            if ($signedResult['success']) {
+                // Hapus file asli dan gunakan yang sudah ditandatangani
+                @unlink($pdfPath);
+                $finalFileName = $signedResult['filename'];
+                
+                log_message('info', 'KDF TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
+            } else {
+                log_message('error', 'KDF TTE gagal untuk Pinjam ID: ' . $pinjamId . ' - Error: ' . $signedResult['error']);
+                
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Gagal melakukan tanda tangan elektronik KDF: ' . $signedResult['error']
+                ]);
+            }
+        }
+        
+        // Update data peminjaman (keep existing logic + add TTE fields)
+        log_message('debug', '==== Mencoba update database dengan pinjam_id: ' . $pinjamId . ' ====');
+        
+        $updateData = [
+            'surat_penanggung_jawab' => $finalFileName,
             'nomor_surat' => $nomorSurat,
             'tanggal_surat' => $tanggalSurat,
             'tempat_surat' => $tempatSurat,
@@ -1936,33 +2029,56 @@ public function generateSuratPenanggungJawabKdf()
             'nip_penanggung_jawab_kendaraan' => $nipPenanggungJawabKendaraan,
             'nama_kepala_satuan_kerja' => $namaKepalaSatuanKerja,
             'nip_kepala_satuan_kerja' => $nipKepalaSatuanKerja
+        ];
+        
+        // Tambahan field TTE untuk KDF
+        if ($enableTTE) {
+            $updateData['is_kdf_tte_signed'] = 1;
+            $updateData['kdf_tte_signed_at'] = date('Y-m-d H:i:s');
+            $updateData['kdf_tte_signer_nik'] = $tteNik;
+        }
+        
+        log_message('debug', 'Data update: ' . json_encode($updateData));
+        
+        try {
+            $result = $model->update($pinjamId, $updateData);
+            
+            log_message('debug', '==== Hasil update database: ' . ($result !== false ? 'Berhasil' : 'Gagal') . ' ====');
+            
+            // Verifikasi data telah tersimpan
+            $updatedPinjam = $model->find($pinjamId);
+            log_message('debug', 'Data setelah update: ' . json_encode([
+                'surat_penanggung_jawab' => $updatedPinjam['surat_penanggung_jawab'] ?? null,
+                'nomor_surat' => $updatedPinjam['nomor_surat'] ?? null,
+                'is_kdf_tte_signed' => $updatedPinjam['is_kdf_tte_signed'] ?? null
+            ]));
+            
+            // Jika result false, tambahkan debug untuk error database
+            if ($result === false) {
+                log_message('error', 'Error Database: ' . print_r($model->errors(), true));
+                log_message('error', 'SQL terakhir: ' . $model->db->getLastQuery());
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'Exception saat update database: ' . $e->getMessage());
+            log_message('debug', 'Kolom yang diizinkan dalam model: ' . json_encode($model->allowedFields));
+        }
+        
+        // Kembalikan response (enhanced with TTE info)
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => $enableTTE ? 'Surat Penanggung Jawab KDF berhasil dibuat dan ditandatangani elektronik' : 'Surat penanggung jawab KDF berhasil dibuat',
+            'file_name' => $finalFileName,
+            'tte_applied' => $enableTTE,
+            'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null
         ]);
         
-        log_message('debug', '==== Hasil update database: ' . ($result !== false ? 'Berhasil' : 'Gagal') . ' ====');
-        
-        // Verifikasi data telah tersimpan
-        $updatedPinjam = $model->find($pinjamId);
-        log_message('debug', 'Data setelah update: ' . json_encode([
-            'surat_penanggung_jawab' => $updatedPinjam['surat_penanggung_jawab'] ?? null,
-            'nomor_surat' => $updatedPinjam['nomor_surat'] ?? null
-        ]));
-        
-        // Jika result false, tambahkan debug untuk error database
-        if ($result === false) {
-            log_message('error', 'Error Database: ' . print_r($model->errors(), true));
-            log_message('error', 'SQL terakhir: ' . $model->db->getLastQuery());
-        }
     } catch (\Exception $e) {
-        log_message('error', 'Exception saat update database: ' . $e->getMessage());
-          log_message('debug', 'Kolom yang diizinkan dalam model: ' . json_encode($model->allowedFields));
+        log_message('error', 'Error generateSuratPenanggungJawabKdf: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan sistem KDF: ' . $e->getMessage()
+        ]);
     }
-    
-    // Kembalikan response
-    return $this->response->setJSON([
-        'success' => true,
-        'message' => 'Surat penanggung jawab berhasil dibuat',
-        'file_name' => $suratName
-    ]);
 }
 
 // Method untuk generate PDF surat penanggung jawab

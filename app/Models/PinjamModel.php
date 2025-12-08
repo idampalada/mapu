@@ -49,7 +49,14 @@ protected $allowedFields = [
     'nama_penanggung_jawab_kendaraan',
     'nip_penanggung_jawab_kendaraan',
     'nama_kepala_satuan_kerja',
-    'nip_kepala_satuan_kerja'
+    'nip_kepala_satuan_kerja',
+            'is_tte_signed',
+        'tte_signed_at',
+        'tte_signer_nik',
+        // TAMBAHKAN KOLOM TTE KDF BARU:
+        'is_kdf_tte_signed',         // ← BARU
+        'kdf_tte_signed_at',         // ← BARU
+        'kdf_tte_signer_nik'        // ← BARU
 ];
 
     protected $useTimestamps = true;
@@ -177,4 +184,75 @@ protected $allowedFields = [
     //         ->set(['is_returned' => $isReturned])
     //         ->update();
     // }
+    public function getPeminjamanWithTTEStatus($id = null)
+    {
+        $builder = $this->select('pinjam.*, aset.merk, aset.no_polisi, aset.kategori_id')
+                        ->join('aset', 'aset.id = pinjam.kendaraan_id', 'left');
+        
+        if ($id) {
+            return $builder->where('pinjam.id', $id)->first();
+        }
+        
+        return $builder->findAll();
+    }
+
+    /**
+     * Get KDF documents that need TTE signing
+     */
+    public function getKDFNeedsTTE()
+    {
+        return $this->select('pinjam.*, aset.merk, aset.no_polisi, aset.kategori_id')
+                    ->join('aset', 'aset.id = pinjam.kendaraan_id', 'left')
+                    ->where('aset.kategori_id', 'KDF')
+                    ->where('pinjam.surat_penanggung_jawab IS NOT NULL')
+                    ->where('pinjam.is_kdf_tte_signed', 0)
+                    ->findAll();
+    }
+
+    /**
+     * Get KDF documents that are TTE signed
+     */
+    public function getKDFTTESigned()
+    {
+        return $this->select('pinjam.*, aset.merk, aset.no_polisi, aset.kategori_id')
+                    ->join('aset', 'aset.id = pinjam.kendaraan_id', 'left')
+                    ->where('aset.kategori_id', 'KDF')
+                    ->where('pinjam.is_kdf_tte_signed', 1)
+                    ->orderBy('pinjam.kdf_tte_signed_at', 'DESC')
+                    ->findAll();
+    }
+
+    /**
+     * Update TTE KDF status
+     */
+    public function updateKDFTTEStatus($pinjamId, $signerNik)
+    {
+        return $this->update($pinjamId, [
+            'is_kdf_tte_signed' => 1,
+            'kdf_tte_signed_at' => date('Y-m-d H:i:s'),
+            'kdf_tte_signer_nik' => $signerNik,
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
