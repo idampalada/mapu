@@ -56,7 +56,11 @@ protected $allowedFields = [
         // TAMBAHKAN KOLOM TTE KDF BARU:
         'is_kdf_tte_signed',         // ← BARU
         'kdf_tte_signed_at',         // ← BARU
-        'kdf_tte_signer_nik'        // ← BARU
+        'kdf_tte_signer_nik',        // ← BARU
+            // ===== NEW: TTE FIELDS UNTUK SURAT JALAN =====
+    'is_surat_jalan_tte_signed',       // ← BARU
+    'surat_jalan_tte_signed_at',       // ← BARU
+    'surat_jalan_tte_signer_nik'       // ← BARU
 ];
 
     protected $useTimestamps = true;
@@ -234,6 +238,71 @@ protected $allowedFields = [
             'updated_at' => date('Y-m-d H:i:s')
         ]);
     }
+    // Method untuk mendapatkan status TTE surat jalan
+public function getTTESuratJalanStatus($pinjamId)
+{
+    $builder = $this->builder();
+    $result = $builder->select('is_surat_jalan_tte_signed, surat_jalan_tte_signed_at, surat_jalan_tte_signer_nik')
+                     ->where('id', $pinjamId)
+                     ->get()
+                     ->getRowArray();
+    
+    if (!$result) {
+        return null;
+    }
+    
+    return [
+        'is_signed' => (bool)$result['is_surat_jalan_tte_signed'],
+        'signed_at' => $result['surat_jalan_tte_signed_at'],
+        'signer_nik_masked' => $result['surat_jalan_tte_signer_nik'] ? 
+            substr($result['surat_jalan_tte_signer_nik'], 0, 4) . '***' : null
+    ];
+}
+
+// Method untuk mendapatkan semua status TTE
+public function getAllTTEStatus($pinjamId)
+{
+    $builder = $this->builder();
+    $result = $builder->select('
+            is_tte_signed, 
+            tte_signed_at, 
+            tte_signer_nik,
+            is_kdf_tte_signed, 
+            kdf_tte_signed_at, 
+            kdf_tte_signer_nik,
+            is_surat_jalan_tte_signed, 
+            surat_jalan_tte_signed_at, 
+            surat_jalan_tte_signer_nik
+        ')
+        ->where('id', $pinjamId)
+        ->get()
+        ->getRowArray();
+    
+    if (!$result) {
+        return null;
+    }
+    
+    return [
+        'surat_permohonan' => [
+            'is_signed' => (bool)$result['is_tte_signed'],
+            'signed_at' => $result['tte_signed_at'],
+            'signer_nik_masked' => $result['tte_signer_nik'] ? 
+                substr($result['tte_signer_nik'], 0, 4) . '***' : null
+        ],
+        'surat_kdf' => [
+            'is_signed' => (bool)$result['is_kdf_tte_signed'],
+            'signed_at' => $result['kdf_tte_signed_at'],
+            'signer_nik_masked' => $result['kdf_tte_signer_nik'] ? 
+                substr($result['kdf_tte_signer_nik'], 0, 4) . '***' : null
+        ],
+        'surat_jalan' => [
+            'is_signed' => (bool)$result['is_surat_jalan_tte_signed'],
+            'signed_at' => $result['surat_jalan_tte_signed_at'],
+            'signer_nik_masked' => $result['surat_jalan_tte_signer_nik'] ? 
+                substr($result['surat_jalan_tte_signer_nik'], 0, 4) . '***' : null
+        ]
+    ];
+}
 }
 
 

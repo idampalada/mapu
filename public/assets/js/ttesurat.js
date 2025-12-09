@@ -31,15 +31,60 @@ $(document).ready(function () {
     // Validasi field yang diperlukan untuk surat yang dipilih
     let isValid = true;
 
-    // FIX UNTUK MASALAH DUPLICATE ELEMENT nomor_surat
-    // Replace di homepage.js bagian validation
+    // ===== NOMOR SURAT GLOBAL RESOLVER =====
+    let resolvedNomorSurat = "";
+
+    // Function untuk mencari nomor surat dengan prioritas
+    function findNomorSurat() {
+      // Priority 1: ID selector
+      const byId = $("#nomor_surat").val();
+      if (byId && byId.trim() !== "") {
+        console.log("📋 Found nomor_surat by ID:", byId);
+        return byId.trim();
+      }
+
+      // Priority 2: Name selector (visible dan enabled)
+      const visibleElements = $('input[name="nomor_surat"]:visible:enabled');
+      for (let i = 0; i < visibleElements.length; i++) {
+        const value = $(visibleElements[i]).val();
+        if (value && value.trim() !== "") {
+          console.log(`📋 Found nomor_surat by name selector [${i}]:`, value);
+          return value.trim();
+        }
+      }
+
+      // Priority 3: All elements with value (fallback)
+      const allElements = $('input[name="nomor_surat"]');
+      for (let i = 0; i < allElements.length; i++) {
+        const value = $(allElements[i]).val();
+        if (value && value.trim() !== "") {
+          console.log(`📋 Found nomor_surat by fallback [${i}]:`, value);
+          return value.trim();
+        }
+      }
+
+      return "";
+    }
 
     if (buatSuratPenanggungJawab) {
       // Reset validasi terlebih dahulu
       $(".surat-penanggung-field").removeClass("is-invalid");
 
+      // ===== RESOLVE NOMOR SURAT DULU =====
+      resolvedNomorSurat = findNomorSurat();
+      console.log("🎯 RESOLVED NOMOR SURAT:", resolvedNomorSurat);
+
       // PERBAIKAN: Smart selector untuk field yang mungkin duplicate
       function getFieldValue(fieldIds, fieldName) {
+        // Special handling untuk nomor_surat
+        if (fieldName === "Nomor Surat") {
+          return {
+            value: resolvedNomorSurat,
+            element: $("#nomor_surat"),
+            found: resolvedNomorSurat !== "",
+          };
+        }
+
         for (const fieldId of fieldIds) {
           // Coba selector ID dulu
           const elementById = $("#" + fieldId);
@@ -104,35 +149,13 @@ $(document).ready(function () {
         }
       });
 
-      // KHUSUS DEBUG UNTUK NOMOR SURAT
-      if (missingFields.includes("Nomor Surat")) {
-        console.log("🔍 SPECIAL DEBUG UNTUK NOMOR SURAT:");
-        console.log("All nomor_surat elements:");
-        $('[name="nomor_surat"]').each(function (index, element) {
-          console.log(`  Element ${index}:`, {
-            id: element.id,
-            value: $(element).val(),
-            visible: $(element).is(":visible"),
-            disabled: $(element).is(":disabled"),
-            inModal: $(element).closest(".modal").length > 0,
-            modalId: $(element).closest(".modal").attr("id"),
-          });
-        });
+      // ===== NEW: VALIDASI TTE SURAT KDF JIKA AKTIF =====
+      if ($("#enableTTEKdf").length > 0 && $("#enableTTEKdf").is(":checked")) {
+        console.log("🔒 Validating TTE KDF credentials...");
 
-        // LAST RESORT: Ambil yang pertama yang ada value
-        const allNomorSurat = $('[name="nomor_surat"]');
-        for (let i = 0; i < allNomorSurat.length; i++) {
-          const elem = $(allNomorSurat[i]);
-          const val = elem.val();
-          if (val && val.trim() !== "") {
-            console.log(
-              `🚀 FALLBACK: Using nomor_surat element ${i} with value: "${val}"`
-            );
-            missingFields = missingFields.filter(
-              (field) => field !== "Nomor Surat"
-            );
-            break;
-          }
+        const tteValidationErrors = validateTTECredentialsKdf();
+        if (tteValidationErrors.length > 0) {
+          missingFields = missingFields.concat(tteValidationErrors);
         }
       }
 
@@ -180,6 +203,19 @@ $(document).ready(function () {
         }
       });
 
+      // ===== NEW: VALIDASI TTE SURAT JALAN JIKA AKTIF =====
+      if (
+        $("#enableTTESuratJalan").length > 0 &&
+        $("#enableTTESuratJalan").is(":checked")
+      ) {
+        console.log("🔒 Validating TTE Surat Jalan credentials...");
+
+        const tteValidationErrors = validateTTECredentialsSuratJalan();
+        if (tteValidationErrors.length > 0) {
+          missingFields = missingFields.concat(tteValidationErrors);
+        }
+      }
+
       if (missingFields.length > 0) {
         Swal.fire({
           icon: "error",
@@ -210,25 +246,24 @@ $(document).ready(function () {
 
     // Buat array promises untuk menyimpan semua AJAX request
     const promises = [];
-    const pinjamId = $("#pinjamId").val();
 
-    // ========================================
-    // 🔥 PATCH: TAMBAHKAN TTE SUPPORT DI SINI!
-    // ========================================
+    // ===== FIX: GUNAKAN PINJAM_ID YANG BENAR UNTUK MASING-MASING TAB =====
+    const pinjamIdKDF = $("#pinjamId").val(); // Tab 1 - KDF
+    const pinjamIdSuratJalan = $("#pinjamId2").val(); // Tab 2 - Surat Jalan
+
+    console.log("DEBUG: pinjamIdKDF =", pinjamIdKDF);
+    console.log("DEBUG: pinjamIdSuratJalan =", pinjamIdSuratJalan);
 
     // Proses Surat Penanggung Jawab jika dipilih
     if (buatSuratPenanggungJawab) {
-      const nomorSurat =
-        $("#nomor_surat").val() ||
-        $('input[name="nomor_surat"]:visible').val() ||
-        "";
-      console.log("NOMOR SURAT yang dikirim:", nomorSurat); // 👈 debug untuk pastikan terisi
+      // ===== FIX: GUNAKAN RESOLVED NOMOR SURAT =====
+      console.log("🎯 USING RESOLVED NOMOR SURAT:", resolvedNomorSurat);
 
       const suratPenanggungData = new FormData();
 
-      // Basic data (EXISTING)
-      suratPenanggungData.append("pinjam_id", pinjamId);
-      suratPenanggungData.append("nomor_surat", nomorSurat);
+      // ===== FIX: GUNAKAN PINJAM_ID DAN NOMOR_SURAT YANG BENAR =====
+      suratPenanggungData.append("pinjam_id", pinjamIdKDF);
+      suratPenanggungData.append("nomor_surat", resolvedNomorSurat); // ✅ GUNAKAN RESOLVED VALUE
       suratPenanggungData.append("tanggal_surat", $("#tanggal_surat").val());
       suratPenanggungData.append("tempat_surat", $("#tempat_surat").val());
       suratPenanggungData.append(
@@ -248,10 +283,9 @@ $(document).ready(function () {
         $("#nip_kepala_satuan_kerja").val()
       );
 
-      // 🆕 TTE DATA SUPPORT (PATCH TAMBAHAN)
-      // Cek apakah TTE checkbox dicentang
+      // TTE DATA SUPPORT
       if ($("#enableTTEKdf").length > 0 && $("#enableTTEKdf").is(":checked")) {
-        console.log("🔒 TTE ENABLED - Adding TTE data to FormData");
+        console.log("🔒 TTE KDF ENABLED - Adding TTE data to FormData");
 
         suratPenanggungData.append("enable_tte", "on");
         suratPenanggungData.append("tte_nik", $("#tte_nik_kdf").val() || "");
@@ -293,15 +327,11 @@ $(document).ready(function () {
           $("#tte_location_kdf").val() || "Jakarta"
         );
 
-        console.log("✅ TTE data added to FormData");
-      } else {
-        console.log(
-          "📄 TTE NOT ENABLED or ELEMENT NOT FOUND - No TTE data added"
-        );
+        console.log("✅ TTE KDF data added to FormData");
       }
 
-      // Debug FormData entries untuk verify TTE data
-      console.log("=== FINAL FORMDATA ENTRIES ===");
+      // Debug FormData entries
+      console.log("=== FINAL FORMDATA ENTRIES (KDF) ===");
       for (let [key, value] of suratPenanggungData.entries()) {
         if (key === "tte_passphrase") {
           console.log(key + ":", "HAS_VALUE");
@@ -311,7 +341,7 @@ $(document).ready(function () {
       }
 
       const suratPenanggungPromise = $.ajax({
-        url: "/AsetKendaraan/generateSuratPenanggungJawabKdf",
+        url: "/AsetKendaraan/generateSuratPenanggungJawabKdf", // ✅ CORRECT URL
         type: "POST",
         data: suratPenanggungData,
         processData: false,
@@ -321,17 +351,17 @@ $(document).ready(function () {
       promises.push(suratPenanggungPromise);
     }
 
-    // Proses Surat Jalan jika dipilih (EXISTING - TIDAK BERUBAH)
+    // ===== FIX: PROSES SURAT JALAN DENGAN ENDPOINT DAN DATA YANG BENAR =====
     if (buatSuratJalan) {
       const suratJalanData = new FormData();
-      suratJalanData.append("pinjam_id", pinjamId);
+
+      // ===== FIX: GUNAKAN PINJAM_ID YANG BENAR DAN FIELD YANG TEPAT =====
+      suratJalanData.append("pinjam_id", pinjamIdSuratJalan);
       suratJalanData.append("tanggal_mulai", $("#tanggal_mulai").val());
       suratJalanData.append("tanggal_selesai", $("#tanggal_selesai").val());
       suratJalanData.append("jam_mulai", $("#jam_mulai").val());
       suratJalanData.append("jam_selesai", $("#jam_selesai").val());
       suratJalanData.append("urusan_kedinasan", $("#urusan_kedinasan").val());
-
-      // TAMBAHKAN DUA BARIS INI:
       suratJalanData.append(
         "nama_pemegang_surat",
         $("#nama_pemegang_surat").val()
@@ -341,8 +371,71 @@ $(document).ready(function () {
         $("#nip_pemegang_surat").val()
       );
 
+      // TTE DATA SUPPORT UNTUK SURAT JALAN
+      if (
+        $("#enableTTESuratJalan").length > 0 &&
+        $("#enableTTESuratJalan").is(":checked")
+      ) {
+        console.log("🔒 TTE SURAT JALAN ENABLED - Adding TTE data to FormData");
+
+        suratJalanData.append("enable_tte_surat_jalan", "on");
+        suratJalanData.append(
+          "tte_nik_surat_jalan",
+          $("#tte_nik_surat_jalan").val() || ""
+        );
+        suratJalanData.append(
+          "tte_passphrase_surat_jalan",
+          $("#tte_passphrase_surat_jalan").val() || ""
+        );
+        suratJalanData.append(
+          "tte_qr_link_surat_jalan",
+          $("#tte_qr_link_surat_jalan").val() || "https://s.pu.go.id"
+        );
+        suratJalanData.append(
+          "tte_position_surat_jalan",
+          $("#tte_position_surat_jalan").val() || "visible_bottom"
+        );
+        suratJalanData.append(
+          "tte_x_surat_jalan",
+          $("#tte_x_surat_jalan").val() || "450"
+        );
+        suratJalanData.append(
+          "tte_y_surat_jalan",
+          $("#tte_y_surat_jalan").val() || "250"
+        );
+        suratJalanData.append(
+          "tte_width_surat_jalan",
+          $("#tte_width_surat_jalan").val() || "150"
+        );
+        suratJalanData.append(
+          "tte_height_surat_jalan",
+          $("#tte_height_surat_jalan").val() || "75"
+        );
+        suratJalanData.append(
+          "tte_reason_surat_jalan",
+          $("#tte_reason_surat_jalan").val() ||
+            "Surat Jalan telah ditandatangani secara elektronik"
+        );
+        suratJalanData.append(
+          "tte_location_surat_jalan",
+          $("#tte_location_surat_jalan").val() || "Jakarta"
+        );
+
+        console.log("✅ TTE Surat Jalan data added to FormData");
+      }
+
+      // Debug FormData entries
+      console.log("=== FINAL FORMDATA ENTRIES (SURAT JALAN) ===");
+      for (let [key, value] of suratJalanData.entries()) {
+        if (key === "tte_passphrase_surat_jalan") {
+          console.log(key + ":", "HAS_VALUE");
+        } else {
+          console.log(key + ":", value);
+        }
+      }
+
       const suratJalanPromise = $.ajax({
-        url: "/AsetKendaraan/generateSuratJalan",
+        url: "/AsetKendaraan/generateSuratJalan", // ✅ CORRECT URL FOR SURAT JALAN
         type: "POST",
         data: suratJalanData,
         processData: false,
@@ -352,25 +445,38 @@ $(document).ready(function () {
       promises.push(suratJalanPromise);
     }
 
-    // Tunggu semua promises selesai (EXISTING - TIDAK BERUBAH)
+    // Tunggu semua promises selesai dengan ENHANCED RESPONSE HANDLING
     Promise.all(promises)
       .then((responses) => {
         // Cek apakah semua responses success
         let allSuccess = true;
         let errorMessage = "";
-        let successDocuments = []; // TAMBAHAN: Track dokumen yang berhasil
+        let successDocuments = []; // Track dokumen yang berhasil
+        let tteStatuses = []; // NEW: Track TTE status
 
-        for (const response of responses) {
+        for (let i = 0; i < responses.length; i++) {
+          const response = responses[i];
           if (!response.success) {
             allSuccess = false;
             errorMessage += (response.error || "Terjadi kesalahan") + "\n";
+          } else {
+            // NEW: Collect TTE status info
+            if (response.tte_applied) {
+              const docType =
+                i === 0 && buatSuratPenanggungJawab
+                  ? "Surat KDF"
+                  : "Surat Jalan";
+              tteStatuses.push(
+                `${docType}: TTE oleh ${response.tte_signer || "Sistem"}`
+              );
+            }
           }
         }
 
-        // TAMBAHAN: Tentukan jenis dokumen yang berhasil dibuat
+        // Tentukan jenis dokumen yang berhasil dibuat
         if (allSuccess) {
           if (buatSuratPenanggungJawab) {
-            successDocuments.push("Penomoran Surat Penanggung Jawab");
+            successDocuments.push("Surat Penanggung Jawab");
           }
           if (buatSuratJalan) {
             successDocuments.push("Surat Jalan");
@@ -378,10 +484,10 @@ $(document).ready(function () {
         }
 
         if (allSuccess) {
-          // PERBAIKAN: Buat pesan sukses yang spesifik
+          // Buat pesan sukses yang spesifik dengan TTE info
           let successMessage = "";
           if (successDocuments.length === 1) {
-            if (successDocuments[0] === "Penomoran Surat Penanggung Jawab") {
+            if (successDocuments[0] === "Surat Penanggung Jawab") {
               successMessage = "Penomoran Berhasil";
             } else {
               successMessage = successDocuments[0] + " berhasil dibuat";
@@ -393,14 +499,24 @@ $(document).ready(function () {
             successMessage = "Dokumen berhasil dibuat";
           }
 
+          // NEW: Tambahkan info TTE jika ada
+          if (tteStatuses.length > 0) {
+            successMessage +=
+              `<br><br><strong>Status TTE:</strong><br>` +
+              tteStatuses.join("<br>");
+          }
+
           Swal.fire({
             icon: "success",
             title: "Berhasil!",
-            text: successMessage, // GUNAKAN PESAN SPESIFIK
+            html: successMessage, // Gunakan HTML untuk support TTE info
             confirmButtonText: "OK",
             confirmButtonColor: "#198754",
           }).then(() => {
-            // PERBAIKAN: Tutup modal dulu, baru reload
+            // NEW: Save TTE credentials untuk next time (tanpa passphrase)
+            saveTTECredentialsIfNeeded();
+
+            // Tutup modal dulu, baru reload
             $("#modalSetuju").modal("hide");
             setTimeout(() => {
               location.reload();
@@ -417,7 +533,7 @@ $(document).ready(function () {
         }
       })
       .catch((error) => {
-        console.error("Error dalam Promise.all:", error); // TAMBAHAN: Console log untuk debugging
+        console.error("Error dalam Promise.all:", error);
         Swal.fire({
           icon: "error",
           title: "Gagal!",
@@ -430,8 +546,88 @@ $(document).ready(function () {
       });
   });
 
-  // Toggle required attribute berdasarkan checkbox
-  // DI AKHIR $(document).ready(function () { ... })
+  // ===== TTE VALIDATION FUNCTIONS =====
+
+  // Validasi TTE credentials untuk KDF
+  function validateTTECredentialsKdf() {
+    const errors = [];
+
+    const nik = $("#tte_nik_kdf").val().trim();
+    if (!nik || nik.length !== 16) {
+      $("#tte_nik_kdf").addClass("is-invalid");
+      errors.push("NIK KDF harus 16 digit");
+    }
+
+    const passphrase = $("#tte_passphrase_kdf").val().trim();
+    if (!passphrase || passphrase.length < 6) {
+      $("#tte_passphrase_kdf").addClass("is-invalid");
+      errors.push("Passphrase KDF minimal 6 karakter");
+    }
+
+    const qrLink = $("#tte_qr_link_kdf").val().trim();
+    if (!qrLink || !qrLink.startsWith("http")) {
+      $("#tte_qr_link_kdf").addClass("is-invalid");
+      errors.push("Link QR KDF harus valid (http/https)");
+    }
+
+    return errors;
+  }
+
+  // Validasi TTE credentials untuk Surat Jalan
+  function validateTTECredentialsSuratJalan() {
+    const errors = [];
+
+    const nik = $("#tte_nik_surat_jalan").val().trim();
+    if (!nik || nik.length !== 16) {
+      $("#tte_nik_surat_jalan").addClass("is-invalid");
+      errors.push("NIK Surat Jalan harus 16 digit");
+    }
+
+    const passphrase = $("#tte_passphrase_surat_jalan").val().trim();
+    if (!passphrase || passphrase.length < 6) {
+      $("#tte_passphrase_surat_jalan").addClass("is-invalid");
+      errors.push("Passphrase Surat Jalan minimal 6 karakter");
+    }
+
+    const qrLink = $("#tte_qr_link_surat_jalan").val().trim();
+    if (!qrLink || !qrLink.startsWith("http")) {
+      $("#tte_qr_link_surat_jalan").addClass("is-invalid");
+      errors.push("Link QR Surat Jalan harus valid (http/https)");
+    }
+
+    return errors;
+  }
+
+  // Save TTE credentials (tanpa passphrase)
+  function saveTTECredentialsIfNeeded() {
+    try {
+      // Save KDF credentials
+      if ($("#enableTTEKdf").is(":checked")) {
+        const kdfCredentials = {
+          nik: $("#tte_nik_kdf").val(),
+          qr_link: $("#tte_qr_link_kdf").val(),
+        };
+        localStorage.setItem(
+          "tte_last_credentials_kdf",
+          JSON.stringify(kdfCredentials)
+        );
+      }
+
+      // Save Surat Jalan credentials
+      if ($("#enableTTESuratJalan").is(":checked")) {
+        const suratJalanCredentials = {
+          nik: $("#tte_nik_surat_jalan").val(),
+          qr_link: $("#tte_qr_link_surat_jalan").val(),
+        };
+        localStorage.setItem(
+          "tte_last_credentials_surat_jalan",
+          JSON.stringify(suratJalanCredentials)
+        );
+      }
+    } catch (e) {
+      console.log("Failed to save TTE credentials:", e);
+    }
+  }
 
   // Toggle required attribute berdasarkan checkbox
   $("#buatSuratPenanggungJawab").on("change", function () {
@@ -510,20 +706,33 @@ $(document).ready(function () {
     });
   });
 
-  // 🆕 TAMBAHKAN TTE EVENT HANDLERS DI AKHIR DOCUMENT READY
-  // Toggle TTE options
+  // ===== TTE EVENT HANDLERS - UNTUK SEMUA DOKUMEN =====
+
+  // Toggle TTE options untuk KDF
   $(document).on("change", "#enableTTEKdf", function () {
     const $tteOptions = $("#tteOptionsKdf");
     if ($(this).is(":checked")) {
       $tteOptions.slideDown(300);
-      console.log("TTE Options shown");
+      console.log("TTE KDF Options shown");
     } else {
       $tteOptions.slideUp(300);
-      console.log("TTE Options hidden");
+      console.log("TTE KDF Options hidden");
     }
   });
 
-  // Toggle password
+  // NEW: Toggle TTE options untuk Surat Jalan
+  $(document).on("change", "#enableTTESuratJalan", function () {
+    const $tteOptions = $("#tteOptionsSuratJalan");
+    if ($(this).is(":checked")) {
+      $tteOptions.slideDown(300);
+      console.log("TTE Surat Jalan Options shown");
+    } else {
+      $tteOptions.slideUp(300);
+      console.log("TTE Surat Jalan Options hidden");
+    }
+  });
+
+  // Toggle password untuk KDF
   $(document).on("click", "#togglePassphraseKdf", function () {
     const $passInput = $("#tte_passphrase_kdf");
     const $icon = $(this).find("i");
@@ -537,7 +746,21 @@ $(document).ready(function () {
     }
   });
 
-  // NIK Validation
+  // NEW: Toggle password untuk Surat Jalan
+  $(document).on("click", "#togglePassphraseSuratJalan", function () {
+    const $passInput = $("#tte_passphrase_surat_jalan");
+    const $icon = $(this).find("i");
+
+    if ($passInput.attr("type") === "password") {
+      $passInput.attr("type", "text");
+      $icon.removeClass("bi-eye").addClass("bi-eye-slash");
+    } else {
+      $passInput.attr("type", "password");
+      $icon.removeClass("bi-eye-slash").addClass("bi-eye");
+    }
+  });
+
+  // NIK Validation untuk KDF
   $(document).on("input", "#tte_nik_kdf", function () {
     let value = $(this).val().replace(/\D/g, "");
     if (value.length > 16) {
@@ -552,7 +775,22 @@ $(document).ready(function () {
     }
   });
 
-  // Position Toggle
+  // NEW: NIK Validation untuk Surat Jalan
+  $(document).on("input", "#tte_nik_surat_jalan", function () {
+    let value = $(this).val().replace(/\D/g, "");
+    if (value.length > 16) {
+      value = value.substring(0, 16);
+    }
+    $(this).val(value);
+
+    if (value.length === 16) {
+      $(this).removeClass("is-invalid").addClass("is-valid");
+    } else {
+      $(this).removeClass("is-valid");
+    }
+  });
+
+  // Position Toggle untuk KDF
   $(document).on("change", "#tte_position_kdf", function () {
     const $customPosition = $("#customPositionKdf");
     if ($(this).val() === "visible_custom") {
@@ -562,7 +800,89 @@ $(document).ready(function () {
     }
   });
 
-  console.log("TTE Event handlers loaded");
+  // NEW: Position Toggle untuk Surat Jalan
+  $(document).on("change", "#tte_position_surat_jalan", function () {
+    const $customPosition = $("#customPositionSuratJalan");
+    if ($(this).val() === "visible_custom") {
+      $customPosition.slideDown(300);
+    } else {
+      $customPosition.slideUp(300);
+    }
+  });
+
+  // NEW: Load Last Credentials untuk KDF
+  $(document).on("click", "#loadCredentialsKdf", function () {
+    const savedCredentials = localStorage.getItem("tte_last_credentials_kdf");
+    if (savedCredentials) {
+      try {
+        const credentials = JSON.parse(savedCredentials);
+
+        if (credentials.nik) {
+          $("#tte_nik_kdf").val(credentials.nik);
+        }
+        if (credentials.qr_link) {
+          $("#tte_qr_link_kdf").val(credentials.qr_link);
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Credential Dimuat!",
+          text: "Credential KDF terakhir berhasil dimuat. Silakan masukkan passphrase.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        $("#tte_passphrase_kdf").focus();
+      } catch (e) {
+        console.error("Error loading KDF credentials:", e);
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "Tidak Ada Data",
+        text: "Belum ada credential KDF tersimpan sebelumnya",
+      });
+    }
+  });
+
+  // NEW: Load Last Credentials untuk Surat Jalan
+  $(document).on("click", "#loadCredentialsSuratJalan", function () {
+    const savedCredentials = localStorage.getItem(
+      "tte_last_credentials_surat_jalan"
+    );
+    if (savedCredentials) {
+      try {
+        const credentials = JSON.parse(savedCredentials);
+
+        if (credentials.nik) {
+          $("#tte_nik_surat_jalan").val(credentials.nik);
+        }
+        if (credentials.qr_link) {
+          $("#tte_qr_link_surat_jalan").val(credentials.qr_link);
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Credential Dimuat!",
+          text: "Credential Surat Jalan terakhir berhasil dimuat. Silakan masukkan passphrase.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+
+        $("#tte_passphrase_surat_jalan").focus();
+      } catch (e) {
+        console.error("Error loading Surat Jalan credentials:", e);
+      }
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "Tidak Ada Data",
+        text: "Belum ada credential Surat Jalan tersimpan sebelumnya",
+      });
+    }
+  });
+
+  console.log("TTE Multi-Document Event handlers loaded");
 }); // AKHIR $(document).ready
 
 // Function untuk menampilkan modal setuju dengan dual tab dan checkbox
@@ -571,7 +891,7 @@ function showSetujuModal(pinjamId) {
   $(".surat-penanggung-field, .surat-jalan-field").removeClass("is-invalid");
   $("#buatSuratPenanggungJawab, #buatSuratJalan").prop("checked", true);
 
-  // Set ID peminjaman
+  // ===== FIX: SET PINJAM_ID YANG BENAR UNTUK KEDUA TAB =====
   $("#pinjamId, #pinjamId2").val(pinjamId);
 
   // Set tanggal hari ini sebagai default
@@ -638,18 +958,33 @@ function showSetujuModal(pinjamId) {
         );
         $("#urusan_kedinasan").val(data.pinjam.urusan_kedinasan || "");
 
-        // 🆕 TAMBAHKAN: Set default TTE values jika ada saved credentials
+        // ===== NEW: Set default TTE values untuk SEMUA DOKUMEN =====
         try {
-          const savedCredentials = localStorage.getItem(
+          // Load KDF credentials
+          const savedKdfCredentials = localStorage.getItem(
             "tte_last_credentials_kdf"
           );
-          if (savedCredentials) {
-            const credentials = JSON.parse(savedCredentials);
+          if (savedKdfCredentials) {
+            const credentials = JSON.parse(savedKdfCredentials);
             if (credentials.nik) {
               $("#tte_nik_kdf").val(credentials.nik);
             }
             if (credentials.qr_link) {
               $("#tte_qr_link_kdf").val(credentials.qr_link);
+            }
+          }
+
+          // Load Surat Jalan credentials
+          const savedSuratJalanCredentials = localStorage.getItem(
+            "tte_last_credentials_surat_jalan"
+          );
+          if (savedSuratJalanCredentials) {
+            const credentials = JSON.parse(savedSuratJalanCredentials);
+            if (credentials.nik) {
+              $("#tte_nik_surat_jalan").val(credentials.nik);
+            }
+            if (credentials.qr_link) {
+              $("#tte_qr_link_surat_jalan").val(credentials.qr_link);
             }
           }
         } catch (e) {

@@ -1058,8 +1058,8 @@
                                                 <div class="form-group mb-3">
                                                     <label for="tte_position" class="form-label">Posisi Tanda Tangan</label>
                                                     <select class="form-select form-select-sm" name="tte_position" id="tte_position">
-                                                        <option value="visible_bottom" selected>Halaman 2 - Posisi Default</option>
-                                                        <option value="visible_custom">Halaman 2 - Posisi Kustom</option>
+                                                        <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
+                                                        <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                                         <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                     </select>
                                                 </div>
@@ -1510,8 +1510,8 @@
                                                     <div class="form-group mb-3">
                                                         <label for="tte_position_kdf" class="form-label">Posisi Tanda Tangan</label>
                                                         <select class="form-select form-select-sm" name="tte_position" id="tte_position_kdf">
-                                                            <option value="visible_bottom" selected>Halaman 2 - Posisi Default</option>
-                                                            <option value="visible_custom">Halaman 2 - Posisi Kustom</option>
+                                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
+                                                            <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                                             <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                         </select>
                                                     </div>
@@ -1581,94 +1581,235 @@
                     <div class="modal-body">
                         <input type="hidden" id="pinjamId2" name="pinjam_id">
                         
-                        <!-- Checkbox untuk memilih surat -->
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="buatSuratJalan" name="buatSuratJalan" checked>
-                            <label class="form-check-label" for="buatSuratJalan">
-                                <strong>Buat Surat Jalan</strong>
-                            </label>
-                        </div>
-                        
-                        <!-- Data peminjam -->
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="nama_penanggung_jawab2" class="form-label">Nama Penanggung Jawab</label>
-                                    <input type="text" class="form-control" id="nama_penanggung_jawab2" name="nama_penanggung_jawab2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="nip_nrp2" class="form-label">NIP/NRP</label>
-                                    <input type="text" class="form-control" id="nip_nrp2" name="nip_nrp2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="pangkat_golongan2" class="form-label">Pangkat/Golongan</label>
-                                    <input type="text" class="form-control" id="pangkat_golongan2" name="pangkat_golongan2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="jabatan2" class="form-label">Jabatan</label>
-                                    <input type="text" class="form-control" id="jabatan2" name="jabatan2" readonly>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="no_polisi2" class="form-label">Nomor Polisi</label>
-                                    <input type="text" class="form-control" id="no_polisi2" name="no_polisi2" readonly>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="kode_barang2" class="form-label">Kode Barang</label>
-                                    <input type="text" class="form-control" id="kode_barang2" name="kode_barang2" readonly>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Tanggal dan jam -->
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="tanggal_mulai" class="form-label">Tanggal Mulai</label>
-                                    <input type="date" class="form-control surat-jalan-field" id="tanggal_mulai" name="tanggal_mulai">
+                            <!-- KOLOM KIRI: Data Surat Jalan -->
+                            <div class="col-md-7">
+                                <!-- Checkbox untuk memilih surat -->
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="buatSuratJalan" name="buatSuratJalan" checked>
+                                    <label class="form-check-label" for="buatSuratJalan">
+                                        <strong>Buat Surat Jalan</strong>
+                                    </label>
                                 </div>
-                                <div class="form-group mb-2">
-                                    <label for="jam_mulai" class="form-label">Jam Mulai</label>
-                                    <input type="time" class="form-control surat-jalan-field" id="jam_mulai" name="jam_mulai">
+                                
+                                <!-- Data peminjaman -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="nama_penanggung_jawab2" class="form-label">Nama Penanggung Jawab</label>
+                                            <input type="text" class="form-control" id="nama_penanggung_jawab2" name="nama_penanggung_jawab2" readonly>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="nip_nrp2" class="form-label">NIP/NRP</label>
+                                            <input type="text" class="form-control" id="nip_nrp2" name="nip_nrp2" readonly>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="pangkat_golongan2" class="form-label">Pangkat/Golongan</label>
+                                            <input type="text" class="form-control" id="pangkat_golongan2" name="pangkat_golongan2" readonly>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="jabatan2" class="form-label">Jabatan</label>
+                                            <input type="text" class="form-control" id="jabatan2" name="jabatan2" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="no_polisi2" class="form-label">Nomor Polisi</label>
+                                            <input type="text" class="form-control" id="no_polisi2" name="no_polisi2" readonly>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="kode_barang2" class="form-label">Kode Barang</label>
+                                            <input type="text" class="form-control" id="kode_barang2" name="kode_barang2" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Jadwal Peminjaman Surat Jalan -->
+                                <h5 class="mt-3 mb-2">Jadwal Peminjaman Surat Jalan</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="tanggal_mulai" class="form-label">Tanggal Mulai <span class="text-danger"> *</span></label>
+                                            <input type="date" class="form-control surat-jalan-field" id="tanggal_mulai" name="tanggal_mulai" required>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="jam_mulai" class="form-label">Jam Mulai</label>
+                                            <input type="time" class="form-control surat-jalan-field" id="jam_mulai" name="jam_mulai" value="08:00">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="tanggal_selesai" class="form-label">Tanggal Selesai <span class="text-danger"> *</span></label>
+                                            <input type="date" class="form-control surat-jalan-field" id="tanggal_selesai" name="tanggal_selesai" required>
+                                        </div>
+                                        <div class="form-group mb-2">
+                                            <label for="jam_selesai" class="form-label">Jam Selesai</label>
+                                            <input type="time" class="form-control surat-jalan-field" id="jam_selesai" name="jam_selesai" value="17:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan <span class="text-danger"> *</span></label>
+                                    <textarea class="form-control surat-jalan-field" id="urusan_kedinasan" name="urusan_kedinasan" rows="3" placeholder="Masukkan urusan kedinasan..." required></textarea>
+                                </div>
+                                
+                                <!-- Data Pemegang Surat Penanggung Jawab -->
+                                <h5 class="mt-3 mb-2">Data Pemegang Surat Penanggung Jawab</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="nama_pemegang_surat" class="form-label">Nama Pemegang Surat</label>
+                                            <input type="text" class="form-control" id="nama_pemegang_surat" name="nama_pemegang_surat" value="Pak Udin">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label for="nip_pemegang_surat" class="form-label">NIP Pemegang Surat</label>
+                                            <input type="text" class="form-control" id="nip_pemegang_surat" name="nip_pemegang_surat" value="12345678">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="tanggal_selesai" class="form-label">Tanggal Selesai</label>
-                                    <input type="date" class="form-control surat-jalan-field" id="tanggal_selesai" name="tanggal_selesai">
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label for="jam_selesai" class="form-label">Jam Selesai</label>
-                                    <input type="time" class="form-control surat-jalan-field" id="jam_selesai" name="jam_selesai">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="urusan_kedinasan" class="form-label">Urusan Kedinasan</label>
-                            <textarea class="form-control surat-jalan-field" id="urusan_kedinasan" name="urusan_kedinasan" rows="3"></textarea>
-                        </div>
-                        
-                        <!-- Bagian untuk Pemegang Surat Penanggung Jawab -->
-                        <h5 class="mt-3 mb-2">Data Pemegang Surat Penanggung Jawab</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="nama_pemegang_surat" class="form-label">Nama Pemegang Surat</label>
-                                    <input type="text" class="form-control" id="nama_pemegang_surat" name="nama_pemegang_surat" value="Pak Udin">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-2">
-                                    <label for="nip_pemegang_surat" class="form-label">NIP Pemegang Surat</label>
-                                    <input type="text" class="form-control" id="nip_pemegang_surat" name="nip_pemegang_surat" value="12345678">
+
+                            <!-- KOLOM KANAN: TTE Options untuk Surat Jalan -->
+                            <div class="col-md-5">
+                                <div class="card border-success h-100">
+                                    <div class="card-header bg-success bg-opacity-10">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0 text-success">
+                                                <i class="bi bi-shield-check"></i> Tanda Tangan Elektronik Surat Jalan
+                                            </h6>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="enableTTESuratJalan" name="enable_tte_surat_jalan" checked>
+                                                <label class="form-check-label fw-bold text-success" for="enableTTESuratJalan">
+                                                    Aktif
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="tteOptionsSuratJalan">
+                                            <!-- SECTION CREDENTIAL TTE SURAT JALAN -->
+                                            <div class="card border-warning mb-3">
+                                                <div class="card-header bg-warning bg-opacity-10 py-2">
+                                                    <h6 class="mb-0 text-warning">
+                                                        <i class="bi bi-key"></i> Credential Penandatangan
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body py-2">
+                                                    <div class="mb-3">
+                                                        <label for="tte_nik_surat_jalan" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control form-control-sm" id="tte_nik_surat_jalan" name="tte_nik_surat_jalan" 
+                                                               placeholder="Masukkan NIK 16 digit" maxlength="16" required>
+                                                        <div class="form-text">NIK harus sudah terdaftar di sistem BSrE</div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="tte_passphrase_surat_jalan" class="form-label">Passphrase <span class="text-danger">*</span></label>
+                                                        <div class="input-group">
+                                                            <input type="password" class="form-control form-control-sm" id="tte_passphrase_surat_jalan" name="tte_passphrase_surat_jalan" 
+                                                                   placeholder="Masukkan passphrase TTE" required>
+                                                            <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphraseSuratJalan">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="form-text">Passphrase untuk akses sertifikat elektronik</div>
+                                                    </div>
+                                                    
+                                                    <div class="mb-3">
+                                                        <label for="tte_qr_link_surat_jalan" class="form-label">Link QR Code <span class="text-danger">*</span></label>
+                                                        <input type="url" class="form-control form-control-sm" id="tte_qr_link_surat_jalan" name="tte_qr_link_surat_jalan" 
+                                                               placeholder="https://example.com" value="https://s.pu.go.id" required>
+                                                        <div class="form-text">Link yang akan ditampilkan pada QR code</div>
+                                                    </div>
+
+                                                    <!-- Load Credentials Button -->
+                                                    <div class="mb-3">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" id="loadCredentialsSuratJalan">
+                                                            <i class="bi bi-arrow-repeat"></i> Gunakan Credential Terakhir
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- SECTION POSISI SIGNATURE SURAT JALAN -->
+                                            <div class="card border-info mb-3">
+                                                <div class="card-header bg-info bg-opacity-10 py-2">
+                                                    <h6 class="mb-0 text-info">
+                                                        <i class="bi bi-crosshair"></i> Posisi Tanda Tangan
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body py-2">
+                                                    <div class="form-group mb-3">
+                                                        <label for="tte_position_surat_jalan" class="form-label">Posisi Tanda Tangan</label>
+                                                        <select class="form-select form-select-sm" name="tte_position_surat_jalan" id="tte_position_surat_jalan">
+                                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Bawah</option>
+                                                            <option value="visible_top">Halaman 1 - Posisi Atas</option>
+                                                            <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
+                                                            <option value="invisible">Invisible (Tidak Terlihat)</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div id="customPositionSuratJalan" style="display:none;">
+                                                        <div class="row mb-2">
+                                                            <div class="col-6">
+                                                                <label class="form-label">Posisi X</label>
+                                                                <input type="number" class="form-control form-control-sm" id="tte_x_surat_jalan"
+                                                                       name="tte_x_surat_jalan" value="450" min="0" max="2000">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <label class="form-label">Posisi Y</label>
+                                                                <input type="number" class="form-control form-control-sm" id="tte_y_surat_jalan"
+                                                                       name="tte_y_surat_jalan" value="250" min="0" max="2000">
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mb-2">
+                                                            <div class="col-6">
+                                                                <label class="form-label">Lebar</label>
+                                                                <input type="number" class="form-control form-control-sm" id="tte_width_surat_jalan"
+                                                                       name="tte_width_surat_jalan" value="150" min="0" max="2000">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <label class="form-label">Tinggi</label>
+                                                                <input type="number" class="form-control form-control-sm" id="tte_height_surat_jalan"
+                                                                       name="tte_height_surat_jalan" value="75" min="0" max="2000">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group mb-2">
+                                                        <label for="tte_reason_surat_jalan" class="form-label">Alasan Penandatanganan</label>
+                                                        <input type="text" class="form-control form-control-sm" id="tte_reason_surat_jalan" name="tte_reason_surat_jalan" 
+                                                               value="Surat Jalan telah disetujui dan ditandatangani secara elektronik">
+                                                    </div>
+
+                                                    <div class="form-group mb-2">
+                                                        <label for="tte_location_surat_jalan" class="form-label">Lokasi Penandatanganan</label>
+                                                        <input type="text" class="form-control form-control-sm" id="tte_location_surat_jalan" name="tte_location_surat_jalan" 
+                                                               value="Jakarta">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-warning py-2">
+                                                <small>
+                                                    <i class="bi bi-exclamation-triangle"></i>
+                                                    <strong>Perhatian Surat Jalan:</strong> 
+                                                    <ul class="mb-0 mt-1">
+                                                        <li>Proses TTE untuk Surat Jalan membutuhkan waktu 30-60 detik</li>
+                                                        <li>Surat Jalan harus ditandatangani oleh pihak yang berwenang</li>
+                                                        <li>Credential akan digunakan sekali saja, tidak disimpan</li>
+                                                    </ul>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             
             <!-- Footer dengan tombol submit utama -->
             <div class="modal-footer">

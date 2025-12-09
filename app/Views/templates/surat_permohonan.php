@@ -63,7 +63,7 @@
         .letter-number {
             text-align: center;
             font-size: 11pt;
-            margin-bottom: 7px;
+            margin-bottom: 16px;
         }
 
         table {
@@ -80,7 +80,7 @@
         .permission-section {
             text-align: center;
             font-weight: bold;
-            margin: 8px 0 5px 0;
+            margin: 15px 0 12px 0;
             font-size: 12pt;
             text-transform: uppercase;
         }
@@ -97,7 +97,8 @@
 
         .signature-date {
             text-align: right;
-            margin-bottom: 5px;
+            margin-top: 18px;
+            margin-bottom: 25px;
             font-size: 11pt;
         }
 
@@ -124,6 +125,10 @@
             text-decoration: underline;
             margin-top: 4px;
         }
+        .before-ketentuan {
+    margin-top: 10px;  /* Atur spasi sesuai kebutuhan */
+}
+
     </style>
 </head>
 <body>
@@ -189,7 +194,7 @@ Surat izin ini berlaku mulai <strong><?= date("d F Y", strtotime($tanggal_pinjam
 sampai <strong><?= date("d F Y", strtotime($tanggal_kembali ?? 'now')) ?></strong>.
 </p>
 
-<p><strong>Dengan ketentuan:</strong></p>
+<p class="before-ketentuan"><strong>Dengan ketentuan:</strong></p>
 <ol class="ketentuan">
     <li>Izin bersifat sementara dan disesuaikan kebutuhan dinas;</li>
     <li>Pemakai bertanggung jawab atas kehilangan dan dikenakan TGR sesuai ketentuan;</li>

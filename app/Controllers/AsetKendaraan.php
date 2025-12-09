@@ -326,9 +326,12 @@ public function generateSuratJalan()
     $jamSelesai = $this->request->getPost('jam_selesai');
     $urusanKedinasan = $this->request->getPost('urusan_kedinasan');
     
+    // ===== NEW: TTE SUPPORT =====
+    $enableTTE = $this->request->getPost('enable_tte_surat_jalan') === 'on';
+    
     $model = new PinjamModel();
     $asetModel = new AsetModel();
-    $userModel = new \Myth\Auth\Models\UserModel(); // Tambahkan model user
+    $userModel = new \Myth\Auth\Models\UserModel();
     
     // Ambil data pinjam
     $pinjam = $model->find($pinjamId);
@@ -353,39 +356,128 @@ public function generateSuratJalan()
     
     // Buat data untuk PDF
     $pdfData = [
-    'nomor_surat' => 'SURAT/JALAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjamId),
-    'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
-    'nip_nrp' => $pinjam['nip_nrp'],
-    'pangkat_golongan' => $pinjam['pangkat_golongan'],
-    'jabatan' => $pinjam['jabatan'],
-    'unit_organisasi' => $pinjam['unit_organisasi'],
-    'urusan_kedinasan' => $urusanKedinasan,
-    'tanggal_mulai' => $tanggalMulai,
-    'jam_mulai' => $jamMulai,
-    'tanggal_selesai' => $tanggalSelesai,
-    'jam_selesai' => $jamSelesai,
-    'kode_barang' => $asset['kode_barang'],
-    'nup' => $asset['nup'] ?? '-',
-    'no_polisi' => $asset['no_polisi'],
-    'merk' => $asset['merk'],
-    'kategori' => $asset['kategori_id'],
-    'tanggal_terbit' => date('Y-m-d'),
-    'penanggung_jawab' => 'Pak Solihin',
-    'nip_penanggung_jawab' => '123123',
-    // Ubah 2 baris berikut agar mengambil nilai dari form
-    'pemegang_surat' => $this->request->getPost('nama_pemegang_surat') ?? 'Pak Udin',
-    'nip_pemegang_surat' => $this->request->getPost('nip_pemegang_surat') ?? '12345678',
-    'lokasi_terbit' => 'Jakarta'
-];
+        'nomor_surat' => 'SURAT/JALAN/' . date('Y/m') . '/' . sprintf('%04d', $pinjamId),
+        'nama_penanggung_jawab' => $pinjam['nama_penanggung_jawab'],
+        'nip_nrp' => $pinjam['nip_nrp'],
+        'pangkat_golongan' => $pinjam['pangkat_golongan'],
+        'jabatan' => $pinjam['jabatan'],
+        'unit_organisasi' => $pinjam['unit_organisasi'],
+        'urusan_kedinasan' => $urusanKedinasan,
+        'tanggal_mulai' => $tanggalMulai,
+        'jam_mulai' => $jamMulai,
+        'tanggal_selesai' => $tanggalSelesai,
+        'jam_selesai' => $jamSelesai,
+        'kode_barang' => $asset['kode_barang'],
+        'nup' => $asset['nup'] ?? '-',
+        'no_polisi' => $asset['no_polisi'],
+        'merk' => $asset['merk'],
+        'kategori' => $asset['kategori_id'],
+        'tanggal_terbit' => date('Y-m-d'),
+        'penanggung_jawab' => 'Pak Solihin',
+        'nip_penanggung_jawab' => '123123',
+        'pemegang_surat' => $this->request->getPost('nama_pemegang_surat') ?? 'Pak Udin',
+        'nip_pemegang_surat' => $this->request->getPost('nip_pemegang_surat') ?? '12345678',
+        'lokasi_terbit' => 'Jakarta'
+    ];
     
     // Generate PDF surat jalan
     $suratJalanName = $this->generateSuratJalanPdf($pdfData);
     
-    // Update status peminjaman
-    $model->update($pinjamId, [
+    if (!$suratJalanName) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Gagal generate surat jalan'
+        ]);
+    }
+
+    $pdfPath = ROOTPATH . 'public/uploads/documents/' . $suratJalanName;
+    $finalFileName = $suratJalanName;
+    
+    // ===== NEW: TTE PROCESSING UNTUK SURAT JALAN =====
+    if ($enableTTE) {
+        log_message('debug', 'Surat Jalan TTE enabled, processing signature...');
+        
+        // AMBIL CREDENTIAL TTE DARI INPUT
+        $tteNik = $this->request->getPost('tte_nik_surat_jalan');
+        $ttePassphrase = $this->request->getPost('tte_passphrase_surat_jalan');
+        $tteQrLink = $this->request->getPost('tte_qr_link_surat_jalan');
+        
+        // Validasi credential TTE Surat Jalan
+        if (empty($tteNik) || strlen($tteNik) !== 16) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'NIK TTE Surat Jalan harus 16 digit'
+            ]);
+        }
+        
+        if (empty($ttePassphrase) || strlen($ttePassphrase) < 6) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Passphrase TTE Surat Jalan minimal 6 karakter'
+            ]);
+        }
+        
+        if (empty($tteQrLink) || !filter_var($tteQrLink, FILTER_VALIDATE_URL)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Link QR TTE Surat Jalan harus berupa URL yang valid'
+            ]);
+        }
+        
+        $tteData = [
+            'nik' => $tteNik,
+            'passphrase' => $ttePassphrase,
+            'qr_link' => $tteQrLink,
+            'position' => $this->request->getPost('tte_position_surat_jalan') ?: 'visible_bottom',
+            'x' => $this->request->getPost('tte_x_surat_jalan') ?: 450,
+            'y' => $this->request->getPost('tte_y_surat_jalan') ?: 250,
+            'width' => $this->request->getPost('tte_width_surat_jalan') ?: 150,
+            'height' => $this->request->getPost('tte_height_surat_jalan') ?: 75,
+            'reason' => $this->request->getPost('tte_reason_surat_jalan') ?: 'Surat Jalan telah ditandatangani secara elektronik',
+            'location' => $this->request->getPost('tte_location_surat_jalan') ?: 'Jakarta'
+        ];
+        
+        // Log credential info untuk Surat Jalan (tanpa password)
+        log_message('debug', 'Surat Jalan TTE Data: ' . json_encode([
+            'nik' => $tteNik,
+            'qr_link' => $tteQrLink,
+            'position' => $tteData['position'],
+            'reason' => $tteData['reason']
+        ]));
+        
+        // Panggil TTE service untuk Surat Jalan (reuse existing method)
+        $signedResult = $this->signPDFWithTTE($pdfPath, $tteData);
+        
+        if ($signedResult['success']) {
+            // Hapus file asli dan gunakan yang sudah ditandatangani
+            @unlink($pdfPath);
+            $finalFileName = $signedResult['filename'];
+            
+            log_message('info', 'Surat Jalan TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
+        } else {
+            log_message('error', 'Surat Jalan TTE gagal untuk Pinjam ID: ' . $pinjamId . ' - Error: ' . $signedResult['error']);
+            
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal melakukan tanda tangan elektronik Surat Jalan: ' . $signedResult['error']
+            ]);
+        }
+    }
+    
+    // Update status peminjaman dengan TTE fields
+    $updateData = [
         'status' => PinjamModel::STATUS_DISETUJUI,
-        'surat_jalan_admin' => $suratJalanName,
-    ]);
+        'surat_jalan_admin' => $finalFileName,
+    ];
+    
+    // Tambahan field TTE untuk Surat Jalan
+    if ($enableTTE) {
+        $updateData['is_surat_jalan_tte_signed'] = 1;
+        $updateData['surat_jalan_tte_signed_at'] = date('Y-m-d H:i:s');
+        $updateData['surat_jalan_tte_signer_nik'] = $tteNik;
+    }
+    
+    $result = $model->update($pinjamId, $updateData);
     
     // Update status kendaraan
     $asetModel->update($pinjam['kendaraan_id'], [
@@ -405,8 +497,10 @@ public function generateSuratJalan()
         'tanggal_pinjam' => $pinjam['tanggal_pinjam'],
         'tanggal_kembali' => $pinjam['tanggal_kembali'],
         'status' => 'disetujui',
-        'surat_jalan_admin' => $suratJalanName,
-        'surat_permohonan' => $pinjam['surat_permohonan'] ?? null
+        'surat_jalan_admin' => $finalFileName,
+        'surat_permohonan' => $pinjam['surat_permohonan'] ?? null,
+        'tte_applied' => $enableTTE,
+        'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null
     ];
     
     // Kirim notifikasi persetujuan peminjaman
@@ -414,8 +508,10 @@ public function generateSuratJalan()
     
     return $this->response->setJSON([
         'success' => true,
-        'message' => 'Peminjaman berhasil disetujui',
-        'file_name' => $suratJalanName
+        'message' => $enableTTE ? 'Surat Jalan berhasil dibuat dan ditandatangani elektronik' : 'Surat Jalan berhasil dibuat',
+        'file_name' => $finalFileName,
+        'tte_applied' => $enableTTE,
+        'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null
     ]);
 }
 
@@ -2831,7 +2927,7 @@ private function signPDFWithTTE($pdfPath, $tteData)
             'nik' => $tteData['nik'],                                    // DARI INPUT
             'passphrase' => $tteData['passphrase'],                      // DARI INPUT
             'tampilan' => 'visible',
-            'page' => '2',
+            'page' => '1',
             'xAxis' => (string)$tteData['x'],
             'yAxis' => (string)$tteData['y'], 
             'width' => (string)$tteData['width'],

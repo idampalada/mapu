@@ -80,7 +80,7 @@
     <script src="<?= base_url(); ?>/assets/js/letterhead-surat.js"></script>
     <script src="<?= base_url(); ?>/assets/js/booking-ruangan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/ttesuratpermohonan.js"></script>
-<script src="<?= base_url(); ?>/assets/js/ttesuratkdf.js"></script>
+<script src="<?= base_url(); ?>/assets/js/ttesurat.js"></script>
     <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>
     <script src="<?= base_url(); ?>/assets/js/mainpage.js"></script>
 

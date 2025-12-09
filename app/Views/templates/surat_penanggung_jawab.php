@@ -61,7 +61,7 @@
         .letter-number {
             text-align: center;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
         }
 
         table { width: 100%; border-collapse: collapse; }
