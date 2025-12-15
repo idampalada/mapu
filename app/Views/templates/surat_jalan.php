@@ -140,7 +140,7 @@
         <h1>KEMENTERIAN PEKERJAAN UMUM</h1>
         <h2>SEKRETARIAT JENDERAL</h2>
         <div class="address">
-            Jl. Pattimura Nomor 20, Kebayoran Baru, Jakarta Selatan 12110<br>
+            Jl. Pattimura Nomor 20, Selong, Kebayoran Baru, Jakarta Selatan, DKI Jakarta 12110<br>
             Telepon (021) 7392681
         </div>
     </div>

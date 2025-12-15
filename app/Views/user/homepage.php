@@ -721,7 +721,6 @@
 }
 </style>
 
-/* CSS untuk styling inline keterlambatan pengembalian */
 <style>
 /* Bisa ditambahkan ke file CSS utama atau di head template */
 .keterlambatan-readonly {

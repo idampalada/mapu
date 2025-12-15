@@ -1292,6 +1292,20 @@ if ($is_late_return) {
     'daysLate' => $days_late
         ];
 
+
+        // === LOGO PROCESSING SIMPLE ===
+$logoPath = FCPATH . 'assets/images/logo-pu.svg';
+
+if (file_exists($logoPath)) {
+    $pdfData['logo_data'] = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
+    $pdfData['logo_found'] = true;
+    $pdfData['logo_method'] = 'direct';
+} else {
+    $pdfData['logo_data'] = null;
+    $pdfData['logo_found'] = false;
+    $pdfData['logo_method'] = 'not_found';
+}
+
         // Log data STNK, BPKB, dan Rangka untuk debugging
         log_message('debug', 'Data kendaraan untuk PDF: ' . json_encode([
             'no_stnk' => $asset['no_stnk'] ?? 'tidak ada',
