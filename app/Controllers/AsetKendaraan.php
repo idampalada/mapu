@@ -1677,151 +1677,536 @@ public function verifikasiPengembalian()
         return $this->response->setJSON(['error' => 'Unauthorized Access']);
     }
 
-    $kembaliId = $this->request->getPost('kembali_id');
-    $status = $this->request->getPost('status');
-    $keterangan = $this->request->getPost('keterangan');
-    $rating_admin = $this->request->getPost('rating_admin'); // Ambil rating admin
-    $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
+    try {
+        $kembaliId = $this->request->getPost('kembali_id');
+        $status = $this->request->getPost('status');
+        $keterangan = $this->request->getPost('keterangan');
+        $rating_admin = $this->request->getPost('rating_admin');
+        $enableTTE = $this->request->getPost('enable_tte_pengembalian') === 'on';
 
-    // Validasi alasan penolakan jika status ditolak
-    if ($status === 'ditolak' && empty($keterangan)) {
-        return $this->response->setJSON(['error' => 'Alasan penolakan harus diisi']);
-    }
+        log_message('debug', '==== verifikasiPengembalian DIPANGGIL ====');
+        log_message('debug', 'Kembali ID: ' . $kembaliId);
+        log_message('debug', 'Status: ' . $status);
+        log_message('debug', 'Enable TTE: ' . ($enableTTE ? 'YES' : 'NO'));
 
-    // Validasi rating admin jika status disetujui
-    if ($status === 'disetujui' && empty($rating_admin)) {
-        return $this->response->setJSON(['error' => 'Rating admin harus diisi']);
-    }
-
-    // Validasi dokumen tambahan saat penolakan
-    if ($status === 'ditolak' && (!$dokumenTambahan || !$dokumenTambahan->isValid())) {
-        return $this->response->setJSON(['error' => 'Dokumen tambahan harus diupload untuk menolak pengembalian']);
-    }
-
-    $model = new KembaliModel();
-    $pinjamModel = new PinjamModel();
-    $asetModel = new AsetModel();
-    $db = db_connect();
-
-    if (!in_array($status, [KembaliModel::STATUS_DISETUJUI, KembaliModel::STATUS_DITOLAK])) {
-        return $this->response->setJSON(['error' => 'Status tidak valid']);
-    }
-
-    $kembali = $model->find($kembaliId);
-    if (!$kembali) {
-        return $this->response->setJSON(['error' => 'Data pengembalian tidak ditemukan']);
-    }
-
-    $updateData = [
-        'status' => $status,
-        'keterangan' => $keterangan
-    ];
-
-    // Tambahkan rating admin jika disetujui
-    if ($status === 'disetujui') {
-        $updateData['rating_admin'] = $rating_admin;
-    }
-
-    if ($dokumenTambahan && $dokumenTambahan->isValid()) {
-        // Mendukung format PDF, JPG, dan PNG
-        $validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-        $fileType = $dokumenTambahan->getClientMimeType();
-        
-        if (!in_array($fileType, $validTypes)) {
-            return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF, JPG, atau PNG']);
+        // If TTE is enabled, redirect to TTE method
+        if ($enableTTE) {
+            log_message('debug', 'Redirecting to TTE method...');
+            return $this->verifikasiPengembalianWithTTE();
         }
 
-        if ($dokumenTambahan->getSize() > 2 * 1024 * 1024) {
-            return $this->response->setJSON(['error' => 'Ukuran file Dokumen Tambahan tidak boleh lebih dari 2MB']);
-        }
-        
-        if ($this->check_file_with_virustotal($dokumenTambahan)) {
-            return $this->response->setJSON(['error' => 'File Dokumen Tambahan terdeteksi tidak aman']);
+        // Continue with regular processing
+        if (!$kembaliId || !$status) {
+            return $this->response->setJSON(['error' => 'Data verifikasi tidak lengkap']);
         }
 
-        $newName = $dokumenTambahan->getRandomName();
-        $dokumenTambahan->move(ROOTPATH . 'public/uploads/documents', $newName);
-        $updateData['dokumen_tambahan'] = $newName;
+        // Validasi alasan penolakan jika status ditolak
+        if ($status === 'ditolak' && empty($keterangan)) {
+            return $this->response->setJSON(['error' => 'Alasan penolakan harus diisi']);
+        }
+
+        // Validasi rating admin jika status disetujui
+        if ($status === 'disetujui' && empty($rating_admin)) {
+            return $this->response->setJSON(['error' => 'Rating admin harus diisi']);
+        }
+
+        $dokumenTambahan = $this->request->getFile('dokumen_tambahan');
+
+        // Validasi dokumen tambahan saat penolakan
+        if ($status === 'ditolak' && (!$dokumenTambahan || !$dokumenTambahan->isValid())) {
+            return $this->response->setJSON(['error' => 'Dokumen tambahan harus diupload untuk menolak pengembalian']);
+        }
+
+        $model = new KembaliModel();
+        $pinjamModel = new PinjamModel();
+        $asetModel = new AsetModel();
+        $db = db_connect();
+
+        if (!in_array($status, [KembaliModel::STATUS_DISETUJUI, KembaliModel::STATUS_DITOLAK])) {
+            return $this->response->setJSON(['error' => 'Status tidak valid']);
+        }
+
+        $kembali = $model->find($kembaliId);
+        if (!$kembali) {
+            return $this->response->setJSON(['error' => 'Data pengembalian tidak ditemukan']);
+        }
+
+        $updateData = [
+            'status' => $status,
+            'keterangan' => $keterangan,
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => user_id()
+        ];
+
+        // Tambahkan rating admin jika disetujui
+        if ($status === 'disetujui') {
+            $updateData['rating_admin'] = $rating_admin;
+        }
+
+        if ($dokumenTambahan && $dokumenTambahan->isValid()) {
+            // Mendukung format PDF, JPG, dan PNG
+            $validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            $fileType = $dokumenTambahan->getClientMimeType();
+            
+            if (!in_array($fileType, $validTypes)) {
+                return $this->response->setJSON(['error' => 'Format file Dokumen Tambahan harus PDF, JPG, atau PNG']);
+            }
+
+            if ($dokumenTambahan->getSize() > 2 * 1024 * 1024) {
+                return $this->response->setJSON(['error' => 'Ukuran file Dokumen Tambahan tidak boleh lebih dari 2MB']);
+            }
+            
+            if ($this->check_file_with_virustotal($dokumenTambahan)) {
+                return $this->response->setJSON(['error' => 'File Dokumen Tambahan terdeteksi tidak aman']);
+            }
+
+            $newName = $dokumenTambahan->getRandomName();
+            $dokumenTambahan->move(ROOTPATH . 'public/uploads/documents', $newName);
+            $updateData['dokumen_tambahan'] = $newName;
+        }
+
+        // Cari data peminjaman terkait
+        $pinjam = $pinjamModel->find($kembali['pinjam_id']);
+
+        if (!$pinjam) {
+            return $this->response->setJSON(['error' => 'Data peminjaman terkait tidak ditemukan']);
+        }
+
+        $db->transStart();
+
+        try {
+            $result = $model->update($kembaliId, $updateData);
+            if (!$result) {
+                return $this->response->setJSON(['error' => 'Gagal mengupdate status pengembalian']);
+            }
+
+            if ($status === 'disetujui') {
+                // Update status asset menjadi tersedia
+                $asetModel->update($kembali['kendaraan_id'], [
+                    'status_pinjam' => 'Tersedia'
+                ]);
+
+                // Send notification
+                $pinjam = $pinjamModel->find($kembali['pinjam_id']);
+                $asset = $asetModel->find($kembali['kendaraan_id']);
+                $userData = $this->getUserById($pinjam['user_id']);
+                
+                $notifData = [
+                    'user_email' => $userData['email'] ?? '',
+                    'user_fullname' => $userData['fullname'] ?? '',
+                    'merk' => $asset['merk'] ?? '',
+                    'no_polisi' => $asset['no_polisi'] ?? '',
+                    'nama_penanggung_jawab' => $kembali['nama_penanggung_jawab'] ?? '',
+                    'nip_nrp' => $kembali['nip_nrp'] ?? '',
+                    'tanggal_pinjam' => $pinjam['tanggal_pinjam'] ?? '',
+                    'tanggal_kembali' => $pinjam['tanggal_kembali'] ?? '',
+                    'rating_admin' => $rating_admin,
+                    'tte_applied' => false,
+                    'tte_signer' => null
+                ];
+
+                if (function_exists('sendPengembalianNotification')) {
+                    sendPengembalianNotification($notifData, 'approved');
+                }
+
+            } else if ($status === 'ditolak') {
+                $asetModel->update($kembali['kendaraan_id'], [
+                    'status_pinjam' => 'Dipinjam'
+                ]);
+
+                $pinjamModel->update($pinjam['id'], [
+                    'is_returned' => false,
+                    'has_rejected_return' => true,
+                    'rejected_return_reason' => $keterangan,
+                    'rejected_return_date' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON(['error' => 'Terjadi kesalahan pada transaksi database']);
+            }
+
+            log_message('info', 'Pengembalian ID ' . $kembaliId . ' berhasil di-' . $status . ' tanpa TTE');
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => $status === 'disetujui' ? 'Pengembalian berhasil disetujui' : 'Pengembalian berhasil ditolak',
+                'tte_applied' => false,
+                'tte_signer' => null,
+                'rating_admin' => $rating_admin
+            ]);
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Error in verification: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => $e->getMessage()]);
+        }
+
+    } catch (\Exception $e) {
+        log_message('error', 'Error verifikasiPengembalian: ' . $e->getMessage());
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+        ]);
     }
+}
 
-    // Cari data peminjaman terkait
-    $pinjam = $pinjamModel->find($kembali['pinjam_id']);
-
-    if (!$pinjam) {
-        return $this->response->setJSON(['error' => 'Data peminjaman terkait tidak ditemukan']);
+/**
+ * Enhanced verifikasiPengembalianWithTTE method
+ */
+public function verifikasiPengembalianWithTTE()
+{
+    if (!in_groups(['admin', 'admin_gedungutama'])) {
+        return $this->response->setJSON(['error' => 'Unauthorized Access']);
     }
-
-    $db->transStart();
 
     try {
-        $model->update($kembaliId, $updateData);
+        $kembaliId = $this->request->getPost('kembali_id');
+        $ratingAdmin = $this->request->getPost('rating_admin');
+        $keterangan = $this->request->getPost('keterangan');
+        $enableTTE = $this->request->getPost('enable_tte_pengembalian') === 'on';
+        
+        log_message('debug', '==== verifikasiPengembalianWithTTE DIPANGGIL ====');
+        log_message('debug', 'Kembali ID: ' . $kembaliId);
+        log_message('debug', 'Rating Admin: ' . $ratingAdmin);
+        log_message('debug', 'Enable TTE: ' . ($enableTTE ? 'YES' : 'NO'));
 
-        if ($status === 'disetujui') {
-            $asetModel->update($kembali['kendaraan_id'], [
-                'status_pinjam' => 'Tersedia'
-            ]);
-
-            $pinjamModel->update($pinjam['id'], [
-                'status' => 'selesai',
-                'is_returned' => false
-            ]);
-
-        } else if ($status === 'ditolak') {
-            $asetModel->update($kembali['kendaraan_id'], [
-                'status_pinjam' => 'Dipinjam'
-            ]);
-
-            $pinjamModel->update($pinjam['id'], [
-                'is_returned' => false,
-                'has_rejected_return' => true,
-                'rejected_return_reason' => $keterangan,
-                'rejected_return_date' => date('Y-m-d H:i:s')
+        // Validasi input
+        if (!$kembaliId || !$ratingAdmin) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data kembali ID dan rating admin harus diisi'
             ]);
         }
 
+        $model = new KembaliModel();
+        $pinjamModel = new PinjamModel();
+        $asetModel = new AsetModel();
+        $db = db_connect();
+
+        // Ambil data pengembalian
+        $kembali = $model->find($kembaliId);
+        if (!$kembali) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data pengembalian tidak ditemukan'
+            ]);
+        }
+
+        // Ambil data pinjam dan asset
+        $pinjam = $pinjamModel->find($kembali['pinjam_id']);
+        $asset = $asetModel->find($kembali['kendaraan_id']);
+
+        if (!$pinjam || !$asset) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Data peminjaman atau aset tidak ditemukan'
+            ]);
+        }
+
+        log_message('debug', 'Data loaded - Pinjam ID: ' . $pinjam['id'] . ', Asset: ' . $asset['merk'] . ' ' . $asset['no_polisi']);
+
+        $finalFileName = $kembali['berita_acara_pengembalian'];
+
+        // ===== TTE PROCESSING UNTUK BERITA ACARA PENGEMBALIAN =====
+        if ($enableTTE) {
+            // Cek apakah berita acara pengembalian sudah ada
+            if (empty($kembali['berita_acara_pengembalian'])) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Berita acara pengembalian belum tersedia'
+                ]);
+            }
+
+            log_message('debug', 'TTE enabled for berita acara pengembalian');
+            
+            // Validasi credential TTE
+            $tteNik = $this->request->getPost('tte_nik');
+            $ttePassphrase = $this->request->getPost('tte_passphrase');
+            $tteQrLink = $this->request->getPost('tte_qr_link');
+
+            if (empty($tteNik) || strlen($tteNik) !== 16) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'NIK TTE harus 16 digit'
+                ]);
+            }
+
+            if (empty($ttePassphrase) || strlen($ttePassphrase) < 6) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Passphrase TTE minimal 6 karakter'
+                ]);
+            }
+
+            if (empty($tteQrLink) || !filter_var($tteQrLink, FILTER_VALIDATE_URL)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Link QR TTE harus berupa URL yang valid'
+                ]);
+            }
+
+            $beritaAcaraPath = ROOTPATH . 'public/uploads/documents/' . $kembali['berita_acara_pengembalian'];
+
+            // Validasi file berita acara exists
+            if (!file_exists($beritaAcaraPath)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'File berita acara pengembalian tidak ditemukan: ' . $kembali['berita_acara_pengembalian']
+                ]);
+            }
+
+            $tteData = [
+                'nik' => $tteNik,
+                'passphrase' => $ttePassphrase,
+                'qr_link' => $tteQrLink,
+                'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
+                'x' => $this->request->getPost('tte_x') ?: 400,
+                'y' => $this->request->getPost('tte_y') ?: 700,
+                'width' => $this->request->getPost('tte_width') ?: 150,
+                'height' => $this->request->getPost('tte_height') ?: 75,
+                'reason' => $this->request->getPost('tte_reason') ?: 'Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik',
+                'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
+            ];
+
+            log_message('debug', 'TTE Data: ' . json_encode([
+                'nik' => substr($tteNik, 0, 4) . '***',
+                'qr_link' => $tteQrLink,
+                'position' => $tteData['position'],
+                'file_path' => $beritaAcaraPath
+            ]));
+
+            // Proses TTE
+            $signedResult = $this->signPDFWithTTE($beritaAcaraPath, $tteData);
+
+            if ($signedResult['success']) {
+                // Hapus file asli dan gunakan yang sudah ditandatangani
+                @unlink($beritaAcaraPath);
+                $finalFileName = $signedResult['filename'];
+                
+                log_message('info', 'TTE Pengembalian berhasil untuk dokumen: ' . $finalFileName . ' - Kembali ID: ' . $kembaliId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
+            } else {
+                log_message('error', 'TTE Pengembalian gagal untuk Kembali ID: ' . $kembaliId . ' - Error: ' . $signedResult['error']);
+                
+                return $this->response->setJSON([
+                    'success' => false,
+                    'error' => 'Gagal melakukan tanda tangan elektronik: ' . $signedResult['error']
+                ]);
+            }
+        }
+
+        // Start database transaction
+        $db->transStart();
+
+        // Update status pengembalian
+        $updateData = [
+            'status' => KembaliModel::STATUS_DISETUJUI,
+            'rating_admin' => $ratingAdmin,
+            'keterangan' => $keterangan,
+            'berita_acara_pengembalian' => $finalFileName, // Update dengan file yang sudah di-TTE
+            'verified_at' => date('Y-m-d H:i:s'),
+            'verified_by' => user_id()
+        ];
+
+        // Tambahkan field TTE jika enabled
+        if ($enableTTE && isset($tteNik)) {
+            $updateData['is_tte_signed'] = 1;
+            $updateData['tte_signed_at'] = date('Y-m-d H:i:s');
+            $updateData['tte_signer_nik'] = $tteNik;
+        }
+
+        log_message('debug', 'Updating kembali with data: ' . json_encode($updateData));
+
+        $result = $model->update($kembaliId, $updateData);
+
+        if (!$result) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal mengupdate status pengembalian'
+            ]);
+        }
+
+        // Update status asset menjadi tersedia
+        $assetUpdateResult = $asetModel->update($kembali['kendaraan_id'], [
+            'status_pinjam' => 'Tersedia'
+        ]);
+
+        if (!$assetUpdateResult) {
+            $db->transRollback();
+            log_message('error', 'Gagal update status asset menjadi Tersedia');
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal mengupdate status kendaraan'
+            ]);
+        }
+
+        // Update status pinjam menjadi selesai
+        $pinjamUpdateResult = $pinjamModel->update($pinjam['id'], [
+            'status' => 'selesai',
+            'is_returned' => false // Reset flag returned
+        ]);
+
+        if (!$pinjamUpdateResult) {
+            $db->transRollback();
+            log_message('error', 'Gagal update status pinjam menjadi selesai');
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Gagal mengupdate status peminjaman'
+            ]);
+        }
+
+        // Commit transaction
         $db->transComplete();
 
         if ($db->transStatus() === false) {
-            return $this->response->setJSON(['error' => 'Terjadi kesalahan pada transaksi database']);
+            log_message('error', 'Transaction failed for kembali ID: ' . $kembaliId);
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Terjadi kesalahan pada transaksi database'
+            ]);
         }
 
-        $asset = $asetModel->find($kembali['kendaraan_id']);
-        $userData = $this->getUserData($kembali['user_id']);
-        $notifData = [
-            'user_email' => $userData->email ?? '',
-            'user_fullname' => $userData->fullname ?? '',
-            'merk' => $asset['merk'] ?? '',
-            'no_polisi' => $asset['no_polisi'] ?? '',
-            'status' => $status ?? '',
-            'keterangan' => $keterangan ?? '',
-            'kondisi_kembali' => $kembali['kondisi_kembali'] ?? '-',
-            'nama_penanggung_jawab' => $kembali['nama_penanggung_jawab'] ?? '',
-            'nip_nrp' => $kembali['nip_nrp'] ?? '',
-            'tanggal_pinjam' => $kembali['tanggal_pinjam'] ?? '',
-            'tanggal_kembali' => $kembali['tanggal_kembali'] ?? '',
-            'surat_pengembalian' => $kembali['surat_pengembalian'] ?? '',
-            'berita_acara_pengembalian' => $kembali['berita_acara_pengembalian'] ?? '',
-            'dokumen_tambahan' => $kembali['dokumen_tambahan'] ?? '',
-            'rating_pengguna' => $kembali['rating_pengguna'] ?? '',
-            'rating_admin' => $rating_admin ?? ''
-        ];
-        sendPengembalianNotification($notifData, 'verified');
+        log_message('info', 'Database transaction completed successfully for kembali ID: ' . $kembaliId);
 
-        $message = $status === 'disetujui'
-            ? 'Pengembalian kendaraan berhasil disetujui'
-            : 'Pengembalian kendaraan ditolak. Status dikembalikan ke Dipinjam';
+        // ===== SEND NOTIFICATION =====
+        try {
+            // Get user data with proper handling
+            $userModel = new \Myth\Auth\Models\UserModel();
+            $user = $userModel->find($pinjam['user_id']);
+            
+            $notifData = [
+                'user_email' => $user ? $user->email : '',
+                'user_fullname' => $user ? ($user->fullname ?? $user->username) : '',
+                'merk' => $asset['merk'] ?? '',
+                'no_polisi' => $asset['no_polisi'] ?? '',
+                'nama_penanggung_jawab' => $kembali['nama_penanggung_jawab'] ?? '',
+                'nip_nrp' => $kembali['nip_nrp'] ?? '',
+                'jabatan' => $kembali['jabatan'] ?? '',
+                'unit_organisasi' => $kembali['unit_organisasi'] ?? '',
+                'tanggal_pinjam' => $pinjam['tanggal_pinjam'] ?? '',
+                'tanggal_kembali' => $pinjam['tanggal_kembali'] ?? '',
+                'kondisi_kembali' => $kembali['kondisi_kembali'] ?? '',
+                'rating_pengguna' => $kembali['rating_pengguna'] ?? '',
+                'rating_admin' => $ratingAdmin,
+                'berita_acara_pengembalian' => $finalFileName,
+                'status' => 'disetujui',
+                'keterangan' => $keterangan ?? '',
+                'tte_applied' => $enableTTE,
+                'tte_signer' => $enableTTE && isset($tteNik) ? substr($tteNik, 0, 4) . '***' : null,
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+            if (function_exists('sendPengembalianNotification')) {
+                sendPengembalianNotification($notifData, 'verified');
+                log_message('debug', 'Notification sent successfully');
+            } else {
+                log_message('warning', 'sendPengembalianNotification function not found');
+            }
+
+        } catch (\Exception $notifError) {
+            log_message('error', 'Error sending notification: ' . $notifError->getMessage());
+            // Don't fail the whole process if notification fails
+        }
+
+        log_message('info', 'Pengembalian ID ' . $kembaliId . ' berhasil disetujui dengan rating ' . $ratingAdmin . ($enableTTE ? ' + TTE' : ''));
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => $message
+            'message' => $enableTTE ? 'Pengembalian berhasil disetujui dan berita acara ditandatangani elektronik' : 'Pengembalian berhasil disetujui',
+            'tte_applied' => $enableTTE,
+            'tte_signer' => $enableTTE && isset($tteNik) ? substr($tteNik, 0, 4) . '***' : null,
+            'rating_admin' => $ratingAdmin,
+            'berita_acara' => $finalFileName
         ]);
 
     } catch (\Exception $e) {
-        $db->transRollback();
-        log_message('error', 'Error in verification: ' . $e->getMessage());
-        return $this->response->setJSON(['error' => $e->getMessage()]);
+        // Rollback transaction if it's still active
+        if (isset($db) && $db->transStatus() !== false) {
+            $db->transRollback();
+        }
+
+        log_message('error', 'Error verifikasiPengembalianWithTTE: ' . $e->getMessage());
+        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+        
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+        ]);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Get pengembalian data for TTE modal
+ */
+public function getPengembalianData()
+{
+    $kembaliId = $this->request->getPost('kembali_id');
+    
+    $model = new KembaliModel();
+    $asetModel = new AsetModel();
+    
+    // Ambil data pengembalian
+    $kembali = $model->find($kembaliId);
+    if (!$kembali) {
+        return $this->response->setJSON([
+            'success' => false,
+            'error' => 'Data pengembalian tidak ditemukan'
+        ]);
+    }
+    
+    // Ambil data aset
+    $asset = $asetModel->find($kembali['kendaraan_id']);
+    
+    return $this->response->setJSON([
+        'success' => true,
+        'pengembalian' => array_merge($kembali, [
+            'merk' => $asset['merk'] ?? '',
+            'no_polisi' => $asset['no_polisi'] ?? ''
+        ])
+    ]);
+}
+
+/**
+ * Helper method to get user by ID
+ */
+private function getUserById($userId)
+{
+    $userModel = new \Myth\Auth\Models\UserModel();
+    $user = $userModel->find($userId);
+    
+    if ($user) {
+        return [
+            'id' => $user->id,
+            'username' => $user->username,
+            'email' => $user->email,
+            'fullname' => $user->fullname ?? $user->username,
+            'active' => $user->active
+        ];
+    }
+    
+    return null;
+}
+
 public function updateSurat()
 {
     $pinjamId = $this->request->getPost('pinjam_id');

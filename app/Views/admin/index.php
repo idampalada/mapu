@@ -893,60 +893,142 @@
     </div>
 
     <!-- Modal Rating Admin -->
-    <div class="modal fade" id="modalRatingAdmin" tabindex="-1" aria-labelledby="modalRatingAdminLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalRatingAdminLabel">Rating Pengembalian Kendaraan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formRatingAdmin">
-                        <input type="hidden" id="kembali_id_rating" name="kembali_id">
-                        <input type="hidden" name="status" value="disetujui">
-                        
-                        <div class="form-group mb-3">
-                            <label class="form-label">Rating Kondisi Kendaraan <span class="text-danger"> *</span></label>
-                            <div class="rating-container">
-                                <div class="star-rating d-flex align-items-center">
-                                    <div class="rating-stars">
-                                        <input type="radio" id="admin_star5" name="rating_admin" value="5" required />
-                                        <label for="admin_star5" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
-                                        
-                                        <input type="radio" id="admin_star4" name="rating_admin" value="4" />
-                                        <label for="admin_star4" title="Baik"><i class="bi bi-star-fill"></i></label>
-                                        
-                                        <input type="radio" id="admin_star3" name="rating_admin" value="3" />
-                                        <label for="admin_star3" title="Cukup"><i class="bi bi-star-fill"></i></label>
-                                        
-                                        <input type="radio" id="admin_star2" name="rating_admin" value="2" />
-                                        <label for="admin_star2" title="Kurang"><i class="bi bi-star-fill"></i></label>
-                                        
-                                        <input type="radio" id="admin_star1" name="rating_admin" value="1" />
-                                        <label for="admin_star1" title="Sangat Kurang"><i class="bi bi-star-fill"></i></label>
+<!-- REPLACE the existing modalRatingAdmin in admin/index.php with this enhanced version -->
+<!-- Modal Rating Admin dengan TTE Integration -->
+<div class="modal fade" id="modalRatingAdmin" tabindex="-1" aria-labelledby="modalRatingAdminLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRatingAdminLabel">
+                    <i class="bi bi-star text-warning"></i> 
+                    Rating Pengembalian Kendaraan
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formRatingAdmin">
+                    <input type="hidden" id="kembali_id_rating" name="kembali_id">
+                    <input type="hidden" name="status" value="disetujui">
+                    
+                    <div class="row">
+                        <!-- KOLOM KIRI: Rating & Catatan -->
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label">Rating Kondisi Kendaraan <span class="text-danger">*</span></label>
+                                <div class="rating-container">
+                                    <div class="star-rating d-flex align-items-center">
+                                        <div class="rating-stars">
+                                            <input type="radio" id="admin_star5" name="rating_admin" value="5" required />
+                                            <label for="admin_star5" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
+                                            
+                                            <input type="radio" id="admin_star4" name="rating_admin" value="4" />
+                                            <label for="admin_star4" title="Baik"><i class="bi bi-star-fill"></i></label>
+                                            
+                                            <input type="radio" id="admin_star3" name="rating_admin" value="3" />
+                                            <label for="admin_star3" title="Cukup"><i class="bi bi-star-fill"></i></label>
+                                            
+                                            <input type="radio" id="admin_star2" name="rating_admin" value="2" />
+                                            <label for="admin_star2" title="Kurang"><i class="bi bi-star-fill"></i></label>
+                                            
+                                            <input type="radio" id="admin_star1" name="rating_admin" value="1" />
+                                            <label for="admin_star1" title="Sangat Kurang"><i class="bi bi-star-fill"></i></label>
+                                        </div>
+                                        <span class="ms-3 rating-text-admin">0/5</span>
                                     </div>
-                                    <span class="ms-3 rating-text-admin">0/5</span>
+                                    <div class="form-text">
+                                        <small><i class="bi bi-info-circle"></i> Berikan rating kondisi kendaraan saat pengembalian (1-5)</small>
+                                    </div>
                                 </div>
-                                <div class="form-text">
-                                    <small><i class="bi bi-info-circle"></i> Berikan rating kondisi kendaraan saat pengembalian (1-5)</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="keterangan" class="form-label">Catatan (opsional)</label>
+                                <textarea class="form-control" id="keterangan" name="keterangan" rows="3" 
+                                    placeholder="Catatan tambahan tentang kondisi kendaraan"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- KOLOM KANAN: TTE Options -->
+                        <div class="col-md-6">
+                            <div class="card border-success h-100">
+                                <div class="card-header bg-success bg-opacity-10">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0 text-success">
+                                            <i class="bi bi-shield-check"></i> Tanda Tangan Elektronik
+                                        </h6>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="enableTTEPengembalian" name="enable_tte_pengembalian">
+                                            <label class="form-check-label fw-bold text-success" for="enableTTEPengembalian">
+                                                Aktif
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body" id="tteOptionsPengembalian" style="display: none;">
+                                    <!-- NIK -->
+                                    <div class="mb-3">
+                                        <label for="tte_nik_pengembalian" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-sm" id="tte_nik_pengembalian" name="tte_nik_pengembalian" 
+                                               placeholder="Masukkan NIK 16 digit" maxlength="16">
+                                        <div class="form-text">NIK harus terdaftar di sistem BSrE</div>
+                                    </div>
+                                    
+                                    <!-- Passphrase -->
+                                    <div class="mb-3">
+                                        <label for="tte_passphrase_pengembalian" class="form-label">Passphrase <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control form-control-sm" id="tte_passphrase_pengembalian" name="tte_passphrase_pengembalian" 
+                                                   placeholder="Masukkan passphrase TTE">
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphrasePengembalian">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- QR Link -->
+                                    <div class="mb-3">
+                                        <label for="tte_qr_link_pengembalian" class="form-label">Link QR Code</label>
+                                        <input type="url" class="form-control form-control-sm" id="tte_qr_link_pengembalian" name="tte_qr_link_pengembalian" 
+                                               value="https://s.pu.go.id">
+                                    </div>
+
+                                    <!-- Load Credentials Button -->
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-sm btn-outline-warning" id="loadCredentialsPengembalian">
+                                            <i class="bi bi-arrow-repeat"></i> Load Credential Terakhir
+                                        </button>
+                                    </div>
+
+                                    <!-- Hidden fields for advanced options -->
+                                    <input type="hidden" id="tte_position_pengembalian" name="tte_position_pengembalian" value="visible_bottom">
+                                    <input type="hidden" id="tte_x_pengembalian" name="tte_x_pengembalian" value="400">
+                                    <input type="hidden" id="tte_y_pengembalian" name="tte_y_pengembalian" value="700">
+                                    <input type="hidden" id="tte_width_pengembalian" name="tte_width_pengembalian" value="150">
+                                    <input type="hidden" id="tte_height_pengembalian" name="tte_height_pengembalian" value="75">
+                                    <input type="hidden" id="tte_reason_pengembalian" name="tte_reason_pengembalian" value="Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik">
+                                    <input type="hidden" id="tte_location_pengembalian" name="tte_location_pengembalian" value="Jakarta">
+
+                                    <div class="alert alert-info py-2">
+                                        <small>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Info TTE:</strong> Proses tanda tangan elektronik membutuhkan waktu 30-60 detik.
+                                        </small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="keterangan" class="form-label">Catatan (opsional)</label>
-                            <textarea class="form-control" id="keterangan" name="keterangan" rows="3" 
-                                placeholder="Catatan tambahan tentang kondisi kendaraan"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" id="btnSubmitRating">Konfirmasi Persetujuan</button>
-                </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="btnSubmitRating">
+                    <i class="bi bi-check-circle"></i> Konfirmasi Persetujuan
+                </button>
             </div>
         </div>
     </div>
+</div>
 <?php endif; ?>
 
 <!-- Modal Edit Surat dengan TTE Credential Input -->

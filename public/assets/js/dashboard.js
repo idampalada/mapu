@@ -2647,19 +2647,36 @@ document.addEventListener("DOMContentLoaded", function () {
     tanggalBarang.addEventListener("change", refreshChartBarang);
   }
 });
+// ===== COMPLETE JAVASCRIPT FOR TTE RATING MODAL =====
+// Replace your existing JS with this complete version
 
-// Fungsi untuk menampilkan modal rating admin
+// Enhanced showRatingModal function with TTE support
 function showRatingModal(kembaliId) {
-  // Reset form dan rating
-  document.getElementById("formRatingAdmin").reset();
-  document.getElementById("kembali_id_rating").value = kembaliId;
-  document.querySelector(".rating-text-admin").textContent = "0/5";
+  // Reset form
+  $("#formRatingAdmin")[0].reset();
+  $("#kembali_id_rating").val(kembaliId);
 
-  // Tampilkan modal
+  // Reset validation
+  $(".form-control").removeClass("is-invalid is-valid");
+  $(".invalid-feedback").remove();
+
+  // Reset TTE toggle to off by default
+  $("#enableTTEPengembalian").prop("checked", false);
+  $("#tteOptionsPengembalian").hide();
+
+  // Reset rating display
+  $(".rating-text-admin").text("0/5");
+
+  // Load saved credentials if available
+  loadSavedCredentialsPengembalianRating();
+
+  // Show modal
   const modal = new bootstrap.Modal(
     document.getElementById("modalRatingAdmin")
   );
   modal.show();
+
+  console.log("Rating modal opened for kembali ID:", kembaliId);
 }
 
 // Ganti fungsi verifikasiPengembalian untuk menggunakan modal rating
@@ -2677,7 +2694,135 @@ function verifikasiPengembalian(id, status) {
   }
 }
 
-// Event listener untuk inisialisasi rating admin
+// ===== HELPER FUNCTIONS YANG LENGKAP =====
+function validateRatingForm() {
+  console.log("Validating rating form...");
+
+  // Clear previous errors
+  clearRatingValidationErrors();
+
+  let isValid = true;
+
+  // Validasi rating admin wajib
+  const rating = $('input[name="rating_admin"]:checked').val();
+  if (!rating) {
+    showRatingFieldError(
+      'input[name="rating_admin"]',
+      "Rating kondisi kendaraan harus dipilih"
+    );
+    isValid = false;
+  }
+
+  // Cek TTE enabled
+  const isTteEnabled = $("#enableTTEPengembalian").is(":checked");
+  if (isTteEnabled) {
+    console.log("TTE enabled, validating credentials...");
+
+    // Validasi NIK
+    const nik = $("#tte_nik_pengembalian").val().trim();
+    if (!nik || nik.length !== 16) {
+      showRatingFieldError("#tte_nik_pengembalian", "NIK harus 16 digit");
+      isValid = false;
+    }
+
+    // Validasi Passphrase
+    const passphrase = $("#tte_passphrase_pengembalian").val();
+    if (!passphrase || passphrase.length < 6) {
+      showRatingFieldError(
+        "#tte_passphrase_pengembalian",
+        "Passphrase minimal 6 karakter"
+      );
+      isValid = false;
+    }
+
+    // Validasi QR Link
+    const qrLink = $("#tte_qr_link_pengembalian").val().trim();
+    if (!qrLink || !isValidUrl(qrLink)) {
+      showRatingFieldError(
+        "#tte_qr_link_pengembalian",
+        "Link QR harus berupa URL yang valid"
+      );
+      isValid = false;
+    }
+  }
+
+  console.log("Form validation result:", isValid);
+  return isValid;
+}
+
+function showRatingFieldError(fieldSelector, message) {
+  const $field = $(fieldSelector);
+  $field.addClass("is-invalid");
+
+  // Remove existing error message
+  $field.siblings(".invalid-feedback").remove();
+
+  // Add error message
+  $field.after(`<div class="invalid-feedback">${message}</div>`);
+}
+
+function clearRatingValidationErrors() {
+  $(".form-control").removeClass("is-invalid is-valid");
+  $(".invalid-feedback").remove();
+}
+
+function showRatingLoadingState($btn) {
+  $btn.prop("disabled", true);
+  $btn.html(
+    '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...'
+  );
+}
+
+function hideRatingLoadingState($btn, originalText = "Submit") {
+  $btn.prop("disabled", false);
+  $btn.html(originalText);
+}
+
+function loadSavedCredentialsPengembalianRating() {
+  try {
+    const saved = localStorage.getItem("tte_last_credentials_pengembalian");
+    if (saved) {
+      const credentials = JSON.parse(saved);
+      $("#tte_nik_pengembalian").val(credentials.nik || "");
+      $("#tte_qr_link_pengembalian").val(credentials.qr_link || "");
+      // TIDAK load passphrase untuk keamanan
+      console.log("Credentials loaded for pengembalian rating");
+    }
+  } catch (e) {
+    console.warn("Error loading saved credentials:", e);
+  }
+}
+
+function saveRatingCredentialsPengembalian() {
+  try {
+    const credentials = {
+      nik: $("#tte_nik_pengembalian").val().trim(),
+      qr_link: $("#tte_qr_link_pengembalian").val().trim(),
+      // TIDAK simpan passphrase untuk keamanan
+    };
+
+    if (credentials.nik || credentials.qr_link) {
+      localStorage.setItem(
+        "tte_last_credentials_pengembalian",
+        JSON.stringify(credentials)
+      );
+      console.log("Credentials saved for pengembalian");
+    }
+  } catch (e) {
+    console.warn("Error saving credentials:", e);
+  }
+}
+
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// ===== ENHANCED SUBMIT HANDLER WITH TTE SUPPORT =====
 document.addEventListener("DOMContentLoaded", function () {
   // Inisialisasi rating bintang admin
   const ratingInputsAdmin = document.querySelectorAll(
@@ -2694,67 +2839,119 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Handler untuk tombol submit rating
+  // Enhanced submit handler with TTE support
   const btnSubmitRating = document.getElementById("btnSubmitRating");
   if (btnSubmitRating) {
-    btnSubmitRating.addEventListener("click", function () {
-      const form = document.getElementById("formRatingAdmin");
-      const kembaliId = document.getElementById("kembali_id_rating").value;
-      const rating = form.querySelector('input[name="rating_admin"]:checked');
-      const keterangan = document.getElementById("keterangan").value;
+    btnSubmitRating.addEventListener("click", function (e) {
+      e.preventDefault();
 
-      // Validasi rating
-      if (!rating) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Rating kondisi kendaraan harus dipilih",
-          confirmButtonText: "Tutup",
-          confirmButtonColor: "#dc3545",
-        });
+      console.log("Submit rating clicked");
+
+      // Validasi form
+      if (!validateRatingForm()) {
+        console.log("Form validation failed");
         return;
       }
 
-      // Tampilkan loading
-      Swal.fire({
-        title: "Mohon Tunggu",
-        text: "Sedang memproses persetujuan...",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
+      const form = document.getElementById("formRatingAdmin");
+      const kembaliId = document.getElementById("kembali_id_rating").value;
+      const rating = form.querySelector(
+        'input[name="rating_admin"]:checked'
+      ).value;
+      const keterangan = document.getElementById("keterangan").value;
+      const isTteEnabled = $("#enableTTEPengembalian").is(":checked");
+
+      console.log("Form data:", {
+        kembaliId,
+        rating,
+        isTteEnabled,
       });
 
-      // Siapkan data
+      // Show loading state
+      const $submitBtn = $(this);
+      showRatingLoadingState($submitBtn);
+
+      // Prepare FormData
       const formData = new FormData();
       formData.append("kembali_id", kembaliId);
       formData.append("status", "disetujui");
-      formData.append("rating_admin", rating.value);
+      formData.append("rating_admin", rating);
       formData.append("keterangan", keterangan);
 
-      // Kirim request
-      fetch(`${BASE_URL}/AsetKendaraan/verifikasiPengembalian`, {
+      // Auto-detect TTE dan set parameter
+      if (isTteEnabled) {
+        console.log("TTE enabled, adding TTE parameters");
+
+        formData.append("enable_tte_pengembalian", "on");
+        formData.append("tte_nik", $("#tte_nik_pengembalian").val().trim());
+        formData.append(
+          "tte_passphrase",
+          $("#tte_passphrase_pengembalian").val()
+        );
+        formData.append(
+          "tte_qr_link",
+          $("#tte_qr_link_pengembalian").val().trim()
+        );
+        formData.append(
+          "tte_position",
+          $("#tte_position").val() || "visible_bottom"
+        );
+        formData.append("tte_x", $("#tte_x").val() || "400");
+        formData.append("tte_y", $("#tte_y").val() || "700");
+        formData.append("tte_width", $("#tte_width").val() || "150");
+        formData.append("tte_height", $("#tte_height").val() || "75");
+        formData.append(
+          "tte_reason",
+          $("#tte_reason").val() ||
+            "Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik"
+        );
+        formData.append("tte_location", $("#tte_location").val() || "Jakarta");
+
+        // Save credentials before submit
+        saveRatingCredentialsPengembalian();
+      }
+
+      // Smart endpoint routing (auto-detection di backend)
+      const endpoint = "/AsetKendaraan/verifikasiPengembalian";
+
+      console.log("Submitting to:", endpoint);
+
+      // Submit form
+      fetch(endpoint, {
         method: "POST",
         body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
       })
         .then((response) => response.json())
         .then((data) => {
+          hideRatingLoadingState($submitBtn, "Submit");
+
+          console.log("Response:", data);
+
           if (data.success) {
+            // Success dengan info TTE
+            let message = data.message || "Pengembalian berhasil disetujui";
+
+            if (data.tte_applied) {
+              message += ` (TTE oleh ${data.tte_signer})`;
+            }
+
             Swal.fire({
               icon: "success",
               title: "Berhasil!",
-              text: data.message || "Pengembalian kendaraan berhasil disetujui",
+              text: message,
               confirmButtonText: "OK",
               confirmButtonColor: "#198754",
             }).then(() => {
-              // Tutup modal
+              // Close modal
               const modal = bootstrap.Modal.getInstance(
                 document.getElementById("modalRatingAdmin")
               );
               if (modal) modal.hide();
 
-              // Reload halaman
+              // Reload page
               window.location.reload();
             });
           } else {
@@ -2764,7 +2961,9 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         })
         .catch((error) => {
-          console.error("Error:", error);
+          hideRatingLoadingState($submitBtn, "Submit");
+          console.error("Submit error:", error);
+
           Swal.fire({
             icon: "error",
             title: "Gagal!",
@@ -2777,3 +2976,73 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+
+// ===== TTE EVENT HANDLERS DENGAN JQUERY =====
+$(document).ready(function () {
+  console.log("Initializing TTE event handlers for rating modal");
+
+  // TTE Toggle Handler
+  $("#enableTTEPengembalian").on("change", function () {
+    const isChecked = $(this).is(":checked");
+    console.log("TTE toggle changed:", isChecked);
+
+    if (isChecked) {
+      $("#tteOptionsPengembalian").slideDown(300);
+      // Load saved credentials when TTE is enabled
+      loadSavedCredentialsPengembalianRating();
+    } else {
+      $("#tteOptionsPengembalian").slideUp(300);
+    }
+  });
+
+  // Password visibility toggle
+  $("#togglePassphrasePengembalian").on("click", function (e) {
+    e.preventDefault();
+    const $passphraseInput = $("#tte_passphrase_pengembalian");
+    const $icon = $(this).find("i");
+
+    if ($passphraseInput.attr("type") === "password") {
+      $passphraseInput.attr("type", "text");
+      $icon.removeClass("bi-eye").addClass("bi-eye-slash");
+    } else {
+      $passphraseInput.attr("type", "password");
+      $icon.removeClass("bi-eye-slash").addClass("bi-eye");
+    }
+  });
+
+  // NIK validation (16 digits only)
+  $("#tte_nik_pengembalian").on("input", function () {
+    let value = $(this).val().replace(/\D/g, ""); // Remove non-digits
+    if (value.length > 16) {
+      value = value.substring(0, 16);
+    }
+    $(this).val(value);
+
+    // Visual validation
+    if (value.length === 16) {
+      $(this).removeClass("is-invalid").addClass("is-valid");
+    } else if (value.length > 0) {
+      $(this).removeClass("is-valid").addClass("is-invalid");
+    } else {
+      $(this).removeClass("is-valid is-invalid");
+    }
+  });
+
+  // Load saved credentials button
+  $("#loadCredentialsPengembalian").on("click", function (e) {
+    e.preventDefault();
+    loadSavedCredentialsPengembalianRating();
+
+    // Show feedback
+    $(this).html('<i class="bi bi-check"></i> Loaded').addClass("btn-success");
+    setTimeout(() => {
+      $(this)
+        .html('<i class="bi bi-arrow-clockwise"></i> Load Saved')
+        .removeClass("btn-success");
+    }, 2000);
+  });
+
+  console.log("TTE event handlers initialized");
+});
+
+console.log("Rating modal with TTE support loaded");
