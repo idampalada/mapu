@@ -792,22 +792,24 @@ $(document).ready(function () {
   });
 
   // Position Toggle untuk KDF
+  // Position Toggle untuk KDF - DIPERBAIKI
   $(document).on("change", "#tte_position_kdf", function () {
     const $customPosition = $("#customPositionKdf");
-    if ($(this).val() === "visible_custom") {
-      $customPosition.slideDown(300);
-    } else {
+    if ($(this).val() === "invisible") {
       $customPosition.slideUp(300);
+    } else {
+      $customPosition.slideDown(300); // Tampil untuk visible_custom
     }
   });
 
   // NEW: Position Toggle untuk Surat Jalan
+  // Position Toggle untuk Surat Jalan - DIPERBAIKI
   $(document).on("change", "#tte_position_surat_jalan", function () {
     const $customPosition = $("#customPositionSuratJalan");
-    if ($(this).val() === "visible_custom") {
-      $customPosition.slideDown(300);
-    } else {
+    if ($(this).val() === "invisible") {
       $customPosition.slideUp(300);
+    } else {
+      $customPosition.slideDown(300); // Tampil untuk visible_custom
     }
   });
 
@@ -906,6 +908,11 @@ function showSetujuModal(pinjamId) {
   // Set jam default
   $("#jam_mulai").val("08:00");
   $("#jam_selesai").val("17:00");
+
+  // ===== TRIGGER CHANGE EVENT UNTUK KOORDINAT FORM =====
+  // Ini akan memastikan form koordinat tampil berdasarkan nilai default HTML
+  $("#tte_position_kdf").trigger("change");
+  $("#tte_position_surat_jalan").trigger("change");
 
   // Ambil data peminjaman
   $.ajax({
@@ -1020,3 +1027,17 @@ function showSetujuModal(pinjamId) {
     },
   });
 }
+
+$('button[data-bs-toggle="tab"]').on("shown.bs.tab", function (e) {
+  const targetTab = $(e.target).attr("data-bs-target");
+
+  console.log("🧭 Tab aktif:", targetTab);
+
+  if (targetTab === "#suratJalanTab") {
+    initSuratJalanTab();
+  }
+
+  if (targetTab === "#suratPenanggungTab") {
+    initKdfTab();
+  }
+});

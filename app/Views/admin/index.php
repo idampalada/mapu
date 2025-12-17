@@ -1140,13 +1140,12 @@
                                                 <div class="form-group mb-3">
                                                     <label for="tte_position_permohonan" class="form-label">Posisi Tanda Tangan</label>
                                                     <select class="form-select form-select-sm" name="tte_position" id="tte_position_permohonan">
-                                                        <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
                                                         <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                                         <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                     </select>
                                                 </div>
 
-                                                <div id="customPositionPermohonan" style="display:none;">
+                                                <div id="customPositionPermohonan" style="display:block;">
                                                     <div class="row mb-3">
                                                         <div class="col-6">
                                                             <label class="form-label">Posisi X</label>
@@ -1598,13 +1597,12 @@
                                     <div class="form-group mb-3">
                                         <label for="tte_position_kdf" class="form-label">Posisi Tanda Tangan</label>
                                         <select class="form-select form-select-sm" name="tte_position" id="tte_position_kdf">
-                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
                                             <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                             <option value="invisible">Invisible (Tidak Terlihat)</option>
                                         </select>
                                     </div>
 
-                                    <div id="customPositionKdf" style="display:none;">
+                                    <div id="customPositionKdf" style="display:block;">
                                         <div class="row mb-2">
                                             <div class="col-6">
                                                 <label class="form-label">Posisi X</label>
@@ -1847,14 +1845,12 @@
                                                     <div class="form-group mb-3">
                                                         <label for="tte_position_surat_jalan" class="form-label">Posisi Tanda Tangan</label>
                                                         <select class="form-select form-select-sm" name="tte_position_surat_jalan" id="tte_position_surat_jalan">
-                                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Bawah</option>
-                                                            <option value="visible_top">Halaman 1 - Posisi Atas</option>
                                                             <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                                             <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                         </select>
                                                     </div>
 
-                                                    <div id="customPositionSuratJalan" style="display:none;">
+                                                    <div id="customPositionSuratJalan" style="display:block;">
                                                         <div class="row mb-2">
                                                             <div class="col-6">
                                                                 <label class="form-label">Posisi X</label>

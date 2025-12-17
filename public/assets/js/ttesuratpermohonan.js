@@ -146,13 +146,12 @@ $(document).ready(function () {
     const selectedValue = $(this).val();
     const $customPosition = $("#customPositionPermohonan");
 
-    if (selectedValue === "visible_custom") {
-      $customPosition.slideDown(300);
-    } else {
+    if (selectedValue === "invisible") {
       $customPosition.slideUp(300);
+    } else {
+      $customPosition.slideDown(300);
     }
   });
-
   // FALLBACK untuk ID lama
   $("#tte_position").change(function () {
     const selectedValue = $(this).val();
