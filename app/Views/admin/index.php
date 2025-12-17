@@ -1156,7 +1156,7 @@
                                                         <div class="col-6">
                                                             <label class="form-label">Posisi Y</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_y" value="250" min="0" max="2000">
+                                                                   name="tte_y" value="190" min="0" max="2000">
                                                         </div>
                                                     </div>
                                                     <div class="row mb-3">
@@ -1168,7 +1168,7 @@
                                                         <div class="col-6">
                                                             <label class="form-label">Tinggi</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_height" value="200" min="0" max="2000">
+                                                                   name="tte_height" value="160" min="0" max="2000">
                                                         </div>
                                                     </div>
                                                     
