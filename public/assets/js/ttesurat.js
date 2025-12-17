@@ -283,9 +283,11 @@ $(document).ready(function () {
         $("#nip_kepala_satuan_kerja").val()
       );
 
-      // TTE DATA SUPPORT
+      // ✅ SIMPLIFIED TTE DATA - Biar backend yang handle koordinat default
       if ($("#enableTTEKdf").length > 0 && $("#enableTTEKdf").is(":checked")) {
-        console.log("🔒 TTE KDF ENABLED - Adding TTE data to FormData");
+        console.log(
+          "🔒 TTE KDF ENABLED - Adding TTE data to FormData (backend will handle coordinates)"
+        );
 
         suratPenanggungData.append("enable_tte", "on");
         suratPenanggungData.append("tte_nik", $("#tte_nik_kdf").val() || "");
@@ -301,22 +303,19 @@ $(document).ready(function () {
           "tte_position",
           $("#tte_position_kdf").val() || "visible_bottom"
         );
-        suratPenanggungData.append(
-          "tte_x",
-          $('input[name="tte_x"]').val() || "250"
-        );
-        suratPenanggungData.append(
-          "tte_y",
-          $('input[name="tte_y"]').val() || "730"
-        );
+
+        // Kirim koordinat dari form (untuk custom position) atau biar backend yang tentukan default
+        suratPenanggungData.append("tte_x", $("#tte_x_kdf").val() || "");
+        suratPenanggungData.append("tte_y", $("#tte_y_kdf").val() || "");
         suratPenanggungData.append(
           "tte_width",
-          $('input[name="tte_width"]').val() || "150"
+          $("#tte_width_kdf").val() || ""
         );
         suratPenanggungData.append(
           "tte_height",
-          $('input[name="tte_height"]').val() || "55"
+          $("#tte_height_kdf").val() || ""
         );
+
         suratPenanggungData.append(
           "tte_reason",
           $("#tte_reason_kdf").val() ||
@@ -327,7 +326,9 @@ $(document).ready(function () {
           $("#tte_location_kdf").val() || "Jakarta"
         );
 
-        console.log("✅ TTE KDF data added to FormData");
+        console.log(
+          "✅ TTE KDF data added - Backend will use default coordinates for visible_bottom"
+        );
       }
 
       // Debug FormData entries
@@ -882,7 +883,9 @@ $(document).ready(function () {
     }
   });
 
-  console.log("TTE Multi-Document Event handlers loaded");
+  console.log(
+    "TTE Multi-Document Event handlers loaded - Backend handles default coordinates"
+  );
 }); // AKHIR $(document).ready
 
 // Function untuk menampilkan modal setuju dengan dual tab dan checkbox

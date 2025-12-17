@@ -1102,18 +1102,18 @@
                                             </div>
                                             <div class="card-body py-2">
                                                 <div class="mb-3">
-                                                    <label for="tte_nik" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
-                                                    <input type="text" class="form-control form-control-sm" id="tte_nik" name="tte_nik" 
+                                                    <label for="tte_nik_permohonan" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_nik_permohonan" name="tte_nik" 
                                                            placeholder="Masukkan NIK 16 digit" maxlength="16" required>
                                                     <div class="form-text">NIK harus sudah terdaftar di sistem BSrE</div>
                                                 </div>
                                                 
                                                 <div class="mb-3">
-                                                    <label for="tte_passphrase" class="form-label">Passphrase <span class="text-danger">*</span></label>
+                                                    <label for="tte_passphrase_permohonan" class="form-label">Passphrase <span class="text-danger">*</span></label>
                                                     <div class="input-group">
-                                                        <input type="password" class="form-control form-control-sm" id="tte_passphrase" name="tte_passphrase" 
+                                                        <input type="password" class="form-control form-control-sm" id="tte_passphrase_permohonan" name="tte_passphrase" 
                                                                placeholder="Masukkan passphrase TTE" required>
-                                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphrase">
+                                                        <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphrasePermohonan">
                                                             <i class="bi bi-eye"></i>
                                                         </button>
                                                     </div>
@@ -1121,77 +1121,81 @@
                                                 </div>
                                                 
                                                 <div class="mb-3">
-                                                    <label for="tte_qr_link" class="form-label">Link QR Code <span class="text-danger">*</span></label>
-                                                    <input type="url" class="form-control form-control-sm" id="tte_qr_link" name="tte_qr_link" 
+                                                    <label for="tte_qr_link_permohonan" class="form-label">Link QR Code <span class="text-danger">*</span></label>
+                                                    <input type="url" class="form-control form-control-sm" id="tte_qr_link_permohonan" name="tte_qr_link" 
                                                            placeholder="https://example.com" value="https://s.pu.go.id" required>
                                                     <div class="form-text">Link yang akan ditampilkan pada QR code</div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- SECTION POSISI SIGNATURE -->
+                                        <!-- SECTION POSISI SIGNATURE SURAT PERMOHONAN -->
                                         <div class="card border-info mb-3">
                                             <div class="card-header bg-info bg-opacity-10 py-2">
                                                 <h6 class="mb-0 text-info">
-                                                    <i class="bi bi-crosshair"></i> Posisi Tanda Tangan
+                                                    <i class="bi bi-crosshair"></i> Posisi Tanda Tangan - Surat Permohonan
                                                 </h6>
                                             </div>
                                             <div class="card-body py-2">
                                                 <div class="form-group mb-3">
-                                                    <label for="tte_position" class="form-label">Posisi Tanda Tangan</label>
-                                                    <select class="form-select form-select-sm" name="tte_position" id="tte_position">
+                                                    <label for="tte_position_permohonan" class="form-label">Posisi Tanda Tangan</label>
+                                                    <select class="form-select form-select-sm" name="tte_position" id="tte_position_permohonan">
                                                         <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
                                                         <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
                                                         <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                     </select>
                                                 </div>
 
-                                                <div id="customPosition" style="display:none;">
+                                                <div id="customPositionPermohonan" style="display:none;">
                                                     <div class="row mb-3">
                                                         <div class="col-6">
                                                             <label class="form-label">Posisi X</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_x" value="650" min="0" max="2000">
+                                                                   name="tte_x_permohonan" id="tte_x_permohonan" 
+                                                                   value="650" min="0" max="2000">
                                                         </div>
                                                         <div class="col-6">
                                                             <label class="form-label">Posisi Y</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_y" value="190" min="0" max="2000">
+                                                                   name="tte_y_permohonan" id="tte_y_permohonan" 
+                                                                   value="190" min="0" max="2000">
                                                         </div>
                                                     </div>
                                                     <div class="row mb-3">
                                                         <div class="col-6">
                                                             <label class="form-label">Lebar</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_width" value="200" min="0" max="2000">
+                                                                   name="tte_width_permohonan" id="tte_width_permohonan" 
+                                                                   value="200" min="0" max="2000">
                                                         </div>
                                                         <div class="col-6">
                                                             <label class="form-label">Tinggi</label>
                                                             <input type="number" class="form-control form-control-sm" 
-                                                                   name="tte_height" value="160" min="0" max="2000">
+                                                                   name="tte_height_permohonan" id="tte_height_permohonan" 
+                                                                   value="160" min="0" max="2000">
                                                         </div>
                                                     </div>
                                                     
                                                     <div class="alert alert-info py-2">
                                                         <small>
                                                             <i class="bi bi-info-circle"></i>
-                                                            <strong>Panduan Koordinat:</strong><br>
-                                                            • X, Y: 0-2000 (koordinat dalam PDF)<br>
-                                                            • Halaman A4 ≈ 595x842 points<br>
-                                                            • Test dengan nilai kecil dulu, lalu adjust
+                                                            <strong>Koordinat Surat Permohonan:</strong><br>
+                                                            • X: 650, Y: 190 (posisi kanan-atas)<br>
+                                                            • Lebar: 200, Tinggi: 160<br>
+                                                            • Sesuaikan jika diperlukan
                                                         </small>
                                                     </div>
                                                 </div>
 
                                                 <div class="form-group mb-3">
-                                                    <label for="tte_reason" class="form-label">Alasan Penandatanganan</label>
-                                                    <input type="text" class="form-control form-control-sm" id="tte_reason" name="tte_reason" 
+                                                    <label for="tte_reason_permohonan" class="form-label">Alasan Penandatanganan</label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_reason_permohonan" name="tte_reason" 
                                                            value="Dokumen telah disetujui dan ditandatangani">
                                                 </div>
 
                                                 <div class="form-group mb-3">
-                                                    <label for="tte_location" class="form-label">Lokasi Penandatanganan</label>
-                                                    <input type="text" class="form-control form-control-sm" id="tte_location" name="tte_location" 
+                                                    <label for="tte_location_permohonan" class="form-label">Lokasi Penandatanganan</label>
+                                                    <input type="text" class="form-control form-control-sm" id="tte_location_permohonan" name="tte_location" 
                                                            value="Jakarta">
                                                 </div>
                                             </div>
@@ -1200,10 +1204,11 @@
                                         <div class="alert alert-warning py-2">
                                             <small>
                                                 <i class="bi bi-exclamation-triangle"></i>
-                                                <strong>Perhatian:</strong> 
+                                                <strong>Perhatian Surat Permohonan:</strong> 
                                                 <ul class="mb-0 mt-1">
                                                     <li>Proses TTE membutuhkan waktu 30-60 detik</li>
                                                     <li>Pastikan NIK sudah terdaftar di BSrE dengan status AKTIF</li>
+                                                    <li>Koordinat: X=650, Y=190 (kanan-atas)</li>
                                                     <li>Credential akan digunakan sekali saja, tidak disimpan</li>
                                                 </ul>
                                             </small>
@@ -1227,6 +1232,7 @@
         </div>
     </div>
 </div>
+
 
 <div class="modal fade" id="modalPilihTambah" tabindex="-1" aria-labelledby="modalPilihTambahLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -1421,242 +1427,257 @@
             <div class="tab-content">
                 <!-- Tab 1: Buat Surat Penanggung Jawab KDF -->
                 <div class="tab-pane fade show active" id="suratPenanggungTab" role="tabpanel" 
-                     aria-labelledby="surat-penanggung-tab">
-                    <div class="modal-body">
-                        <input type="hidden" id="pinjamId" name="pinjam_id">
-                        
-                        <div class="row">
-                            <!-- KOLOM KIRI: Data KDF -->
-                            <div class="col-md-7">
-                                <!-- Checkbox untuk memilih surat -->
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" id="buatSuratPenanggungJawab" name="buatSuratPenanggungJawab" checked>
-                                    <label class="form-check-label" for="buatSuratPenanggungJawab">
-                                        <strong>Buat Surat Penanggung Jawab KDF</strong>
-                                    </label>
-                                </div>
-                                
-                                <!-- Data peminjaman -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
-                                            <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" readonly>
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <label for="nip_nrp" class="form-label">NIP/NRP</label>
-                                            <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" readonly>
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <label for="pangkat_golongan" class="form-label">Pangkat/Golongan</label>
-                                            <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan" readonly>
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <label for="jabatan" class="form-label">Jabatan</label>
-                                            <input type="text" class="form-control" id="jabatan" name="jabatan" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="no_polisi" class="form-label">Nomor Polisi</label>
-                                            <input type="text" class="form-control" id="no_polisi" name="no_polisi" readonly>
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <label for="kode_barang" class="form-label">Kode Barang</label>
-                                            <input type="text" class="form-control" id="kode_barang" name="kode_barang" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Penomoran Surat -->
-                                <h5 class="mt-3 mb-2">Penomoran Surat Penanggung Jawab KDF</h5>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-2">
-                                            <label for="nomor_surat" class="form-label">Nomor Surat <span class="text-danger"> *</span></label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="nomor_surat" name="nomor_surat">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-2">
-                                            <label for="tanggal_surat" class="form-label">Tanggal Surat</label>
-                                            <input type="date" class="form-control surat-penanggung-field" id="tanggal_surat" name="tanggal_surat" value="<?= date('Y-m-d') ?>">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-2">
-                                            <label for="tempat_surat" class="form-label">Tempat Surat</label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="tempat_surat" name="tempat_surat" value="Jakarta">
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Bagian untuk kedua penandatangan -->
-                                <h5 class="mt-3 mb-2">Data Penandatangan</h5>
+             aria-labelledby="surat-penanggung-tab">
+    <div class="modal-body">
+        <input type="hidden" id="pinjamId" name="pinjam_id">
+        
+        <div class="row">
+            <!-- KOLOM KIRI: Data KDF -->
+            <div class="col-md-7">
+                <!-- Checkbox untuk memilih surat -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="buatSuratPenanggungJawab" name="buatSuratPenanggungJawab" checked>
+                    <label class="form-check-label" for="buatSuratPenanggungJawab">
+                        <strong>Buat Surat Penanggung Jawab KDF</strong>
+                    </label>
+                </div>
+                
+                <!-- Data peminjaman -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
+                            <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" readonly>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="nip_nrp" class="form-label">NIP/NRP</label>
+                            <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" readonly>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="pangkat_golongan" class="form-label">Pangkat/Golongan</label>
+                            <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan" readonly>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="jabatan" class="form-label">Jabatan</label>
+                            <input type="text" class="form-control" id="jabatan" name="jabatan" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="no_polisi" class="form-label">Nomor Polisi</label>
+                            <input type="text" class="form-control" id="no_polisi" name="no_polisi" readonly>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label for="kode_barang" class="form-label">Kode Barang</label>
+                            <input type="text" class="form-control" id="kode_barang" name="kode_barang" readonly>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Penomoran Surat -->
+                <h5 class="mt-3 mb-2">Penomoran Surat Penanggung Jawab KDF</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group mb-2">
+                            <label for="nomor_surat_kdf" class="form-label">Nomor Surat <span class="text-danger"> *</span></label>
+                            <input type="text" class="form-control surat-penanggung-field" id="nomor_surat_kdf" name="nomor_surat">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-2">
+                            <label for="tanggal_surat_kdf" class="form-label">Tanggal Surat</label>
+                            <input type="date" class="form-control surat-penanggung-field" id="tanggal_surat_kdf" name="tanggal_surat" value="<?= date('Y-m-d') ?>">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-2">
+                            <label for="tempat_surat_kdf" class="form-label">Tempat Surat</label>
+                            <input type="text" class="form-control surat-penanggung-field" id="tempat_surat_kdf" name="tempat_surat" value="Jakarta">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bagian untuk kedua penandatangan -->
+                <h5 class="mt-3 mb-2">Data Penandatangan</h5>
 
-                                <!-- Penandatangan 1: Penanggung Jawab KDF -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="nama_penanggung_jawab_kendaraan" class="form-label">Nama Penanggung Jawab Kendaraan</label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="nama_penanggung_jawab_kendaraan" name="nama_penanggung_jawab_kendaraan">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="nip_penanggung_jawab_kendaraan" class="form-label">NIP Penanggung Jawab Kendaraan</label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="nip_penanggung_jawab_kendaraan" name="nip_penanggung_jawab_kendaraan">
-                                        </div>
-                                    </div>
-                                </div>
+                <!-- Penandatangan 1: Penanggung Jawab KDF -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="nama_penanggung_jawab_kendaraan" class="form-label">Nama Penanggung Jawab Kendaraan</label>
+                            <input type="text" class="form-control surat-penanggung-field" id="nama_penanggung_jawab_kendaraan" name="nama_penanggung_jawab_kendaraan">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="nip_penanggung_jawab_kendaraan" class="form-label">NIP Penanggung Jawab Kendaraan</label>
+                            <input type="text" class="form-control surat-penanggung-field" id="nip_penanggung_jawab_kendaraan" name="nip_penanggung_jawab_kendaraan">
+                        </div>
+                    </div>
+                </div>
 
-                                <!-- Penandatangan 2: Kepala Satuan Kerja -->
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="nama_kepala_satuan_kerja" class="form-label">Nama Kepala Satuan Kerja</label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja" value="Suherman">
-                                        </div>
+                <!-- Penandatangan 2: Kepala Satuan Kerja -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="nama_kepala_satuan_kerja" class="form-label">Nama Kepala Satuan Kerja</label>
+                            <input type="text" class="form-control surat-penanggung-field" id="nama_kepala_satuan_kerja" name="nama_kepala_satuan_kerja" value="Suherman">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label for="nip_kepala_satuan_kerja" class="form-label">NIP Kepala Satuan Kerja</label>
+                            <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja" value="13579">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KOLOM KANAN: TTE Options untuk KDF -->
+            <div class="col-md-5">
+                <div class="card border-success h-100">
+                    <div class="card-header bg-success bg-opacity-10">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 text-success">
+                                <i class="bi bi-shield-check"></i> Tanda Tangan Elektronik KDF
+                            </h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableTTEKdf" name="enable_tte" checked>
+                                <label class="form-check-label fw-bold text-success" for="enableTTEKdf">
+                                    Aktif
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="tteOptionsKdf">
+                            <!-- SECTION CREDENTIAL TTE KDF -->
+                            <div class="card border-warning mb-3">
+                                <div class="card-header bg-warning bg-opacity-10 py-2">
+                                    <h6 class="mb-0 text-warning">
+                                        <i class="bi bi-key"></i> Credential Penandatangan
+                                    </h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="mb-3">
+                                        <label for="tte_nik_kdf" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control form-control-sm" id="tte_nik_kdf" name="tte_nik" 
+                                               placeholder="Masukkan NIK 16 digit" maxlength="16" required>
+                                        <div class="form-text">NIK harus sudah terdaftar di sistem BSrE</div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-2">
-                                            <label for="nip_kepala_satuan_kerja" class="form-label">NIP Kepala Satuan Kerja</label>
-                                            <input type="text" class="form-control surat-penanggung-field" id="nip_kepala_satuan_kerja" name="nip_kepala_satuan_kerja" value="13579">
+                                    
+                                    <div class="mb-3">
+                                        <label for="tte_passphrase_kdf" class="form-label">Passphrase <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control form-control-sm" id="tte_passphrase_kdf" name="tte_passphrase" 
+                                                   placeholder="Masukkan passphrase TTE" required>
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphraseKdf">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
                                         </div>
+                                        <div class="form-text">Passphrase untuk akses sertifikat elektronik</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="tte_qr_link_kdf" class="form-label">Link QR Code <span class="text-danger">*</span></label>
+                                        <input type="url" class="form-control form-control-sm" id="tte_qr_link_kdf" name="tte_qr_link" 
+                                               placeholder="https://example.com" value="https://s.pu.go.id" required>
+                                        <div class="form-text">Link yang akan ditampilkan pada QR code</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- KOLOM KANAN: TTE Options untuk KDF -->
-                            <div class="col-md-5">
-                                <div class="card border-success h-100">
-                                    <div class="card-header bg-success bg-opacity-10">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0 text-success">
-                                                <i class="bi bi-shield-check"></i> Tanda Tangan Elektronik KDF
-                                            </h6>
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" id="enableTTEKdf" name="enable_tte" checked>
-                                                <label class="form-check-label fw-bold text-success" for="enableTTEKdf">
-                                                    Aktif
-                                                </label>
+                            <!-- SECTION POSISI SIGNATURE KDF -->
+                            <div class="card border-info mb-3">
+                                <div class="card-header bg-info bg-opacity-10 py-2">
+                                    <h6 class="mb-0 text-info">
+                                        <i class="bi bi-crosshair"></i> Posisi Tanda Tangan - KDF
+                                    </h6>
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="form-group mb-3">
+                                        <label for="tte_position_kdf" class="form-label">Posisi Tanda Tangan</label>
+                                        <select class="form-select form-select-sm" name="tte_position" id="tte_position_kdf">
+                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
+                                            <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
+                                            <option value="invisible">Invisible (Tidak Terlihat)</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="customPositionKdf" style="display:none;">
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label">Posisi X</label>
+                                                <input type="number" class="form-control form-control-sm" 
+                                                       name="tte_x_kdf" id="tte_x_kdf" 
+                                                       value="650" min="0" max="2000">
                                             </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Posisi Y</label>
+                                                <input type="number" class="form-control form-control-sm" 
+                                                       name="tte_y_kdf" id="tte_y_kdf" 
+                                                       value="220" min="0" max="2000">
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label">Lebar</label>
+                                                <input type="number" class="form-control form-control-sm" 
+                                                       name="tte_width_kdf" id="tte_width_kdf" 
+                                                       value="200" min="0" max="2000">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label">Tinggi</label>
+                                                <input type="number" class="form-control form-control-sm" 
+                                                       name="tte_height_kdf" id="tte_height_kdf" 
+                                                       value="170" min="0" max="2000">
+                                            </div>
+                                        </div>
+
+                                        <div class="alert alert-info py-2">
+                                            <small>
+                                                <i class="bi bi-info-circle"></i>
+                                                <strong>Koordinat Surat KDF:</strong><br>
+                                                • X: 650, Y: 250 (posisi kanan-tengah)<br>
+                                                • Lebar: 200, Tinggi: 200<br>
+                                                • Sesuaikan jika diperlukan
+                                            </small>
                                         </div>
                                     </div>
-                                    <div class="card-body">
-                                        <div id="tteOptionsKdf">
-                                            <!-- SECTION CREDENTIAL TTE KDF -->
-                                            <div class="card border-warning mb-3">
-                                                <div class="card-header bg-warning bg-opacity-10 py-2">
-                                                    <h6 class="mb-0 text-warning">
-                                                        <i class="bi bi-key"></i> Credential Penandatangan
-                                                    </h6>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <div class="mb-3">
-                                                        <label for="tte_nik_kdf" class="form-label">NIK Penandatangan <span class="text-danger">*</span></label>
-                                                        <input type="text" class="form-control form-control-sm" id="tte_nik_kdf" name="tte_nik" 
-                                                               placeholder="Masukkan NIK 16 digit" maxlength="16" required>
-                                                        <div class="form-text">NIK harus sudah terdaftar di sistem BSrE</div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="tte_passphrase_kdf" class="form-label">Passphrase <span class="text-danger">*</span></label>
-                                                        <div class="input-group">
-                                                            <input type="password" class="form-control form-control-sm" id="tte_passphrase_kdf" name="tte_passphrase" 
-                                                                   placeholder="Masukkan passphrase TTE" required>
-                                                            <button class="btn btn-outline-secondary btn-sm" type="button" id="togglePassphraseKdf">
-                                                                <i class="bi bi-eye"></i>
-                                                            </button>
-                                                        </div>
-                                                        <div class="form-text">Passphrase untuk akses sertifikat elektronik</div>
-                                                    </div>
-                                                    
-                                                    <div class="mb-3">
-                                                        <label for="tte_qr_link_kdf" class="form-label">Link QR Code <span class="text-danger">*</span></label>
-                                                        <input type="url" class="form-control form-control-sm" id="tte_qr_link_kdf" name="tte_qr_link" 
-                                                               placeholder="https://example.com" value="https://s.pu.go.id" required>
-                                                        <div class="form-text">Link yang akan ditampilkan pada QR code</div>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <!-- SECTION POSISI SIGNATURE KDF -->
-                                            <div class="card border-info mb-3">
-                                                <div class="card-header bg-info bg-opacity-10 py-2">
-                                                    <h6 class="mb-0 text-info">
-                                                        <i class="bi bi-crosshair"></i> Posisi Tanda Tangan
-                                                    </h6>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <div class="form-group mb-3">
-                                                        <label for="tte_position_kdf" class="form-label">Posisi Tanda Tangan</label>
-                                                        <select class="form-select form-select-sm" name="tte_position" id="tte_position_kdf">
-                                                            <option value="visible_bottom" selected>Halaman 1 - Posisi Default</option>
-                                                            <option value="visible_custom">Halaman 1 - Posisi Kustom</option>
-                                                            <option value="invisible">Invisible (Tidak Terlihat)</option>
-                                                        </select>
-                                                    </div>
+                                    <div class="form-group mb-2">
+                                        <label for="tte_reason_kdf" class="form-label">Alasan Penandatanganan</label>
+                                        <input type="text" class="form-control form-control-sm" id="tte_reason_kdf" name="tte_reason" 
+                                               value="Surat Penanggung Jawab KDF telah disetujui dan ditandatangani">
+                                    </div>
 
-                                                    <div id="customPositionKdf" style="display:none;">
-                                                        <div class="row mb-2">
-                                                            <div class="col-6">
-                                                                <label class="form-label">Posisi X</label>
-                                                                <input type="number" class="form-control form-control-sm" 
-                                                                       name="tte_x" value="650" min="0" max="2000">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label class="form-label">Posisi Y</label>
-                                                                <input type="number" class="form-control form-control-sm" 
-                                                                       name="tte_y" value="250" min="0" max="2000">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row mb-2">
-                                                            <div class="col-6">
-                                                                <label class="form-label">Lebar</label>
-                                                                <input type="number" class="form-control form-control-sm" 
-                                                                       name="tte_width" value="200" min="0" max="2000">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label class="form-label">Tinggi</label>
-                                                                <input type="number" class="form-control form-control-sm" 
-                                                                       name="tte_height" value="200" min="0" max="2000">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="form-group mb-2">
-                                                        <label for="tte_reason_kdf" class="form-label">Alasan Penandatanganan</label>
-                                                        <input type="text" class="form-control form-control-sm" id="tte_reason_kdf" name="tte_reason" 
-                                                               value="Surat Penanggung Jawab KDF telah disetujui dan ditandatangani">
-                                                    </div>
-
-                                                    <div class="form-group mb-2">
-                                                        <label for="tte_location_kdf" class="form-label">Lokasi Penandatanganan</label>
-                                                        <input type="text" class="form-control form-control-sm" id="tte_location_kdf" name="tte_location" 
-                                                               value="Jakarta">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="alert alert-warning py-2">
-                                                <small>
-                                                    <i class="bi bi-exclamation-triangle"></i>
-                                                    <strong>Perhatian KDF:</strong> 
-                                                    <ul class="mb-0 mt-1">
-                                                        <li>Proses TTE untuk KDF membutuhkan waktu 30-60 detik</li>
-                                                        <li>Surat KDF harus ditandatangani oleh pihak yang berwenang</li>
-                                                        <li>Credential akan digunakan sekali saja, tidak disimpan</li>
-                                                    </ul>
-                                                </small>
-                                            </div>
-                                        </div>
+                                    <div class="form-group mb-2">
+                                        <label for="tte_location_kdf" class="form-label">Lokasi Penandatanganan</label>
+                                        <input type="text" class="form-control form-control-sm" id="tte_location_kdf" name="tte_location" 
+                                               value="Jakarta">
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="alert alert-warning py-2">
+                                <small>
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <strong>Perhatian Surat KDF:</strong> 
+                                    <ul class="mb-0 mt-1">
+                                        <li>Proses TTE untuk KDF membutuhkan waktu 30-60 detik</li>
+                                        <li>Surat KDF harus ditandatangani oleh pihak yang berwenang</li>
+                                        <li>Koordinat: X=650, Y=250 (kanan-tengah)</li>
+                                        <li>Credential akan digunakan sekali saja, tidak disimpan</li>
+                                    </ul>
+                                </small>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
                 
                 <!-- Tab 2: Buat Surat Jalan -->
                 <div class="tab-pane fade" id="suratJalanTab" role="tabpanel" aria-labelledby="surat-jalan-tab">

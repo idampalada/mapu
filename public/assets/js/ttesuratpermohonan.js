@@ -1,4 +1,4 @@
-/* JavaScript untuk Modal TTE dengan Credential Input */
+/* JavaScript untuk Modal TTE dengan Credential Input - FIXED VERSION */
 
 $(document).ready(function () {
   // ================================================
@@ -6,8 +6,22 @@ $(document).ready(function () {
   // ================================================
 
   /**
-   * Toggle password visibility
+   * Toggle password visibility untuk surat permohonan
    */
+  $("#togglePassphrasePermohonan").click(function () {
+    const passInput = $("#tte_passphrase_permohonan");
+    const icon = $(this).find("i");
+
+    if (passInput.attr("type") === "password") {
+      passInput.attr("type", "text");
+      icon.removeClass("bi-eye").addClass("bi-eye-slash");
+    } else {
+      passInput.attr("type", "password");
+      icon.removeClass("bi-eye-slash").addClass("bi-eye");
+    }
+  });
+
+  // FALLBACK untuk ID lama jika masih ada
   $("#togglePassphrase").click(function () {
     const passInput = $("#tte_passphrase");
     const icon = $(this).find("i");
@@ -22,9 +36,9 @@ $(document).ready(function () {
   });
 
   /**
-   * Validasi NIK (harus 16 digit)
+   * Validasi NIK (harus 16 digit) untuk surat permohonan
    */
-  $("#tte_nik").on("input", function () {
+  $("#tte_nik_permohonan").on("input", function () {
     let value = $(this).val().replace(/\D/g, ""); // Hanya angka
 
     if (value.length > 16) {
@@ -41,9 +55,47 @@ $(document).ready(function () {
     }
   });
 
+  // FALLBACK untuk ID lama
+  $("#tte_nik").on("input", function () {
+    let value = $(this).val().replace(/\D/g, "");
+
+    if (value.length > 16) {
+      value = value.substring(0, 16);
+    }
+
+    $(this).val(value);
+
+    if (value.length === 16) {
+      $(this).removeClass("is-invalid").addClass("is-valid");
+    } else {
+      $(this).removeClass("is-valid").addClass("is-invalid");
+    }
+  });
+
   /**
-   * Validasi URL QR Link
+   * Validasi URL QR Link untuk surat permohonan
    */
+  $("#tte_qr_link_permohonan").on("blur", function () {
+    const url = $(this).val();
+    const urlPattern =
+      /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+
+    if (url && !urlPattern.test(url)) {
+      $(this).addClass("is-invalid");
+      $(this)
+        .siblings(".form-text")
+        .text("Format URL tidak valid")
+        .addClass("text-danger");
+    } else {
+      $(this).removeClass("is-invalid");
+      $(this)
+        .siblings(".form-text")
+        .text("Link yang akan ditampilkan pada QR code")
+        .removeClass("text-danger");
+    }
+  });
+
+  // FALLBACK untuk ID lama
   $("#tte_qr_link").on("blur", function () {
     const url = $(this).val();
     const urlPattern =
@@ -74,18 +126,34 @@ $(document).ready(function () {
 
     if (isChecked) {
       $tteOptions.slideDown(300);
-      $btnText.text("Simpan Surat & TTE");
+      if ($btnText.length > 0) {
+        $btnText.text("Simpan Surat & TTE");
+      }
       $(this).next("label").removeClass("text-muted").addClass("text-success");
     } else {
       $tteOptions.slideUp(300);
-      $btnText.text("Simpan Surat Saja");
+      if ($btnText.length > 0) {
+        $btnText.text("Simpan Surat Saja");
+      }
       $(this).next("label").removeClass("text-success").addClass("text-muted");
     }
   });
 
   /**
-   * Toggle Custom Position fields
+   * Toggle Custom Position fields untuk surat permohonan
    */
+  $("#tte_position_permohonan").change(function () {
+    const selectedValue = $(this).val();
+    const $customPosition = $("#customPositionPermohonan");
+
+    if (selectedValue === "visible_custom") {
+      $customPosition.slideDown(300);
+    } else {
+      $customPosition.slideUp(300);
+    }
+  });
+
+  // FALLBACK untuk ID lama
   $("#tte_position").change(function () {
     const selectedValue = $(this).val();
     const $customPosition = $("#customPosition");
@@ -98,32 +166,59 @@ $(document).ready(function () {
   });
 
   /**
-   * Enhanced form validation untuk TTE dengan credential
+   * Enhanced form validation untuk TTE dengan credential - FIXED VERSION
    */
   function validateTTECredentials() {
     let isValid = true;
 
+    // SMART FIELD DETECTION untuk NIK
+    let nikField = $("#tte_nik_permohonan");
+    if (nikField.length === 0) {
+      nikField = $("#tte_nik"); // Fallback ke ID lama
+    }
+
+    // SMART FIELD DETECTION untuk Passphrase
+    let passphraseField = $("#tte_passphrase_permohonan");
+    if (passphraseField.length === 0) {
+      passphraseField = $("#tte_passphrase"); // Fallback ke ID lama
+    }
+
+    // SMART FIELD DETECTION untuk QR Link
+    let qrLinkField = $("#tte_qr_link_permohonan");
+    if (qrLinkField.length === 0) {
+      qrLinkField = $("#tte_qr_link"); // Fallback ke ID lama
+    }
+
     // Validasi NIK
-    const nik = $("#tte_nik").val().trim();
-    if (!nik || nik.length !== 16) {
-      showFieldError("#tte_nik", "NIK harus 16 digit");
-      isValid = false;
+    if (nikField.length > 0) {
+      const nik = nikField.val() ? nikField.val().trim() : "";
+      if (!nik || nik.length !== 16) {
+        showFieldError(nikField, "NIK harus 16 digit");
+        isValid = false;
+      }
     }
 
     // Validasi Passphrase
-    const passphrase = $("#tte_passphrase").val().trim();
-    if (!passphrase || passphrase.length < 6) {
-      showFieldError("#tte_passphrase", "Passphrase minimal 6 karakter");
-      isValid = false;
+    if (passphraseField.length > 0) {
+      const passphrase = passphraseField.val()
+        ? passphraseField.val().trim()
+        : "";
+      if (!passphrase || passphrase.length < 6) {
+        showFieldError(passphraseField, "Passphrase minimal 6 karakter");
+        isValid = false;
+      }
     }
 
     // Validasi QR Link
-    const qrLink = $("#tte_qr_link").val().trim();
-    if (!qrLink || !qrLink.startsWith("http")) {
-      showFieldError("#tte_qr_link", "Link QR harus valid (http/https)");
-      isValid = false;
+    if (qrLinkField.length > 0) {
+      const qrLink = qrLinkField.val() ? qrLinkField.val().trim() : "";
+      if (!qrLink || !qrLink.startsWith("http")) {
+        showFieldError(qrLinkField, "Link QR harus valid (http/https)");
+        isValid = false;
+      }
     }
 
+    console.log("TTE Validation Result:", isValid);
     return isValid;
   }
 
@@ -134,14 +229,18 @@ $(document).ready(function () {
     let isValid = true;
 
     // Validasi nomor surat
-    const nomorSurat = $("#nomor_surat").val().trim();
+    const nomorSurat = $("#nomor_surat").val()
+      ? $("#nomor_surat").val().trim()
+      : "";
     if (!nomorSurat) {
       showFieldError("#nomor_surat", "Nomor surat harus diisi");
       isValid = false;
     }
 
     // Validasi nama kepala satuan kerja
-    const namaKepala = $("#nama_kepala_satuan_kerja").val().trim();
+    const namaKepala = $("#nama_kepala_satuan_kerja").val()
+      ? $("#nama_kepala_satuan_kerja").val().trim()
+      : "";
     if (!namaKepala) {
       showFieldError(
         "#nama_kepala_satuan_kerja",
@@ -151,7 +250,9 @@ $(document).ready(function () {
     }
 
     // Validasi NIP
-    const nipKepala = $("#nip_kepala_satuan_kerja").val().trim();
+    const nipKepala = $("#nip_kepala_satuan_kerja").val()
+      ? $("#nip_kepala_satuan_kerja").val().trim()
+      : "";
     if (!nipKepala) {
       showFieldError(
         "#nip_kepala_satuan_kerja",
@@ -164,23 +265,30 @@ $(document).ready(function () {
   }
 
   /**
-   * Form Submit Handler with TTE Credentials
+   * Form Submit Handler with TTE Credentials - FIXED VERSION
    */
   $("#formEditSurat").on("submit", function (e) {
     e.preventDefault();
+
+    console.log("Form submit started");
 
     // Clear previous errors
     clearFieldErrors();
 
     // Validasi form umum
     if (!validateTTEForm()) {
+      console.log("Basic form validation failed");
       return false;
     }
 
     // Validasi TTE credentials jika diaktifkan
-    if ($("#enableTTE").is(":checked") && !validateTTECredentials()) {
+    const isTTEEnabled = $("#enableTTE").is(":checked");
+    if (isTTEEnabled && !validateTTECredentials()) {
+      console.log("TTE validation failed");
       return false;
     }
+
+    console.log("All validations passed, submitting form");
 
     const formData = new FormData(this);
     const $submitBtn = $("#btnSubmitSurat");
@@ -202,9 +310,11 @@ $(document).ready(function () {
       dataType: "json",
       timeout: 90000, // 90 seconds for TTE process
       success: function (response) {
+        console.log("AJAX Success:", response);
         handleTTESuccess(response, $modal);
       },
       error: function (xhr, status, error) {
+        console.error("AJAX Error:", xhr, status, error);
         handleTTEError(xhr, status, error);
       },
       complete: function () {
@@ -215,20 +325,29 @@ $(document).ready(function () {
   });
 
   /**
-   * Show field error
+   * Show field error - FIXED VERSION
    */
   function showFieldError(fieldSelector, message) {
-    const $field = $(fieldSelector);
-    $field.addClass("is-invalid");
+    let $field;
 
-    // Remove existing error message
-    $field.siblings(".invalid-feedback").remove();
+    if (typeof fieldSelector === "string") {
+      $field = $(fieldSelector);
+    } else {
+      $field = fieldSelector; // Already a jQuery object
+    }
 
-    // Add error message
-    $field.after(`<div class="invalid-feedback">${message}</div>`);
+    if ($field.length > 0) {
+      $field.addClass("is-invalid");
 
-    // Focus on first error field
-    $field.focus();
+      // Remove existing error message
+      $field.siblings(".invalid-feedback").remove();
+
+      // Add error message
+      $field.after(`<div class="invalid-feedback">${message}</div>`);
+
+      // Focus on first error field
+      $field.focus();
+    }
   }
 
   /**
@@ -287,7 +406,7 @@ $(document).ready(function () {
    */
   function handleTTESuccess(response, $modal) {
     if (response.success) {
-      const isEnable = response.tte_applied;
+      const isEnable = response.tte_applied || false;
       const icon = isEnable ? "success" : "info";
       const title = isEnable ? "Berhasil!" : "Surat Disimpan!";
 
@@ -309,15 +428,25 @@ $(document).ready(function () {
 
       // Save credentials untuk next time (tanpa passphrase)
       if (isEnable) {
-        const credentials = {
-          nik: $("#tte_nik").val(),
-          qr_link: $("#tte_qr_link").val(),
-          // Tidak simpan passphrase untuk keamanan
-        };
-        localStorage.setItem(
-          "tte_last_credentials",
-          JSON.stringify(credentials)
-        );
+        try {
+          const nikValue =
+            $("#tte_nik_permohonan").val() || $("#tte_nik").val() || "";
+          const qrValue =
+            $("#tte_qr_link_permohonan").val() || $("#tte_qr_link").val() || "";
+
+          if (nikValue || qrValue) {
+            const credentials = {
+              nik: nikValue,
+              qr_link: qrValue,
+            };
+            localStorage.setItem(
+              "tte_last_credentials",
+              JSON.stringify(credentials)
+            );
+          }
+        } catch (e) {
+          console.log("Could not save credentials:", e);
+        }
       }
 
       Swal.fire({
@@ -335,7 +464,11 @@ $(document).ready(function () {
         location.reload(); // Reload untuk update data
       });
     } else {
-      handleTTEError(null, "error", response.error);
+      handleTTEError(
+        null,
+        "error",
+        response.error || response.message || "Unknown error"
+      );
     }
   }
 
@@ -377,6 +510,8 @@ $(document).ready(function () {
    * Function untuk membuka modal edit dengan auto-populate credentials
    */
   window.openEditSuratModal = function (pinjamId) {
+    console.log("Opening edit surat modal for pinjam ID:", pinjamId);
+
     // Clear form dan errors
     $("#formEditSurat")[0].reset();
     clearFieldErrors();
@@ -389,20 +524,45 @@ $(document).ready(function () {
 
     // Reset TTE options
     $("#enableTTE").prop("checked", true).trigger("change");
-    $("#tte_position").val("visible_bottom").trigger("change");
+
+    // Reset position dropdown dengan fallback
+    const $positionSelect =
+      $("#tte_position_permohonan").length > 0
+        ? $("#tte_position_permohonan")
+        : $("#tte_position");
+    $positionSelect.val("visible_bottom").trigger("change");
 
     // Auto-populate dari data sebelumnya jika ada (localStorage)
-    const savedCredentials = localStorage.getItem("tte_last_credentials");
-    if (savedCredentials) {
-      const data = JSON.parse(savedCredentials);
-      if (confirm("Gunakan credential TTE terakhir yang digunakan?")) {
-        $("#tte_nik")
-          .val(data.nik || "")
-          .trigger("input");
-        $("#tte_qr_link").val(data.qr_link || "https://s.pu.go.id");
-        // Note: Tidak auto-fill passphrase untuk keamanan
-        showToast("info", "Credential TTE berhasil dimuat dari sesi terakhir");
+    try {
+      const savedCredentials = localStorage.getItem("tte_last_credentials");
+      if (savedCredentials) {
+        const data = JSON.parse(savedCredentials);
+        if (confirm("Gunakan credential TTE terakhir yang digunakan?")) {
+          // Try new IDs first, fallback to old IDs
+          const $nikField =
+            $("#tte_nik_permohonan").length > 0
+              ? $("#tte_nik_permohonan")
+              : $("#tte_nik");
+          const $qrField =
+            $("#tte_qr_link_permohonan").length > 0
+              ? $("#tte_qr_link_permohonan")
+              : $("#tte_qr_link");
+
+          if (data.nik && $nikField.length > 0) {
+            $nikField.val(data.nik).trigger("input");
+          }
+          if (data.qr_link && $qrField.length > 0) {
+            $qrField.val(data.qr_link);
+          }
+
+          showToast(
+            "info",
+            "Credential TTE berhasil dimuat dari sesi terakhir"
+          );
+        }
       }
+    } catch (e) {
+      console.log("Could not load saved credentials:", e);
     }
 
     // Show modal
@@ -444,11 +604,7 @@ $(document).ready(function () {
     $(this).siblings(".invalid-feedback").remove();
   });
 
-  // Clear localStorage pada logout (jika ada event listener)
-  $(window).on("beforeunload", function () {
-    // Optional: Clear sensitive data saat tutup browser
-    // localStorage.removeItem('tte_last_credentials');
-  });
+  console.log("TTE Surat Permohonan JS loaded successfully");
 });
 
 // ================================================

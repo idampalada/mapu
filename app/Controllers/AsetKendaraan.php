@@ -2424,7 +2424,7 @@ public function generateSuratPenanggungJawabKdf()
         $pdfPath = ROOTPATH . 'public/uploads/documents/' . $suratName;
         $finalFileName = $suratName;
         
-        // ===== NEW: TTE PROCESSING =====
+        // ===== UPDATED: TTE PROCESSING WITH CONDITIONAL COORDINATES =====
         if ($enableTTE) {
             log_message('debug', 'KDF TTE enabled, processing signature...');
             
@@ -2432,6 +2432,7 @@ public function generateSuratPenanggungJawabKdf()
             $tteNik = $this->request->getPost('tte_nik');
             $ttePassphrase = $this->request->getPost('tte_passphrase');
             $tteQrLink = $this->request->getPost('tte_qr_link');
+            $ttePosition = $this->request->getPost('tte_position') ?: 'visible_bottom';
             
             // Validasi credential TTE KDF
             if (empty($tteNik) || strlen($tteNik) !== 16) {
@@ -2455,24 +2456,42 @@ public function generateSuratPenanggungJawabKdf()
                 ]);
             }
             
+            // ✅ KOORDINAT LOGIC: Default vs Custom
+            if ($ttePosition === 'visible_bottom') {
+                // PAKSA koordinat default untuk KDF - abaikan HTML form values
+                $x = 650;
+                $y = 220;
+                $width = 200;
+                $height = 170;
+                log_message('debug', 'Using KDF default coordinates: X=650, Y=220, W=200, H=170');
+            } else {
+                // Gunakan koordinat dari form untuk posisi custom
+                $x = $this->request->getPost('tte_x') ?: 650;
+                $y = $this->request->getPost('tte_y') ?: 220;
+                $width = $this->request->getPost('tte_width') ?: 200;
+                $height = $this->request->getPost('tte_height') ?: 170;
+                log_message('debug', "Using KDF custom coordinates: X={$x}, Y={$y}, W={$width}, H={$height}");
+            }
+            
             $tteData = [
                 'nik' => $tteNik,
                 'passphrase' => $ttePassphrase,
                 'qr_link' => $tteQrLink,
-                'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
-                'x' => $this->request->getPost('tte_x') ?: 650,
-                'y' => $this->request->getPost('tte_y') ?: 250,
-                'width' => $this->request->getPost('tte_width') ?: 200,
-                'height' => $this->request->getPost('tte_height') ?: 200,
+                'position' => $ttePosition,
+                'x' => $x,
+                'y' => $y,
+                'width' => $width,
+                'height' => $height,
                 'reason' => $this->request->getPost('tte_reason') ?: 'Surat Penanggung Jawab KDF telah ditandatangani secara elektronik',
                 'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
             ];
             
-            // Log credential info untuk KDF (tanpa password)
+            // Log credential info untuk KDF (tanpa password) dengan koordinat
             log_message('debug', 'KDF TTE Data: ' . json_encode([
                 'nik' => $tteNik,
                 'qr_link' => $tteQrLink,
                 'position' => $tteData['position'],
+                'coordinates' => "X={$x}, Y={$y}, W={$width}, H={$height}",
                 'reason' => $tteData['reason']
             ]));
             
@@ -2484,7 +2503,7 @@ public function generateSuratPenanggungJawabKdf()
                 @unlink($pdfPath);
                 $finalFileName = $signedResult['filename'];
                 
-                log_message('info', 'KDF TTE berhasil untuk dokumen: ' . $finalFileName . ' - Pinjam ID: ' . $pinjamId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
+                log_message('info', "KDF TTE berhasil untuk dokumen: {$finalFileName} - Pinjam ID: {$pinjamId} - NIK: " . substr($tteNik, 0, 4) . "*** - Koordinat: X={$x}, Y={$y}");
             } else {
                 log_message('error', 'KDF TTE gagal untuk Pinjam ID: ' . $pinjamId . ' - Error: ' . $signedResult['error']);
                 
@@ -2541,13 +2560,18 @@ public function generateSuratPenanggungJawabKdf()
             log_message('debug', 'Kolom yang diizinkan dalam model: ' . json_encode($model->allowedFields));
         }
         
-        // Kembalikan response (enhanced with TTE info)
+        // Kembalikan response (enhanced with TTE coordinate info)
+        $responseMessage = $enableTTE ? 
+            "Surat Penanggung Jawab KDF berhasil dibuat dan ditandatangani elektronik dengan koordinat X={$x}, Y={$y}" : 
+            'Surat penanggung jawab KDF berhasil dibuat';
+            
         return $this->response->setJSON([
             'success' => true,
-            'message' => $enableTTE ? 'Surat Penanggung Jawab KDF berhasil dibuat dan ditandatangani elektronik' : 'Surat penanggung jawab KDF berhasil dibuat',
+            'message' => $responseMessage,
             'file_name' => $finalFileName,
             'tte_applied' => $enableTTE,
-            'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null
+            'tte_signer' => $enableTTE ? substr($tteNik, 0, 4) . '***' : null,
+            'tte_coordinates' => $enableTTE ? ['x' => $x, 'y' => $y, 'width' => $width, 'height' => $height] : null
         ]);
         
     } catch (\Exception $e) {
@@ -2558,6 +2582,7 @@ public function generateSuratPenanggungJawabKdf()
         ]);
     }
 }
+
 
 // Method untuk generate PDF surat penanggung jawab
 // Method untuk generate PDF surat penanggung jawab
@@ -3211,10 +3236,10 @@ public function updateSuratWithTTE()
                 'passphrase' => $ttePassphrase,                                      // DARI INPUT
                 'qr_link' => $tteQrLink,                                            // DARI INPUT
                 'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
-                'x' => $this->request->getPost('tte_x') ?: 250,
-                'y' => $this->request->getPost('tte_y') ?: 730,
-                'width' => $this->request->getPost('tte_width') ?: 150,
-                'height' => $this->request->getPost('tte_height') ?: 55,
+                'x' => $this->request->getPost('tte_x') ?: 650,
+                'y' => $this->request->getPost('tte_y') ?: 190,
+                'width' => $this->request->getPost('tte_width') ?: 200,
+                'height' => $this->request->getPost('tte_height') ?: 160,
                 'reason' => $this->request->getPost('tte_reason') ?: 'Dokumen telah ditandatangani secara elektronik',
                 'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
             ];
