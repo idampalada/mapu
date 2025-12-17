@@ -1855,24 +1855,24 @@
                                                             <div class="col-6">
                                                                 <label class="form-label">Posisi X</label>
                                                                 <input type="number" class="form-control form-control-sm" id="tte_x_surat_jalan"
-                                                                       name="tte_x_surat_jalan" value="450" min="0" max="2000">
+                                                                       name="tte_x_surat_jalan" value="650" min="0" max="2000">
                                                             </div>
                                                             <div class="col-6">
                                                                 <label class="form-label">Posisi Y</label>
                                                                 <input type="number" class="form-control form-control-sm" id="tte_y_surat_jalan"
-                                                                       name="tte_y_surat_jalan" value="250" min="0" max="2000">
+                                                                       name="tte_y_surat_jalan" value="270" min="0" max="2000">
                                                             </div>
                                                         </div>
                                                         <div class="row mb-2">
                                                             <div class="col-6">
                                                                 <label class="form-label">Lebar</label>
                                                                 <input type="number" class="form-control form-control-sm" id="tte_width_surat_jalan"
-                                                                       name="tte_width_surat_jalan" value="150" min="0" max="2000">
+                                                                       name="tte_width_surat_jalan" value="200" min="0" max="2000">
                                                             </div>
                                                             <div class="col-6">
                                                                 <label class="form-label">Tinggi</label>
                                                                 <input type="number" class="form-control form-control-sm" id="tte_height_surat_jalan"
-                                                                       name="tte_height_surat_jalan" value="75" min="0" max="2000">
+                                                                       name="tte_height_surat_jalan" value="220" min="0" max="2000">
                                                             </div>
                                                         </div>
                                                     </div>

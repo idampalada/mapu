@@ -442,6 +442,7 @@ public function generateSuratJalan()
             'nik' => $tteNik,
             'qr_link' => $tteQrLink,
             'position' => $tteData['position'],
+            'coordinates' => "X={$tteData['x']}, Y={$tteData['y']}, W={$tteData['width']}, H={$tteData['height']}",
             'reason' => $tteData['reason']
         ]));
         
