@@ -1010,7 +1010,7 @@
                                             <div class="form-group mb-3">
                                                 <label for="tte_position_pengembalian" class="form-label">Posisi Tanda Tangan</label>
                                                 <select class="form-select form-select-sm" name="tte_position_pengembalian" id="tte_position_pengembalian">
-                                                    <option value="visible_custom">Halaman - Posisi Kustom</option>
+                                                    <option value="visible_custom">Halaman - Posisi Kustom (Keterlambatan)</option>
                                                     <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                 </select>
                                             </div>
