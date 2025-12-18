@@ -1058,9 +1058,7 @@
                                                 <div class="alert alert-info py-2">
                                                     <small>
                                                         <i class="bi bi-info-circle"></i> <strong>Koordinat Berita Acara Pengembalian:</strong><br>
-                                                        • <strong>Page 1:</strong> X: 400, Y: 700 (bawah kanan)<br>
-                                                        • <strong>Page 2:</strong> X: 450, Y: 200 (atas tengah) <span class="badge bg-success">Recommended</span><br>
-                                                        • <strong>Page 3:</strong> X: 400, Y: 150 (atas)<br>
+                                                        • <strong>Page 2:</strong> X: 650, Y: 340 Lebar 200 Tinggi 290 (atas tengah) <span class="badge bg-success">Recommended Keterlambatan</span><br>
                                                         • Sesuaikan koordinat sesuai kebutuhan dokumen
                                                     </small>
                                                 </div>
