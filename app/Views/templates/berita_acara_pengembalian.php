@@ -81,7 +81,7 @@
     }
     .signature-right { float: right; }
     .signature-name {
-        margin-top: 50px;
+        margin-top: 80px;
         text-decoration: underline;
         font-weight: bold;
     }

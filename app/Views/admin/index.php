@@ -999,14 +999,78 @@
                                         </button>
                                     </div>
 
-                                    <!-- Hidden fields for advanced options -->
-                                    <input type="hidden" id="tte_position_pengembalian" name="tte_position_pengembalian" value="visible_bottom">
-                                    <input type="hidden" id="tte_x_pengembalian" name="tte_x_pengembalian" value="400">
-                                    <input type="hidden" id="tte_y_pengembalian" name="tte_y_pengembalian" value="700">
-                                    <input type="hidden" id="tte_width_pengembalian" name="tte_width_pengembalian" value="150">
-                                    <input type="hidden" id="tte_height_pengembalian" name="tte_height_pengembalian" value="75">
-                                    <input type="hidden" id="tte_reason_pengembalian" name="tte_reason_pengembalian" value="Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik">
-                                    <input type="hidden" id="tte_location_pengembalian" name="tte_location_pengembalian" value="Jakarta">
+                                    <!-- SECTION POSISI SIGNATURE PENGEMBALIAN -->
+                                    <div class="card border-info mb-3">
+                                        <div class="card-header bg-info bg-opacity-10 py-2">
+                                            <h6 class="mb-0 text-info">
+                                                <i class="bi bi-crosshair"></i> Posisi Tanda Tangan
+                                            </h6>
+                                        </div>
+                                        <div class="card-body py-2">
+                                            <div class="form-group mb-3">
+                                                <label for="tte_position_pengembalian" class="form-label">Posisi Tanda Tangan</label>
+                                                <select class="form-select form-select-sm" name="tte_position_pengembalian" id="tte_position_pengembalian">
+                                                    <option value="visible_custom">Halaman - Posisi Kustom</option>
+                                                    <option value="invisible">Invisible (Tidak Terlihat)</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Page Selection -->
+                                            <div class="form-group mb-3" id="pageSelectionPengembalian">
+                                                <label for="tte_page_pengembalian" class="form-label">Pilih Halaman</label>
+                                                <select class="form-select form-select-sm" name="tte_page_pengembalian" id="tte_page_pengembalian">
+                                                    <option value="1">Page 1</option>
+                                                    <option value="2" selected>Page 2</option>
+                                                    <option value="3">Page 3</option>
+                                                </select>
+                                            </div>
+
+                                            <div id="customPositionPengembalian" style="display:block;">
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label">Posisi X</label>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               id="tte_x_pengembalian" name="tte_x_pengembalian" 
+                                                               value="650" min="0" max="2000">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label">Posisi Y</label>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               id="tte_y_pengembalian" name="tte_y_pengembalian" 
+                                                               value="340" min="0" max="2000">
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6">
+                                                        <label class="form-label">Lebar</label>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               id="tte_width_pengembalian" name="tte_width_pengembalian" 
+                                                               value="200" min="0" max="2000">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <label class="form-label">Tinggi</label>
+                                                        <input type="number" class="form-control form-control-sm" 
+                                                               id="tte_height_pengembalian" name="tte_height_pengembalian" 
+                                                               value="290" min="0" max="2000">
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="alert alert-info py-2">
+                                                    <small>
+                                                        <i class="bi bi-info-circle"></i> <strong>Koordinat Berita Acara Pengembalian:</strong><br>
+                                                        • <strong>Page 1:</strong> X: 400, Y: 700 (bawah kanan)<br>
+                                                        • <strong>Page 2:</strong> X: 450, Y: 200 (atas tengah) <span class="badge bg-success">Recommended</span><br>
+                                                        • <strong>Page 3:</strong> X: 400, Y: 150 (atas)<br>
+                                                        • Sesuaikan koordinat sesuai kebutuhan dokumen
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <!-- Hidden fields for advanced options -->
+                                            <input type="hidden" id="tte_reason_pengembalian" name="tte_reason_pengembalian" value="Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik">
+                                            <input type="hidden" id="tte_location_pengembalian" name="tte_location_pengembalian" value="Jakarta">
+                                        </div>
+                                    </div>
 
                                     <div class="alert alert-info py-2">
                                         <small>

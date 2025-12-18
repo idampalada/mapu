@@ -2883,29 +2883,46 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("TTE enabled, adding TTE parameters");
 
         formData.append("enable_tte_pengembalian", "on");
-        formData.append("tte_nik", $("#tte_nik_pengembalian").val().trim());
+
+        // ✅ BENAR: Kirim dengan parameter name yang sesuai backend (_pengembalian suffix)
         formData.append(
-          "tte_passphrase",
+          "tte_nik_pengembalian",
+          $("#tte_nik_pengembalian").val().trim()
+        );
+        formData.append(
+          "tte_passphrase_pengembalian",
           $("#tte_passphrase_pengembalian").val()
         );
         formData.append(
-          "tte_qr_link",
+          "tte_qr_link_pengembalian",
           $("#tte_qr_link_pengembalian").val().trim()
         );
         formData.append(
-          "tte_position",
-          $("#tte_position").val() || "visible_bottom"
+          "tte_position_pengembalian",
+          $("#tte_position_pengembalian").val()
         );
-        formData.append("tte_x", $("#tte_x").val() || "400");
-        formData.append("tte_y", $("#tte_y").val() || "700");
-        formData.append("tte_width", $("#tte_width").val() || "150");
-        formData.append("tte_height", $("#tte_height").val() || "75");
         formData.append(
-          "tte_reason",
-          $("#tte_reason").val() ||
-            "Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik"
+          "tte_page_pengembalian",
+          $("#tte_page_pengembalian").val() || "2"
         );
-        formData.append("tte_location", $("#tte_location").val() || "Jakarta");
+        formData.append("tte_x_pengembalian", $("#tte_x_pengembalian").val());
+        formData.append("tte_y_pengembalian", $("#tte_y_pengembalian").val());
+        formData.append(
+          "tte_width_pengembalian",
+          $("#tte_width_pengembalian").val()
+        );
+        formData.append(
+          "tte_height_pengembalian",
+          $("#tte_height_pengembalian").val()
+        );
+        formData.append(
+          "tte_reason_pengembalian",
+          $("#tte_reason_pengembalian").val()
+        );
+        formData.append(
+          "tte_location_pengembalian",
+          $("#tte_location_pengembalian").val()
+        );
 
         // Save credentials before submit
         saveRatingCredentialsPengembalian();

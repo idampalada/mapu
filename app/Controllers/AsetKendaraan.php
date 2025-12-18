@@ -1923,10 +1923,10 @@ public function verifikasiPengembalianWithTTE()
 
             log_message('debug', 'TTE enabled for berita acara pengembalian');
             
-            // Validasi credential TTE
-            $tteNik = $this->request->getPost('tte_nik');
-            $ttePassphrase = $this->request->getPost('tte_passphrase');
-            $tteQrLink = $this->request->getPost('tte_qr_link');
+            // ✅ UPDATED: Parameter names dengan suffix _pengembalian
+            $tteNik = $this->request->getPost('tte_nik_pengembalian');
+            $ttePassphrase = $this->request->getPost('tte_passphrase_pengembalian');
+            $tteQrLink = $this->request->getPost('tte_qr_link_pengembalian');
 
             if (empty($tteNik) || strlen($tteNik) !== 16) {
                 return $this->response->setJSON([
@@ -1959,23 +1959,27 @@ public function verifikasiPengembalianWithTTE()
                 ]);
             }
 
+            // ✅ UPDATED: Semua parameter menggunakan suffix _pengembalian
             $tteData = [
                 'nik' => $tteNik,
                 'passphrase' => $ttePassphrase,
                 'qr_link' => $tteQrLink,
-                'position' => $this->request->getPost('tte_position') ?: 'visible_bottom',
-                'x' => $this->request->getPost('tte_x') ?: 400,
-                'y' => $this->request->getPost('tte_y') ?: 700,
-                'width' => $this->request->getPost('tte_width') ?: 150,
-                'height' => $this->request->getPost('tte_height') ?: 75,
-                'reason' => $this->request->getPost('tte_reason') ?: 'Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik',
-                'location' => $this->request->getPost('tte_location') ?: 'Jakarta'
+                'position' => $this->request->getPost('tte_position_pengembalian') ?: 'visible_custom',
+                'page' => $this->request->getPost('tte_page_pengembalian') ?: 2,
+                'x' => $this->request->getPost('tte_x_pengembalian'),
+                'y' => $this->request->getPost('tte_y_pengembalian'),
+                'width' => $this->request->getPost('tte_width_pengembalian'),
+                'height' => $this->request->getPost('tte_height_pengembalian'),
+                'reason' => $this->request->getPost('tte_reason_pengembalian') ?: 'Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik',
+                'location' => $this->request->getPost('tte_location_pengembalian') ?: 'Jakarta'
             ];
 
             log_message('debug', 'TTE Data: ' . json_encode([
                 'nik' => substr($tteNik, 0, 4) . '***',
                 'qr_link' => $tteQrLink,
                 'position' => $tteData['position'],
+                'page' => $tteData['page'],
+                'coordinates' => "X={$tteData['x']}, Y={$tteData['y']}, W={$tteData['width']}, H={$tteData['height']}",
                 'file_path' => $beritaAcaraPath
             ]));
 
@@ -1987,7 +1991,7 @@ public function verifikasiPengembalianWithTTE()
                 @unlink($beritaAcaraPath);
                 $finalFileName = $signedResult['filename'];
                 
-                log_message('info', 'TTE Pengembalian berhasil untuk dokumen: ' . $finalFileName . ' - Kembali ID: ' . $kembaliId . ' - NIK: ' . substr($tteNik, 0, 4) . '***');
+                log_message('info', 'TTE Pengembalian berhasil untuk dokumen: ' . $finalFileName . ' - Kembali ID: ' . $kembaliId . ' - NIK: ' . substr($tteNik, 0, 4) . '*** - Page: ' . $tteData['page'] . ' - Koordinat: X=' . $tteData['x'] . ', Y=' . $tteData['y']);
             } else {
                 log_message('error', 'TTE Pengembalian gagal untuk Kembali ID: ' . $kembaliId . ' - Error: ' . $signedResult['error']);
                 
@@ -2138,7 +2142,6 @@ public function verifikasiPengembalianWithTTE()
         ]);
     }
 }
-
 /**
  * Get pengembalian data for TTE modal
  */
@@ -3335,7 +3338,7 @@ private function signPDFWithTTE($pdfPath, $tteData)
             'nik' => $tteData['nik'],                                    // DARI INPUT
             'passphrase' => $tteData['passphrase'],                      // DARI INPUT
             'tampilan' => 'visible',
-            'page' => '1',
+            'page' => (string)($tteData['page'] ?? '1'),
             'xAxis' => (string)$tteData['x'],
             'yAxis' => (string)$tteData['y'], 
             'width' => (string)$tteData['width'],
