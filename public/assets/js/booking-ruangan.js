@@ -585,6 +585,12 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   const modalContent = `
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
+                        <style>
+              #formBookingRuanganModal .form-control::placeholder {
+                color: #9CA3AF;
+                opacity: 1;
+              }
+            </style>
                 <div class="modal-header">
                     <h5 class="modal-title">Booking Ruangan: ${cleanNamaRuangan}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

@@ -395,6 +395,7 @@
             <thead class="table-premium-blue">
                 <tr>
                     <th class="text-center">No</th>
+                    <th class="text-center">Kode Barang</th> 
                     <th class="text-center">Bidang</th>
                     <th class="text-center">Nama Barang</th>
                     <th class="text-center">Merk</th>
@@ -418,6 +419,7 @@
                 <?php $no = 1; foreach ($komputerList as $item): ?>
                     <tr>
                         <td class="text-center"><?= $no++ ?></td>
+                        <td class="fw-medium"><?= esc($item['kode_barang'] ?? '-') ?></td> 
                         <td><?= esc($item['bidang'] ?? '-') ?></td>
                         <td class="fw-medium"><?= esc($item['nama_barang'] ?? '-') ?></td>
                         <td><?= esc($item['merk'] ?? '-') ?></td>

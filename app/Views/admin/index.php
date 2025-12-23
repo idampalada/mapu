@@ -896,7 +896,7 @@
 <!-- REPLACE the existing modalRatingAdmin in admin/index.php with this enhanced version -->
 <!-- Modal Rating Admin dengan TTE Integration -->
 <div class="modal fade" id="modalRatingAdmin" tabindex="-1" aria-labelledby="modalRatingAdminLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalRatingAdminLabel">
@@ -1010,7 +1010,8 @@
                                             <div class="form-group mb-3">
                                                 <label for="tte_position_pengembalian" class="form-label">Posisi Tanda Tangan</label>
                                                 <select class="form-select form-select-sm" name="tte_position_pengembalian" id="tte_position_pengembalian">
-                                                    <option value="visible_custom">Halaman - Posisi Kustom (Keterlambatan)</option>
+                                                    <option value="visible_custom">Halaman - Posisi Kustom</option>
+                                                    <option value="visible_custom_keterlambatan">Halaman - Posisi Kustom (Keterlambatan)</option>
                                                     <option value="invisible">Invisible (Tidak Terlihat)</option>
                                                 </select>
                                             </div>
@@ -1037,7 +1038,7 @@
                                                         <label class="form-label">Posisi Y</label>
                                                         <input type="number" class="form-control form-control-sm" 
                                                                id="tte_y_pengembalian" name="tte_y_pengembalian" 
-                                                               value="340" min="0" max="2000">
+                                                               value="430" min="0" max="2000">
                                                     </div>
                                                 </div>
                                                 <div class="row mb-3">
@@ -1051,7 +1052,7 @@
                                                         <label class="form-label">Tinggi</label>
                                                         <input type="number" class="form-control form-control-sm" 
                                                                id="tte_height_pengembalian" name="tte_height_pengembalian" 
-                                                               value="290" min="0" max="2000">
+                                                               value="380" min="0" max="2000">
                                                     </div>
                                                 </div>
                                                 

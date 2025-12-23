@@ -224,28 +224,30 @@ use App\Models\PinjamRuanganModel;
                                         <div class="d-grid gap-2">
                                             <?php if ($isRuanganActive): ?>
                                                 <!-- Button Booking Sekarang -->
-                                                <button class="btn btn-success btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-booking-ruangan"
-                                                        style="height: 2.2rem; background: linear-gradient(135deg, #28a745, #20c997); border: none;" 
-                                                        data-ruangan-id="<?= $ruangan['id'] ?>"
-                                                        data-ruangan-nama="<?= $cleanRuanganName ?>"
-                                                        data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                                        data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
-                                                        data-booking-type="booking">
-                                                    <i class="bi bi-lightning-fill"></i>
-                                                    <span>Booking Sekarang</span>
-                                                </button>
+                                            <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect 
+                                                        d-flex align-items-center justify-content-center btn-booking-ruangan"
+                                                    style="height: 2.2rem; background-color: #0056B3; border: none;"
+                                                    data-ruangan-id="<?= $ruangan['id'] ?>"
+                                                    data-ruangan-nama="<?= $cleanRuanganName ?>"
+                                                    data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
+                                                    data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
+                                                    data-booking-type="booking">
+                                                Booking Sekarang
+                                            </button>
+
                                                 
                                                 <!-- Button Request Confirm - DENGAN CLASS DAN DATA YANG SAMA SEPERTI ASLI -->
-                                                <button class="btn btn-warning btn-sm rounded-pill shadow-sm hover-effect d-flex align-items-center justify-content-center gap-2 btn-pinjam-ruangan"
-                                                        style="height: 2.2rem; background: linear-gradient(135deg, #ffc107, #fd7e14); border: none; color: #000;" 
-                                                        data-ruangan-id="<?= $ruangan['id'] ?>"
-                                                        data-ruangan-nama="<?= $cleanRuanganName ?>"
-                                                        data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                                        data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
-                                                        data-booking-type="confirm">
-                                                    <i class="bi bi-check-circle"></i>
-                                                    <span>Request Confirm</span>
-                                                </button>
+                                            <button class="btn btn-secondary btn-sm rounded-pill shadow-sm hover-effect
+                                                        d-flex align-items-center justify-content-center btn-pinjam-ruangan"
+                                                    style="height: 2.2rem; background-color: #28A745; border: none; color: #fff;"
+                                                    data-ruangan-id="<?= $ruangan['id'] ?>"
+                                                    data-ruangan-nama="<?= $cleanRuanganName ?>"
+                                                    data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
+                                                    data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
+                                                    data-booking-type="confirm">
+                                                Request Confirm
+                                            </button>
+
                                             <?php else: ?>
                                                 <button class="btn btn-secondary btn-sm rounded-pill d-flex align-items-center justify-content-center gap-2"
                                                         style="height: 2.2rem; cursor: not-allowed;" disabled>

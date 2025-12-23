@@ -2128,15 +2128,23 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
     : "";
 
   const modalContent = `
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #ffc107, #ff8c00); color: white;">
-                    <h5 class="modal-title">
-                        <i class="bi bi-clipboard-check me-2"></i>
-                        Form Request Confirm - ${cleanNamaRuangan}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+<div class="modal-dialog modal-xl">
+  <div class="modal-content" id="formPinjamRuanganModal">
+
+    <div class="modal-header">
+      <h5 class="modal-title fw-semibold text-dark">
+        <i class="bi bi-clipboard-check me-2"></i>
+        Form Request Confirm - ${cleanNamaRuangan}
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <style>
+      #formPinjamRuanganModal .form-control::placeholder {
+        color: #9CA3AF;
+        opacity: 1;
+      }
+    </style>
                 <form id="formPinjamRuanganModal" action="${baseUrl}/user/ruangan/pinjam" method="POST" enctype="multipart/form-data">
                     <div class="modal-body">
                         <input type="hidden" name="ruangan_id" value="${cleanRuanganId}">
@@ -2340,10 +2348,11 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                             <i class="bi bi-x-circle me-1"></i>
                             Batal
                         </button>
-                        <button type="submit" class="btn btn-warning" id="submit_booking" disabled>
-                            <i class="bi bi-send-fill me-1"></i>
-                            Kirim Request
-                        </button>
+<button type="submit" class="btn btn-primary" id="submit_booking" disabled>
+    <i class="bi bi-send-fill me-1"></i>
+    Kirim Request
+</button>
+
                     </div>
                 </form>
             </div>

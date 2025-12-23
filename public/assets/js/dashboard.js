@@ -3059,6 +3059,33 @@ $(document).ready(function () {
     }, 2000);
   });
 
+  // 🚀 TAMBAH INI: Function untuk update koordinat
+  function updateTTECoordinatesPengembalian() {
+    const position = $("#tte_position_pengembalian").val();
+
+    if (position === "visible_custom") {
+      // Tepat waktu
+      $("#tte_x_pengembalian").val("650");
+      $("#tte_y_pengembalian").val("430");
+      $("#tte_width_pengembalian").val("200");
+      $("#tte_height_pengembalian").val("380");
+      console.log("🟢 Koordinat set untuk TEPAT WAKTU: X=650, Y=220");
+    } else if (position === "visible_custom_keterlambatan") {
+      // Keterlambatan
+      $("#tte_x_pengembalian").val("650");
+      $("#tte_y_pengembalian").val("340");
+      $("#tte_width_pengembalian").val("200");
+      $("#tte_height_pengembalian").val("290");
+      console.log("🟡 Koordinat set untuk KETERLAMBATAN: X=650, Y=390");
+    }
+  }
+
+  // 🚀 TAMBAH INI: Event handler untuk dropdown TTE position
+  $("#tte_position_pengembalian").on("change", function () {
+    console.log("TTE position changed to:", $(this).val());
+    updateTTECoordinatesPengembalian();
+  });
+
   console.log("TTE event handlers initialized");
 });
 

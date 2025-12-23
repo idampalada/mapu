@@ -1959,17 +1959,34 @@ public function verifikasiPengembalianWithTTE()
                 ]);
             }
 
+            // ✅ KOORDINAT CONDITIONAL BERDASARKAN DROPDOWN
+            $ttePosition = $this->request->getPost('tte_position_pengembalian') ?: 'visible_custom';
+            
+            if ($ttePosition === 'visible_custom_keterlambatan') {
+                // Koordinat untuk keterlambatan
+                $x = 650;
+                $y = 340;
+                $width = 200;
+                $height = 290;
+            } else {
+                // Koordinat default atau dari form
+                $x = $this->request->getPost('tte_x_pengembalian') ?: 650;
+                $y = $this->request->getPost('tte_y_pengembalian') ?: 430;
+                $width = $this->request->getPost('tte_width_pengembalian') ?: 200;
+                $height = $this->request->getPost('tte_height_pengembalian') ?: 380;
+            }
+
             // ✅ UPDATED: Semua parameter menggunakan suffix _pengembalian
             $tteData = [
                 'nik' => $tteNik,
                 'passphrase' => $ttePassphrase,
                 'qr_link' => $tteQrLink,
-                'position' => $this->request->getPost('tte_position_pengembalian') ?: 'visible_custom',
+                'position' => 'visible_custom',
                 'page' => $this->request->getPost('tte_page_pengembalian') ?: 2,
-                'x' => $this->request->getPost('tte_x_pengembalian'),
-                'y' => $this->request->getPost('tte_y_pengembalian'),
-                'width' => $this->request->getPost('tte_width_pengembalian'),
-                'height' => $this->request->getPost('tte_height_pengembalian'),
+                'x' => $x,
+                'y' => $y,
+                'width' => $width,
+                'height' => $height,
                 'reason' => $this->request->getPost('tte_reason_pengembalian') ?: 'Berita Acara Pengembalian telah disetujui dan ditandatangani secara elektronik',
                 'location' => $this->request->getPost('tte_location_pengembalian') ?: 'Jakarta'
             ];
