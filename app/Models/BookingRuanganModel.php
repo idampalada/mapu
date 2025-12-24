@@ -16,7 +16,7 @@ class BookingRuanganModel extends Model
     
     protected $allowedFields = [
         'ruangan_id', 'user_id', 'tanggal', 'waktu_mulai', 'waktu_selesai',
-        'keperluan', 'nama_penanggung_jawab', 'nomor_hp_penanggung_jawab', 'unit_organisasi', 
+        'keperluan', 'nama_penanggung_jawab', 'nomor_hp_penanggung_jawab', 'unit_organisasi', 'unit_kerja',
         'jumlah_peserta', 'status'
     ];
     

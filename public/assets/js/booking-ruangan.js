@@ -1,6 +1,67 @@
 // booking-ruangan.js
 // Modal Booking Ruangan yang selaras dengan Request Confirm - TANPA DISABLE & TANPA UPLOAD FILE
-
+// ===== TAMBAHKAN DI SINI =====
+// Data mapping unit organisasi ke unit kerja
+const unitKerjaMapping = {
+  Setjen: [
+    "Biro Perencanaan",
+    "Biro Kepegawaian",
+    "Biro Keuangan",
+    "Biro Hukum",
+    "Biro Umum",
+    "Pusdatin",
+  ],
+  Itjen: [
+    "Sekretariat Itjen",
+    "Inspektorat I",
+    "Inspektorat II",
+    "Inspektorat III",
+    "Inspektorat IV",
+  ],
+  "Ditjen Sumber Daya Air": [
+    "Sekretariat Ditjen SDA",
+    "Dit. Bina Operasi dan Pemeliharaan",
+    "Dit. Sungai dan Pantai",
+    "Dit. Irigasi",
+  ],
+  "Ditjen Bina Marga": [
+    "Sekretariat Ditjen Bina Marga",
+    "Dit. Jalan Bebas Hambatan",
+    "Dit. Jalan Nasional",
+  ],
+  "Ditjen Cipta Karya": [
+    "Sekretariat Ditjen Cipta Karya",
+    "Dit. Pengembangan Kawasan Permukiman",
+    "Dit. Air Minum",
+  ],
+  "Ditjen Perumahan": [
+    "Sekretariat Ditjen Perumahan",
+    "Dit. Rumah Umum",
+    "Dit. Rumah Susun",
+  ],
+  "Ditjen Bina Konstruksi": [
+    "Sekretariat Ditjen Bina Konstruksi",
+    "Dit. Kompetensi dan Produktivitas Konstruksi",
+    "Dit. Pengembangan Jasa Konstruksi",
+  ],
+  "Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan": [
+    "Sekretariat DJPI",
+    "Dit. Pembiayaan Perumahan",
+    "Dit. Pembiayaan Infrastruktur",
+  ],
+  BPIW: [
+    "Sekretariat BPIW",
+    "Pusat Pengembangan Kawasan Strategis",
+    "Pusat Pengembangan Kawasan Perkotaan",
+  ],
+  BPSDM: [
+    "Sekretariat BPSDM",
+    "Pusat Pendidikan dan Pelatihan",
+    "Pusat Pembinaan Kompetensi",
+  ],
+  BPJT: ["Sekretariat BPJT", "Divisi Pengembangan", "Divisi Operasi"],
+};
+// ===== AKHIR PENAMBAHAN =====
 // BOOKING TIME PICKER VARIABLES
 let bookingSelectedStartTime = null;
 let bookingSelectedEndTime = null;
@@ -614,22 +675,31 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label for="booking_unit_organisasi">Unit Organisasi<span class="text-danger"> *</span></label>
-                                    <select class="form-control" name="unit_organisasi" required>
-                                        <option value="" class="text-muted" disabled selected>Pilih</option>
-                                        <option value="Setjen">Sekretariat Jenderal</option>
-                                        <option value="Itjen">Inspektorat Jenderal</option>
-                                        <option value="Ditjen Sumber Daya Air">Direktorat Jenderal Sumber Daya Air</option>
-                                        <option value="Ditjen Bina Marga">Direktorat Jenderal Bina Marga</option>
-                                        <option value="Ditjen Cipta Karya">Direktorat Jenderal Cipta Karya</option>
-                                        <option value="Ditjen Perumahan">Direktorat Jenderal Perumahan</option>
-                                        <option value="Ditjen Bina Konstruksi">Direktorat Jenderal Bina Konstruksi</option>
-                                        <option value="Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan">Direktorat Jenderal Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan</option>
-                                        <option value="BPIW">Badan Pengembangan Infrastruktur Wilayah</option>
-                                        <option value="BPSDM">Badan Pengembangan Sumber Daya Manusia</option>
-                                        <option value="BPJT">Badan Pengatur Jalan Tol</option>
-                                    </select>
-                                </div>
+    <label for="booking_unit_organisasi">Unit Organisasi<span class="text-danger"> *</span></label>
+    <select class="form-control" id="booking_unit_organisasi" name="unit_organisasi" required>
+        <option value="" class="text-muted" disabled selected>Pilih</option>
+        <option value="Setjen">Sekretariat Jenderal</option>
+        <option value="Itjen">Inspektorat Jenderal</option>
+        <option value="Ditjen Sumber Daya Air">Direktorat Jenderal Sumber Daya Air</option>
+        <option value="Ditjen Bina Marga">Direktorat Jenderal Bina Marga</option>
+        <option value="Ditjen Cipta Karya">Direktorat Jenderal Cipta Karya</option>
+        <option value="Ditjen Perumahan">Direktorat Jenderal Perumahan</option>
+        <option value="Ditjen Bina Konstruksi">Direktorat Jenderal Bina Konstruksi</option>
+        <option value="Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan">Direktorat Jenderal Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan</option>
+        <option value="BPIW">Badan Pengembangan Infrastruktur Wilayah</option>
+        <option value="BPSDM">Badan Pengembangan Sumber Daya Manusia</option>
+        <option value="BPJT">Badan Pengatur Jalan Tol</option>
+    </select>
+</div>
+
+<div class="form-group mb-3">
+    <label for="booking_unit_kerja">Unit Kerja<span class="text-danger"> *</span></label>
+    <select class="form-control" id="booking_unit_kerja" name="unit_kerja" required disabled>
+        <option value="">Pilih Unit Kerja</option>
+    </select>
+    <small class="text-muted">Pilih unit organisasi terlebih dahulu</small>
+</div>
+                                       
 
                                 <div class="mb-3">
                                     <label for="booking_tanggal" class="form-label">Tanggal Peminjaman<span class="text-danger"> *</span></label>
@@ -743,6 +813,10 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
 
   modalElement.addEventListener("shown.bs.modal", function () {
     initializeBookingTimePicker(cleanRuanganId);
+
+    // ===== TAMBAHKAN BARIS INI =====
+    setupUnitKerjaDropdown();
+    // ===== AKHIR PENAMBAHAN =====
 
     const form = document.getElementById("formBookingRuanganModal");
     if (form) {
@@ -1360,6 +1434,44 @@ function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
+// ===== TAMBAHKAN DI SINI =====
+// Setup unit kerja dropdown
+function setupUnitKerjaDropdown() {
+  const unitOrgSelect = document.getElementById("booking_unit_organisasi");
+  const unitKerjaSelect = document.getElementById("booking_unit_kerja");
+
+  if (unitOrgSelect && unitKerjaSelect) {
+    unitOrgSelect.addEventListener("change", function () {
+      const selectedUnitOrg = this.value;
+
+      // Clear unit kerja dropdown
+      unitKerjaSelect.innerHTML = '<option value="">Pilih Unit Kerja</option>';
+
+      if (selectedUnitOrg && unitKerjaMapping[selectedUnitOrg]) {
+        // Populate unit kerja options
+        unitKerjaMapping[selectedUnitOrg].forEach(function (unitKerja) {
+          const option = document.createElement("option");
+          option.value = unitKerja;
+          option.textContent = unitKerja;
+          unitKerjaSelect.appendChild(option);
+        });
+
+        // Enable unit kerja dropdown
+        unitKerjaSelect.disabled = false;
+        unitKerjaSelect.required = true;
+      } else {
+        // Disable unit kerja dropdown if no unit organisasi selected
+        unitKerjaSelect.disabled = true;
+        unitKerjaSelect.required = false;
+      }
+    });
+
+    console.log("Unit kerja dropdown setup complete");
+  } else {
+    console.warn("Unit organisasi or unit kerja select not found");
+  }
+}
+// ===== AKHIR PENAMBAHAN =====
 // Force setup when modal opens
 document.addEventListener("DOMContentLoaded", function () {
   const modalElement = document.getElementById("modalBookingRuangan");

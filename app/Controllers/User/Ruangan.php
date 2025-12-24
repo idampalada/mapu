@@ -1566,6 +1566,7 @@ public function bookingLangsung()
             'nama_penanggung_jawab' => 'required|min_length[3]',
             'nomor_hp_penanggung_jawab' => 'required|regex_match[/^[0-9]{10,15}$/]',
             'unit_organisasi' => 'required|min_length[3]',
+            'unit_kerja' => 'required|min_length[3]', 
             'jumlah_peserta' => 'required|integer|greater_than[0]'
         ]);
 
@@ -1613,6 +1614,7 @@ public function bookingLangsung()
             'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
             'nomor_hp_penanggung_jawab' => $this->request->getPost('nomor_hp_penanggung_jawab'),
             'unit_organisasi' => $this->request->getPost('unit_organisasi'),
+            'unit_kerja' => $this->request->getPost('unit_kerja'),
             'jumlah_peserta' => $this->request->getPost('jumlah_peserta'),
             'status' => 'aktif'
         ];
