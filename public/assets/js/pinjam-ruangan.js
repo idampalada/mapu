@@ -1,3 +1,196 @@
+// ===== FUNCTION UNTUK POPULATE UNIT KERJA =====
+// ✅ UBAH function setupUnitKerjaDropdown menjadi self-contained:
+function setupUnitKerjaDropdown() {
+  // ✅ GUARD: Cek apakah element ada
+  const unitOrgSelect = document.getElementById("unit_organisasi");
+  const unitKerjaSelect = document.getElementById("unit_kerja");
+
+  if (!unitOrgSelect || !unitKerjaSelect) {
+    console.warn("⚠️ Unit organisasi or unit kerja select not found");
+    return false;
+  }
+
+  // ✅ GUARD: Jangan setup jika sudah ada event listener
+  if (unitOrgSelect._setupCompleted) {
+    console.log("⏭️ Unit kerja dropdown already setup, skipping");
+    return true;
+  }
+
+  // ✅ PERBAIKAN: Data mapping dengan support BOTH database dan display value
+  const unitKerjaMapping = {
+    // Database values (short form)
+    Setjen: [
+      "Biro Perencanaan",
+      "Biro Kepegawaian",
+      "Biro Keuangan",
+      "Biro Hukum",
+      "Biro Umum",
+      "Pusdatin",
+    ],
+    Itjen: [
+      "Sekretariat Itjen",
+      "Inspektorat I",
+      "Inspektorat II",
+      "Inspektorat III",
+      "Inspektorat IV",
+    ],
+    "Ditjen Sumber Daya Air": [
+      "Sekretariat Ditjen SDA",
+      "Dit. Bina Operasi dan Pemeliharaan",
+      "Dit. Sungai dan Pantai",
+      "Dit. Irigasi",
+    ],
+    "Ditjen Bina Marga": [
+      "Sekretariat Ditjen Bina Marga",
+      "Dit. Jalan Bebas Hambatan",
+      "Dit. Jalan Nasional",
+    ],
+    "Ditjen Cipta Karya": [
+      "Sekretariat Ditjen Cipta Karya",
+      "Dit. Pengembangan Kawasan Permukiman",
+      "Dit. Air Minum",
+    ],
+    "Ditjen Perumahan": [
+      "Sekretariat Ditjen Perumahan",
+      "Dit. Rumah Umum",
+      "Dit. Rumah Susun",
+    ],
+    "Ditjen Bina Konstruksi": [
+      "Sekretariat Ditjen Bina Konstruksi",
+      "Dit. Kompetensi dan Produktivitas Konstruksi",
+      "Dit. Pengembangan Jasa Konstruksi",
+    ],
+    "Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan": [
+      "Sekretariat DJPI",
+      "Dit. Pembiayaan Perumahan",
+      "Dit. Pembiayaan Infrastruktur",
+    ],
+    BPIW: [
+      "Sekretariat BPIW",
+      "Pusat Pengembangan Kawasan Strategis",
+      "Pusat Pengembangan Kawasan Perkotaan",
+    ],
+    BPSDM: [
+      "Sekretariat BPSDM",
+      "Pusat Pendidikan dan Pelatihan",
+      "Pusat Pembinaan Kompetensi",
+    ],
+    BPJT: ["Sekretariat BPJT", "Divisi Pengembangan", "Divisi Operasi"],
+
+    // ✅ TAMBAH: Display values (full form) sebagai alias
+    "Sekretariat Jenderal": [
+      "Biro Perencanaan",
+      "Biro Kepegawaian",
+      "Biro Keuangan",
+      "Biro Hukum",
+      "Biro Umum",
+      "Pusdatin",
+    ],
+    "Inspektorat Jenderal": [
+      "Sekretariat Itjen",
+      "Inspektorat I",
+      "Inspektorat II",
+      "Inspektorat III",
+      "Inspektorat IV",
+    ],
+    "Direktorat Jenderal Sumber Daya Air": [
+      "Sekretariat Ditjen SDA",
+      "Dit. Bina Operasi dan Pemeliharaan",
+      "Dit. Sungai dan Pantai",
+      "Dit. Irigasi",
+    ],
+    "Direktorat Jenderal Bina Marga": [
+      "Sekretariat Ditjen Bina Marga",
+      "Dit. Jalan Bebas Hambatan",
+      "Dit. Jalan Nasional",
+    ],
+    "Direktorat Jenderal Cipta Karya": [
+      "Sekretariat Ditjen Cipta Karya",
+      "Dit. Pengembangan Kawasan Permukiman",
+      "Dit. Air Minum",
+    ],
+    "Direktorat Jenderal Perumahan": [
+      "Sekretariat Ditjen Perumahan",
+      "Dit. Rumah Umum",
+      "Dit. Rumah Susun",
+    ],
+    "Direktorat Jenderal Bina Konstruksi": [
+      "Sekretariat Ditjen Bina Konstruksi",
+      "Dit. Kompetensi dan Produktivitas Konstruksi",
+      "Dit. Pengembangan Jasa Konstruksi",
+    ],
+    "Direktorat Jenderal Pembiayaan Infrastruktur PU dan Perumahan": [
+      "Sekretariat DJPI",
+      "Dit. Pembiayaan Perumahan",
+      "Dit. Pembiayaan Infrastruktur",
+    ],
+    "Badan Pengembangan Infrastruktur Wilayah": [
+      "Sekretariat BPIW",
+      "Pusat Pengembangan Kawasan Strategis",
+      "Pusat Pengembangan Kawasan Perkotaan",
+    ],
+    "Badan Pengembangan Sumber Daya Manusia": [
+      "Sekretariat BPSDM",
+      "Pusat Pendidikan dan Pelatihan",
+      "Pusat Pembinaan Kompetensi",
+    ],
+    "Badan Pengatur Jalan Tol": [
+      "Sekretariat BPJT",
+      "Divisi Pengembangan",
+      "Divisi Operasi",
+    ],
+  };
+
+  // ✅ CRITICAL: Remove existing listeners to prevent duplicates
+  unitOrgSelect.removeEventListener("change", unitOrgSelect._changeHandler);
+
+  // ✅ Create new change handler
+  const changeHandler = function () {
+    const selectedUnitOrg = this.value;
+    console.log("Unit organisasi changed to:", selectedUnitOrg);
+
+    // Clear existing options
+    unitKerjaSelect.innerHTML = '<option value="">Pilih Unit Kerja</option>';
+
+    if (selectedUnitOrg && unitKerjaMapping[selectedUnitOrg]) {
+      // Populate unit kerja options
+      unitKerjaMapping[selectedUnitOrg].forEach(function (unitKerja) {
+        const option = document.createElement("option");
+        option.value = unitKerja;
+        option.textContent = unitKerja;
+        unitKerjaSelect.appendChild(option);
+      });
+
+      // Enable dropdown
+      unitKerjaSelect.disabled = false;
+      unitKerjaSelect.required = true;
+
+      console.log(
+        `✅ Populated ${unitKerjaMapping[selectedUnitOrg].length} unit kerja options for: ${selectedUnitOrg}`
+      );
+    } else {
+      // Disable if no valid unit organisasi
+      unitKerjaSelect.disabled = true;
+      unitKerjaSelect.required = false;
+      console.log("❌ No unit kerja mapping found for:", selectedUnitOrg);
+    }
+  };
+
+  // ✅ Store handler reference for removal later
+  unitOrgSelect._changeHandler = changeHandler;
+  unitOrgSelect.addEventListener("change", changeHandler);
+
+  // ✅ Mark as completed to prevent duplicate setup
+  unitOrgSelect._setupCompleted = true;
+
+  console.log(
+    "✅ Unit kerja dropdown setup completed with dual mapping support"
+  );
+  return true;
+}
+// ===== INITIALIZE UNIT KERJA DROPDOWN =====
+// Tambahkan ini ke event listener modal shown
+
 document.addEventListener("DOMContentLoaded", function () {
   initializePinjamRuanganForm();
   initializeVerifikasiHandlers();
@@ -2129,7 +2322,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
 
   const modalContent = `
 <div class="modal-dialog modal-xl">
-  <div class="modal-content" id="formPinjamRuanganModal">
+ <div class="modal-content">
 
     <div class="modal-header">
       <h5 class="modal-title fw-semibold text-dark">
@@ -2145,7 +2338,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
         opacity: 1;
       }
     </style>
-                <form id="formPinjamRuanganModal" action="${baseUrl}/user/ruangan/pinjam" method="POST" enctype="multipart/form-data">
+    <form id="formPinjamRuangan" action="${baseUrl}/user/ruangan/pinjam" method="POST" enctype="multipart/form-data">
                     <div class="modal-body">
                         <input type="hidden" name="ruangan_id" value="${cleanRuanganId}">
                         
@@ -2194,6 +2387,17 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                     </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
+
+                                <div class="form-group mb-3">
+    <label for="unit_kerja" class="form-label">
+        <i class="bi bi-building me-1"></i>
+        Unit Kerja <span class="text-danger"> *</span>
+    </label>
+    <select class="form-control" id="unit_kerja" name="unit_kerja" required disabled>
+        <option value="" disabled selected>Pilih Unit Kerja</option>
+    </select>
+    <small class="text-muted">Pilih unit organisasi terlebih dahulu</small>
+</div>
 
                                 <div class="mb-3">
                                     <label for="tanggal" class="form-label">
@@ -2370,6 +2574,8 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   modalElement.addEventListener("shown.bs.modal", function () {
     console.log(`📋 Modal opened for ruangan ${cleanRuanganId}`);
 
+    setupUnitKerjaDropdown();
+
     // ✅ TRIPLE CHECK: Clear lagi setelah modal terbuka
     clearAllPreviousData();
 
@@ -2414,7 +2620,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
       });
     }
 
-    const form = document.getElementById("formPinjamRuanganModal");
+    const form = document.getElementById("formPinjamRuangan");
     if (form) {
       form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -2723,6 +2929,7 @@ function loadPreviousBookingData(ruanganId) {
           nama_penanggung_jawab: data.data.nama_penanggung_jawab,
           nomor_hp_penanggung_jawab: data.data.nomor_hp_penanggung_jawab, // ✅ TAMBAHKAN HP
           unit_organisasi: data.data.unit_organisasi,
+          unit_kerja: data.data.unit_kerja,
           jumlah_peserta: data.data.jumlah_peserta,
           keperluan: data.data.keperluan,
         };
@@ -2745,6 +2952,37 @@ function loadPreviousBookingData(ruanganId) {
             filledCount++;
           }
         });
+        // Auto-fill unit kerja berdasarkan unit organisasi
+        if (data.data.unit_organisasi && data.data.unit_kerja) {
+          setTimeout(() => {
+            const unitOrgSelect = document.getElementById("unit_organisasi");
+            const unitKerjaSelect = document.getElementById("unit_kerja");
+
+            if (unitOrgSelect && unitKerjaSelect) {
+              // ✅ PERBAIKAN: Force call setupUnitKerjaDropdown dulu
+              setupUnitKerjaDropdown();
+
+              // ✅ Lalu trigger change event
+              setTimeout(() => {
+                if (unitOrgSelect.value === data.data.unit_organisasi) {
+                  const changeEvent = new Event("change");
+                  unitOrgSelect.dispatchEvent(changeEvent);
+
+                  // ✅ Set unit kerja value
+                  setTimeout(() => {
+                    if (unitKerjaSelect) {
+                      unitKerjaSelect.value = data.data.unit_kerja;
+                      unitKerjaSelect.dataset.autoFilled = "true";
+                      console.log(
+                        `✅ Auto-filled unit_kerja dropdown: ${data.data.unit_kerja}`
+                      );
+                    }
+                  }, 100);
+                }
+              }, 100);
+            }
+          }, 400);
+        }
 
         // Auto-set tanggal dari booking terakhir
         if (data.data.tanggal) {

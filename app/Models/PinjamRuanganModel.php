@@ -23,6 +23,7 @@ class PinjamRuanganModel extends Model
         'nama_penanggung_jawab',
         'nomor_hp_penanggung_jawab',
         'unit_organisasi',
+        'unit_kerja',
         'tanggal',
         'waktu_mulai',
         'waktu_selesai',

@@ -581,6 +581,7 @@ public function edit($id)
                     'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
                     'nomor_hp_penanggung_jawab' => $this->request->getPost('nomor_hp_penanggung_jawab'),
                     'unit_organisasi' => $this->request->getPost('unit_organisasi'),
+                    'unit_kerja' => $this->request->getPost('unit_kerja'),
                     'keperluan' => $this->request->getPost('keperluan'),
                     'tanggal' => $this->request->getPost('tanggal'),
                     'waktu_mulai' => $this->request->getPost('waktu_mulai'),
@@ -1684,7 +1685,7 @@ public function getUserLatestBookingData()
         
         // Query dengan filter ruangan_id yang SANGAT SPESIFIK
         $latestBooking = $db->table('booking_ruangan')
-            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, unit_kerja, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
             ->where('user_id', $userId)
             ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
             ->where('status', 'aktif')
@@ -1706,6 +1707,7 @@ public function getUserLatestBookingData()
                         'nama_penanggung_jawab' => $latestBooking['nama_penanggung_jawab'],
                         'nomor_hp_penanggung_jawab' => $latestBooking['nomor_hp_penanggung_jawab'],
                         'unit_organisasi' => $latestBooking['unit_organisasi'],
+                        'unit_kerja' => $latestBooking['unit_kerja'],
                         'keperluan' => $latestBooking['keperluan'],
                         'jumlah_peserta' => $latestBooking['jumlah_peserta'],
                         'waktu_mulai' => $latestBooking['waktu_mulai'],
@@ -1725,7 +1727,7 @@ public function getUserLatestBookingData()
 
         // Fallback: Cari di tabel pinjam_ruangan untuk ruangan yang sama
         $latestPinjam = $db->table('pinjam_ruangan')
-            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
+            ->select('nama_penanggung_jawab, nomor_hp_penanggung_jawab, unit_organisasi, unit_kerja, keperluan, jumlah_peserta, waktu_mulai, waktu_selesai, tanggal, created_at, ruangan_id')
             ->where('user_id', $userId)
             ->where('ruangan_id', $ruanganId) // FILTER RUANGAN YANG SAMA!
             ->where('deleted_at IS NULL')
@@ -1748,6 +1750,7 @@ public function getUserLatestBookingData()
                         'nama_penanggung_jawab' => $latestPinjam['nama_penanggung_jawab'],
                         'nomor_hp_penanggung_jawab' => $latestPinjam['nomor_hp_penanggung_jawab'],
                         'unit_organisasi' => $latestPinjam['unit_organisasi'],
+                        'unit_kerja' => $latestPinjam['unit_kerja'],  
                         'keperluan' => $latestPinjam['keperluan'],
                         'jumlah_peserta' => $latestPinjam['jumlah_peserta'],
                         'waktu_mulai' => $latestPinjam['waktu_mulai'],
@@ -2596,13 +2599,13 @@ public function requestConfirm()
             // Insert ke pinjam_ruangan
             $insertResult = $db->query("
                 INSERT INTO public.pinjam_ruangan (
-                    user_id, ruangan_id, nama_penanggung_jawab, unit_organisasi, 
+                    user_id, ruangan_id, nama_penanggung_jawab, unit_organisasi, unit_kerja,
                     keperluan, tanggal, waktu_mulai, waktu_selesai, jumlah_peserta, 
                     surat_permohonan, status, nomor_hp_penanggung_jawab, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, NOW(), NOW())
             ", [
                 $booking['user_id'], $booking['ruangan_id'], $booking['nama_penanggung_jawab'],
-                $booking['unit_organisasi'], $booking['keperluan'], $booking['tanggal'],
+                $booking['unit_organisasi'], $booking['unit_kerja'], $booking['keperluan'], $booking['tanggal'],
                 $booking['waktu_mulai'], $booking['waktu_selesai'], $booking['jumlah_peserta'],
                 $newFileName, $booking['nomor_hp_penanggung_jawab']
             ]);

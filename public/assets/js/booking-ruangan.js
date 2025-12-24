@@ -814,9 +814,9 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   modalElement.addEventListener("shown.bs.modal", function () {
     initializeBookingTimePicker(cleanRuanganId);
 
-    // ===== TAMBAHKAN BARIS INI =====
-    setupUnitKerjaDropdown();
-    // ===== AKHIR PENAMBAHAN =====
+    // ===== GANTI DENGAN BARIS INI =====
+    setupBookingUnitKerjaDropdown();
+    // ===== AKHIR PENGGANTIAN =====
 
     const form = document.getElementById("formBookingRuanganModal");
     if (form) {
@@ -1471,6 +1471,45 @@ function setupUnitKerjaDropdown() {
     console.warn("Unit organisasi or unit kerja select not found");
   }
 }
+
+// ===== TAMBAH FUNCTION BARU INI SETELAH setupUnitKerjaDropdown() =====
+// Setup unit kerja dropdown KHUSUS untuk booking modal
+function setupBookingUnitKerjaDropdown() {
+  const unitOrgSelect = document.getElementById("booking_unit_organisasi");
+  const unitKerjaSelect = document.getElementById("booking_unit_kerja");
+
+  if (unitOrgSelect && unitKerjaSelect) {
+    unitOrgSelect.addEventListener("change", function () {
+      const selectedUnitOrg = this.value;
+
+      // Clear unit kerja dropdown
+      unitKerjaSelect.innerHTML = '<option value="">Pilih Unit Kerja</option>';
+
+      if (selectedUnitOrg && unitKerjaMapping[selectedUnitOrg]) {
+        // Populate unit kerja options
+        unitKerjaMapping[selectedUnitOrg].forEach(function (unitKerja) {
+          const option = document.createElement("option");
+          option.value = unitKerja;
+          option.textContent = unitKerja;
+          unitKerjaSelect.appendChild(option);
+        });
+
+        // Enable unit kerja dropdown
+        unitKerjaSelect.disabled = false;
+        unitKerjaSelect.required = true;
+      } else {
+        // Disable unit kerja dropdown if no unit organisasi selected
+        unitKerjaSelect.disabled = true;
+        unitKerjaSelect.required = false;
+      }
+    });
+
+    console.log("✅ Booking unit kerja dropdown setup complete");
+  } else {
+    console.warn("⚠️ Booking unit organisasi or unit kerja select not found");
+  }
+}
+// ===== AKHIR FUNCTION BARU =====
 // ===== AKHIR PENAMBAHAN =====
 // Force setup when modal opens
 document.addEventListener("DOMContentLoaded", function () {
