@@ -119,6 +119,27 @@
         .badge.bg-info {
             background-color: #17a2b8 !important;
         }
+        /* Style untuk QR Code Images */
+        .qr-code-container {
+            display: inline-block;
+            position: relative;
+        }
+        .qr-code-container img {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-radius: 4px;
+        }
+        .qr-code-container img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .qr-code-placeholder {
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
     </style>
 </head>
 <body>
@@ -161,13 +182,14 @@
         </form>
     </div>
 
-    <!-- Info bantuan untuk user - diperbarui -->
+    <!-- Info bantuan untuk user - diperbarui dengan QR Code -->
     <div class="alert alert-info mb-3">
         <h6><i class="bi bi-info-circle"></i> Petunjuk Import:</h6>
         <ul class="mb-0">
-            <li><strong>Import Excel:</strong> Mengimpor data dari file Excel (format: .xlsx)</li>
+            <li><strong>Import Excel:</strong> Mengimpor data dari file Excel (format: .xlsx). <strong>Kolom M akan dibaca sebagai QR CODE dan ditampilkan sebagai barcode</strong></li>
             <li><strong>Import/Sync API:</strong> Mengambil data dari API PM-TIK, update data yang sudah ada, tambah data baru</li>
             <li><strong>Reset Data:</strong> Menghapus semua data dari database (gunakan dengan hati-hati!)</li>
+            <li><strong>QR Code:</strong> Klik pada barcode untuk melihat detail dan copy text</li>
         </ul>
     </div>
 
@@ -185,7 +207,8 @@
                             <label for="excelFile" class="form-label">Pilih File Excel (.xlsx)</label>
                             <input type="file" class="form-control" id="excelFile" name="excelFile" accept=".xlsx" required>
                             <div class="form-text text-muted">
-                                File harus berformat .xlsx dan memiliki sheet: Master Aset, MTI, BDI, TU, dll.
+                                File harus berformat .xlsx dan memiliki sheet: Master Aset, MTI, BDI, TU, dll.<br>
+                                <strong>Kolom M di sheet "Master Aset" akan dibaca sebagai QR CODE dan ditampilkan sebagai barcode yang bisa di-scan</strong>
                             </div>
                         </div>
                     </div>
@@ -202,7 +225,7 @@
 
     <!-- Pencarian -->
     <form method="GET" class="d-flex mb-4">
-        <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nama, kode, merk, processor, memori" value="<?= esc($searchTerm ?? '') ?>">
+        <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nama, kode, merk, processor, memori, QR Code" value="<?= esc($searchTerm ?? '') ?>">
         <button type="submit" class="btn btn-primary ms-2">Cari</button>
     </form>
 
@@ -375,9 +398,15 @@
                         <label for="keterangan" class="form-label">Keterangan</label>
                         <textarea name="keterangan" class="form-control" rows="1"><?= old('keterangan') ?></textarea>
                     </div>
-                    <div class="col-md-12 mb-3">
+                    <!-- TAMBAHAN BARU: QR Code field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="qr_code" class="form-label">QR Code</label>
+                        <input type="text" name="qr_code" class="form-control" placeholder="Masukkan QR Code jika ada" value="<?= old('qr_code') ?>">
+                        <small class="form-text text-muted">QR Code akan ditampilkan sebagai barcode yang bisa di-scan</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
                         <label for="spek_lain" class="form-label">Spesifikasi Lain</label>
-                        <textarea name="spek_lain" class="form-control" rows="3" placeholder="Spesifikasi tambahan lainnya"><?= old('spek_lain') ?></textarea>
+                        <textarea name="spek_lain" class="form-control" rows="1" placeholder="Spesifikasi tambahan lainnya"><?= old('spek_lain') ?></textarea>
                     </div>
                 </div>
 
@@ -412,6 +441,8 @@
                     <th class="text-center">Status Penggunaan</th>
                     <th class="text-center">Status Barang</th>
                     <th class="text-center">Keterangan</th>
+                    <!-- KOLOM BARU: QR CODE setelah Keterangan -->
+                    <th class="text-center">QR Code</th>
                     <th class="text-center">Aksi</th>
                 </tr>
             </thead>
@@ -482,6 +513,24 @@
                         </td>
                         <td><?= esc($item['status_barang'] ?? '-') ?></td>
                         <td><?= esc($item['keterangan'] ?? '-') ?></td>
+                        <!-- KOLOM BARU: QR CODE dengan GAMBAR BARCODE -->
+                        <td class="text-center">
+                            <?php if (!empty($item['qr_code']) && trim($item['qr_code']) !== ''): ?>
+                                <div class="qr-code-container">
+                                    <img src="<?= base_url('qrcode/generate/' . urlencode($item['qr_code']) . '/100') ?>" 
+                                         alt="QR Code" 
+                                         title="Klik untuk lihat detail QR Code"
+                                         style="width: 80px; height: 80px; border: 1px solid #ddd; cursor: pointer;"
+                                         onclick="showQrCodeModal('<?= esc($item['qr_code']) ?>')">
+                                </div>
+                            <?php else: ?>
+                                <div class="qr-code-placeholder">
+                                    <img src="<?= base_url('qrcode/placeholder') ?>" 
+                                         alt="No QR Code" 
+                                         style="width: 80px; height: 80px; border: 1px solid #ddd; opacity: 0.3;">
+                                </div>
+                            <?php endif; ?>
+                        </td>
                         <td class="text-center">
                             <a href="<?= base_url('user/barang/peralatandanmesin/komputer/detail/' . $item['id']) ?>" class="btn btn-sm btn-info mb-1">
                                 <i class="bi bi-eye"></i>
@@ -560,6 +609,41 @@
     <?php endif; ?>
 
     </div>
+
+    <!-- Modal QR Code Detail -->
+    <div class="modal fade" id="qrCodeDetailModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="qrCodeModalLabel">
+                        <i class="bi bi-qr-code"></i> QR Code Detail
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <img id="qrCodeLargeImage" 
+                             src="" 
+                             alt="QR Code" 
+                             style="width: 200px; height: 200px; border: 2px solid #007bff;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">QR Code Text:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="qrCodeTextInput" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyQrCodeText()">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-info-circle"></i> 
+                        Scan QR Code dengan aplikasi scanner untuk melihat isi text
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -569,6 +653,78 @@
         this.innerHTML = form.style.display === 'block'
             ? '<i class="bi bi-dash-circle"></i> Sembunyikan Form'
             : '<i class="bi bi-plus-lg"></i> Tambah Aset';
+    });
+
+    // Function untuk show QR Code modal
+    function showQrCodeModal(qrCodeText) {
+        // Set QR Code image dengan size besar
+        const qrImageUrl = '<?= base_url('qrcode/generate/') ?>' + encodeURIComponent(qrCodeText) + '/200';
+        document.getElementById('qrCodeLargeImage').src = qrImageUrl;
+        
+        // Set QR Code text
+        document.getElementById('qrCodeTextInput').value = qrCodeText;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('qrCodeDetailModal'));
+        modal.show();
+    }
+
+    // Function untuk copy QR Code text
+    function copyQrCodeText() {
+        const qrCodeText = document.getElementById('qrCodeTextInput').value;
+        
+        navigator.clipboard.writeText(qrCodeText).then(function() {
+            showToast('QR Code text berhasil di-copy: ' + qrCodeText, 'success');
+        }, function(err) {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = qrCodeText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('QR Code text berhasil di-copy', 'success');
+        });
+    }
+
+    // Function untuk show toast notification
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '9999';
+        toast.style.maxWidth = '350px';
+        toast.innerHTML = `
+            <strong>${type === 'success' ? 'Berhasil!' : 'Error!'}</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+
+    // Preload QR Code images saat halaman load (untuk performa)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cache QR Code images
+        const qrImages = document.querySelectorAll('img[src*="qrcode/generate"]');
+        qrImages.forEach(function(img) {
+            // Add error handling untuk QR images
+            img.onerror = function() {
+                this.src = '<?= base_url('qrcode/placeholder') ?>';
+                this.style.opacity = '0.3';
+            };
+            
+            // Add loading effect
+            img.onload = function() {
+                this.style.opacity = '1';
+            };
+        });
     });
     </script>
 

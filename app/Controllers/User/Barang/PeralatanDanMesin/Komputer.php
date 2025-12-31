@@ -179,10 +179,13 @@ class Komputer extends BaseController
             $pengguna_sekarang = $data_source['pengguna_sekarang'] ?? '';
             $status_barang = $data_source['status_barang'] ?? '';
             $keterangan = $data_source['keterangan'] ?? '';
+            // TAMBAHAN BARU: QR Code
+            $qr_code = $data_source['qr_code'] ?? '';
             
             log_message('info', "Kode Barang: '{$kode_barang}'");
             log_message('info', "Nama Barang: '{$nama_barang}'");
             log_message('info', "Kelompok: '{$kelompok}'");
+            log_message('info', "QR Code: '{$qr_code}'");
             
             $data = [
                 'kode_barang' => trim($kode_barang),
@@ -205,6 +208,8 @@ class Komputer extends BaseController
                 'pengguna_sekarang' => trim($pengguna_sekarang),
                 'status_barang' => trim($status_barang),
                 'keterangan' => trim($keterangan),
+                // TAMBAHAN BARU: QR Code
+                'qr_code' => !empty(trim($qr_code)) ? trim($qr_code) : null,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
@@ -346,6 +351,8 @@ class Komputer extends BaseController
                         'spek_lain' => trim($item['spek_lain'] ?? ''),
                         'nilai_perolehan' => $this->safeFloat($item['nilai_perolehan'] ?? 0),
                         'tanggal_perolehan' => !empty($item['tanggal_perolehan']) ? $item['tanggal_perolehan'] : null,
+                        // TAMBAHAN BARU: QR Code dari API (jika ada)
+                        'qr_code' => !empty($item['qr_code']) ? trim($item['qr_code']) : null,
                         'created_at' => date('Y-m-d H:i:s'),
                         'updated_at' => date('Y-m-d H:i:s')
                     ];
@@ -383,7 +390,7 @@ class Komputer extends BaseController
         }
     }
     
-    // Method baru untuk import dari Excel
+    // Method baru untuk import dari Excel dengan QR Code support
     public function importFromExcel()
     {
         log_message('info', '=== IMPORT EXCEL METHOD DIPANGGIL ===');
@@ -407,9 +414,9 @@ class Komputer extends BaseController
             }
             
             $filePath = WRITEPATH . 'uploads/' . $fileName;
-            log_message('info', 'File berhasil diupload ke: ' . $filePath);
+            log_message('info', 'File berhasil diupload ke: ' . $filePath . ' (Support QR Code dari kolom M)');
             
-            // Proses impor data
+            // Proses impor data dengan QR Code support
             $result = $this->komputerModel->importFromExcel($filePath);
             
             // Hapus file setelah diproses
@@ -418,23 +425,23 @@ class Komputer extends BaseController
             }
             
             if (isset($result['success']) && $result['success']) {
-                log_message('info', 'Import Excel berhasil: ' . json_encode($result));
+                log_message('info', 'Import Excel dengan QR Code berhasil: ' . json_encode($result));
                 session()->setFlashdata('success', $result['message']);
             } else {
-                log_message('error', 'Import Excel gagal: ' . json_encode($result));
+                log_message('error', 'Import Excel dengan QR Code gagal: ' . json_encode($result));
                 session()->setFlashdata('error', $result['message'] ?? 'Gagal import data Excel');
             }
             
             return redirect()->to('user/barang/peralatandanmesin/komputer/kelompokkomputer');
             
         } catch (\Exception $e) {
-            log_message('error', 'Exception saat import Excel: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            log_message('error', 'Exception saat import Excel dengan QR Code: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
             session()->setFlashdata('error', 'Gagal import data: ' . $e->getMessage());
             return redirect()->back();
         }
     }
 
-    // Method export ke CSV
+    // Method export ke CSV dengan QR Code
     public function exportKomputerList($jenis = 'semua')
     {
         $jenisValid = ['komputer-unit', 'peralatan-komputer', 'semua'];
@@ -463,24 +470,28 @@ class Komputer extends BaseController
             $komputerList = $allKomputerList;
         }
 
-        $filename = 'komputer_' . $jenis . '_' . date('Y-m-d') . '.csv';
+        $filename = 'komputer_' . $jenis . '_dengan_qrcode_' . date('Y-m-d') . '.csv';
         
         $response = service('response');
-        $response->setHeader('Content-Type', 'text/csv');
+        $response->setHeader('Content-Type', 'text/csv; charset=utf-8');
         $response->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
         $output = fopen('php://output', 'w');
-        // Tambahkan field baru ke header CSV
+        
+        // BOM untuk UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // TAMBAHKAN QR Code ke header CSV
         fputcsv($output, [
             'No', 'Kode Barang', 'Nama Barang', 'NUP', 'Merk', 'Kelompok', 'Kondisi', 
             'Kuantitas', 'Status Penggunaan', 'Processor', 'Memori', 'Hardisk', 'Monitor', 'Spek Lain',
             'Nilai Perolehan', 'Tanggal Perolehan', 'Bidang', 'Pengguna Sebelumnya', 'Pengguna Sekarang',
-            'Status Barang', 'Keterangan'
+            'Status Barang', 'Keterangan', 'QR Code' // TAMBAHAN BARU
         ]);
 
         $no = 1;
         foreach ($komputerList as $item) {
-            // Tambahkan field baru ke data CSV
+            // TAMBAHKAN QR Code ke data CSV
             fputcsv($output, [
                 $no++,
                 $item['kode_barang'] ?? '-',
@@ -502,7 +513,8 @@ class Komputer extends BaseController
                 $item['pengguna_sebelumnya'] ?? '-',
                 $item['pengguna_sekarang'] ?? '-',
                 $item['status_barang'] ?? '-',
-                $item['keterangan'] ?? '-'
+                $item['keterangan'] ?? '-',
+                $item['qr_code'] ?? '-' // TAMBAHAN BARU
             ]);
         }
 
@@ -547,8 +559,25 @@ private function normalizeDateToYmd(string $raw): ?string
     }
 }
 
+    // TAMBAHAN BARU: Method untuk mendapatkan statistik QR Code
+    public function getQrCodeStats()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['error' => 'Invalid request']);
+        }
+        
+        try {
+            $stats = $this->komputerModel->getStatsWithQrCode();
+            return $this->response->setJSON($stats);
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 
-    // Method untuk cek statistik database
+    // Method untuk cek statistik database dengan QR Code
     public function stats()
     {
         $totalData = $this->komputerModel->countAllResults();
@@ -561,6 +590,14 @@ private function normalizeDateToYmd(string $raw): ?string
             'komputer_unit' => $this->komputerModel->where('kelompok', 'KOMPUTER UNIT')->countAllResults(),
             'peralatan_komputer' => $this->komputerModel->where('kelompok', 'PERALATAN KOMPUTER')->countAllResults(),
         ];
+        
+        // TAMBAHAN BARU: Statistik QR Code
+        try {
+            $qrCodeStats = $this->komputerModel->getStatsWithQrCode();
+            $dbStats['qr_code_stats'] = $qrCodeStats['data'] ?? [];
+        } catch (\Exception $e) {
+            $dbStats['qr_code_stats'] = ['error' => $e->getMessage()];
+        }
         
         return view('user/komputer/stats', [
             'totalData' => $totalData,
@@ -604,6 +641,17 @@ private function normalizeDateToYmd(string $raw): ?string
                 echo "<h5>Sample data komputer:</h5>";
                 echo "<pre>" . json_encode(array_slice($filteredData, 0, 3), JSON_PRETTY_PRINT) . "</pre>";
             }
+            
+            // TAMBAHAN BARU: Check QR Code di API data
+            $withQrCode = 0;
+            foreach ($apiData as $item) {
+                if (!empty($item['qr_code'])) {
+                    $withQrCode++;
+                }
+            }
+            echo "<h4>QR Code di API:</h4>";
+            echo "<p>Data dengan QR Code: {$withQrCode} dari " . count($apiData) . "</p>";
+            
         } else {
             echo "<p style='color: red;'>Tidak ada data dari API atau terjadi error!</p>";
         }

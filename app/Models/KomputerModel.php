@@ -42,7 +42,8 @@ class KomputerModel extends Model
     'pengguna_sebelumnya',
     'pengguna_sekarang',
     'status_barang',
-    'keterangan'
+    'keterangan',
+    'qr_code'
 ];
 
 // Kolom untuk pencarian LIKE (key search ke banyak kolom)
@@ -50,7 +51,7 @@ protected array $searchableColumns = [
     'kode_barang','nama_barang','merk','nup','bidang','kelompok','sub_kelompok',
     'kondisi','status_penggunaan','status_barang','keterangan','spek_lain',
     'jns_processor','processor','memori','hardisk','monitor',
-    'pengguna_sebelumnya','pengguna_sekarang'
+    'pengguna_sebelumnya','pengguna_sekarang','qr_code'
 ];
 
 // Kolom yang diizinkan untuk sorting (whitelist)
@@ -90,7 +91,8 @@ protected array $sortableColumns = [
     'pengguna_sebelumnya' => 'permit_empty|max_length[255]',
     'pengguna_sekarang' => 'permit_empty|max_length[255]',
     'status_barang' => 'permit_empty|max_length[100]',
-    'keterangan' => 'permit_empty'
+    'keterangan' => 'permit_empty',
+    'qr_code' => 'permit_empty|max_length[255]'
 ];
     
     protected $validationMessages = [
@@ -530,6 +532,10 @@ private function cleanImportData($data)
     $cleaned['pengguna_sekarang'] = $this->truncateString(trim($cleaned['pengguna_sekarang'] ?? ''), 255);
     $cleaned['status_barang'] = $this->truncateString(trim($cleaned['status_barang'] ?? ''), 100);
     $cleaned['keterangan'] = $this->truncateString(trim($cleaned['keterangan'] ?? ''), 255);
+        $cleaned['qr_code'] = $this->truncateString(trim($cleaned['qr_code'] ?? ''), 255);
+    if (empty($cleaned['qr_code'])) {
+        $cleaned['qr_code'] = null;  // Set null jika kosong
+    }
     
     // Handle date
     $cleaned['tanggal_perolehan'] = !empty($cleaned['tanggal_perolehan']) ? $cleaned['tanggal_perolehan'] : null;
@@ -863,6 +869,11 @@ private function readSheetData($spreadsheet, $sheetName)
                     $headerMap['status_barang'] = $col;
                 } else if (stripos($header, 'Keterangan') !== false) {
                     $headerMap['keterangan'] = $col;
+                } else if (stripos($header, 'QR CODE') !== false || 
+                           stripos($header, 'QR_CODE') !== false || 
+                           stripos($header, 'QRCODE') !== false) {
+                    // TAMBAHAN BARU - mapping QR CODE
+                    $headerMap['qr_code'] = $col;
                 } else if (stripos($header, 'Processor') !== false) {
                     $headerMap['processor'] = $col;
                 } else if (stripos($header, 'Memori') !== false || stripos($header, 'RAM') !== false) {
@@ -890,6 +901,18 @@ private function readSheetData($spreadsheet, $sheetName)
                 $defaultBidang = 'BDI';
             } else if (stripos($sheetName, 'TU') !== false) {
                 $defaultBidang = 'TU';
+            }
+            
+            // TAMBAHAN BARU - Fallback mapping jika header tidak terdeteksi (berdasarkan posisi kolom fixed dari gambar Excel Anda)
+            if (empty($headerMap)) {
+                $headerMap = [
+                    'bidang' => 'A',
+                    'pengguna_sekarang' => 'H',
+                    'kondisi' => 'I',
+                    'status_barang' => 'J', 
+                    'keterangan' => 'K',
+                    'qr_code' => 'M'  // Kolom M untuk QR CODE berdasarkan gambar Excel
+                ];
             }
             
             // Mulai dari baris setelah header
@@ -1026,6 +1049,12 @@ private function readSheetData($spreadsheet, $sheetName)
                         $keterangan = trim($this->readCellValue($worksheet, $headerMap['keterangan'] . $row) ?? '');
                     }
                     
+                    // TAMBAHAN BARU - Baca QR Code dari kolom M
+                    $qr_code = '';
+                    if (isset($headerMap['qr_code'])) {
+                        $qr_code = trim($this->readCellValue($worksheet, $headerMap['qr_code'] . $row) ?? '');
+                    }
+                    
                     // Baca spesifikasi
                     $processor = '';
                     if (isset($headerMap['processor'])) {
@@ -1042,7 +1071,7 @@ private function readSheetData($spreadsheet, $sheetName)
                         $hardisk = trim($this->readCellValue($worksheet, $headerMap['hardisk'] . $row) ?? '');
                     }
                     
-                    // Simpan data terstandarisasi
+                    // Simpan data terstandarisasi dengan QR Code
                     $data[$key] = [
                         'kode_barang' => $this->truncateString($kode_barang, 100),
                         'nama_barang' => $this->truncateString($nama_barang, 255),
@@ -1060,7 +1089,8 @@ private function readSheetData($spreadsheet, $sheetName)
                         'kondisi' => $this->truncateString($kondisi, 50),
                         'status_penggunaan' => $this->truncateString($status_penggunaan, 100),
                         'status_barang' => $this->truncateString($status_barang, 100),
-                        'keterangan' => $this->truncateString($keterangan, 255)
+                        'keterangan' => $this->truncateString($keterangan, 255),
+                        'qr_code' => $this->truncateString($qr_code, 255) // TAMBAHAN BARU - QR Code
                     ];
                 } catch (\Exception $e) {
                     log_message('warning', "Error membaca baris $row di sheet $sheetName: " . $e->getMessage());
@@ -1263,5 +1293,33 @@ private function saveDataToDatabase($data)
         'existing_count' => $existingCount,
         'failure_count' => $failureCount
     ];
+}
+/**
+ * Get statistics including QR Code coverage
+ */
+public function getStatsWithQrCode()
+{
+    try {
+        $total = $this->countAll();
+        $withQrCode = $this->where('qr_code IS NOT NULL')
+                           ->where('qr_code !=', '')
+                           ->countAllResults();
+        $withoutQrCode = $total - $withQrCode;
+        
+        return [
+            'success' => true,
+            'data' => [
+                'total_records' => $total,
+                'with_qr_code' => $withQrCode,
+                'without_qr_code' => $withoutQrCode,
+                'qr_code_coverage_percentage' => $total > 0 ? round(($withQrCode / $total) * 100, 2) : 0
+            ]
+        ];
+    } catch (\Exception $e) {
+        return [
+            'success' => false,
+            'message' => $e->getMessage()
+        ];
+    }
 }
 }
