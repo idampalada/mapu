@@ -2574,7 +2574,149 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
   modalElement.addEventListener("shown.bs.modal", function () {
     console.log(`📋 Modal opened for ruangan ${cleanRuanganId}`);
 
-    setupUnitKerjaDropdown();
+    // ✅ PERBAIKAN: Setup unit kerja untuk modal request confirm
+    // ✅ PERBAIKAN: Setup unit kerja dropdown dengan ID yang benar
+    setupRequestConfirmUnitKerja();
+
+    function setupRequestConfirmUnitKerja() {
+      const unitOrgSelect = document.getElementById("unit_organisasi");
+      const unitKerjaSelect = document.getElementById("unit_kerja");
+
+      console.log("🔍 Checking elements:", {
+        unitOrg: unitOrgSelect,
+        unitKerja: unitKerjaSelect,
+      });
+
+      if (!unitOrgSelect || !unitKerjaSelect) {
+        console.error("❌ Elements not found, retrying...");
+        setTimeout(() => {
+          setupRequestConfirmUnitKerja();
+        }, 500);
+        return false;
+      }
+
+      // Clear existing event listener
+      if (unitOrgSelect._changeHandler) {
+        unitOrgSelect.removeEventListener(
+          "change",
+          unitOrgSelect._changeHandler
+        );
+      }
+
+      // Unit kerja mapping
+      const unitKerjaMapping = {
+        Setjen: [
+          "Biro Perencanaan",
+          "Biro Kepegawaian",
+          "Biro Keuangan",
+          "Biro Hukum",
+          "Biro Umum",
+          "Pusdatin",
+        ],
+        Itjen: [
+          "Sekretariat Itjen",
+          "Inspektorat I",
+          "Inspektorat II",
+          "Inspektorat III",
+          "Inspektorat IV",
+        ],
+        "Ditjen Sumber Daya Air": [
+          "Sekretariat Ditjen SDA",
+          "Dit. Bina Operasi dan Pemeliharaan",
+          "Dit. Sungai dan Pantai",
+          "Dit. Irigasi",
+        ],
+        "Ditjen Bina Marga": [
+          "Sekretariat Ditjen Bina Marga",
+          "Dit. Jalan Bebas Hambatan",
+          "Dit. Jalan Nasional",
+        ],
+        "Ditjen Cipta Karya": [
+          "Sekretariat Ditjen Cipta Karya",
+          "Dit. Pengembangan Kawasan Permukiman",
+          "Dit. Air Minum",
+        ],
+        "Ditjen Perumahan": [
+          "Sekretariat Ditjen Perumahan",
+          "Dit. Rumah Umum",
+          "Dit. Rumah Susun",
+        ],
+        "Ditjen Bina Konstruksi": [
+          "Sekretariat Ditjen Bina Konstruksi",
+          "Dit. Kompetensi dan Produktivitas Konstruksi",
+          "Dit. Pengembangan Jasa Konstruksi",
+        ],
+        "Ditjen Pembiayaan Infrastruktur Pekerjaan Umum dan Perumahan": [
+          "Sekretariat DJPI",
+          "Dit. Pembiayaan Perumahan",
+          "Dit. Pembiayaan Infrastruktur",
+        ],
+        BPIW: [
+          "Sekretariat BPIW",
+          "Pusat Pengembangan Kawasan Strategis",
+          "Pusat Pengembangan Kawasan Perkotaan",
+        ],
+        BPSDM: [
+          "Sekretariat BPSDM",
+          "Pusat Pendidikan dan Pelatihan",
+          "Pusat Pembinaan Kompetensi",
+        ],
+        BPJT: ["Sekretariat BPJT", "Divisi Pengembangan", "Divisi Operasi"],
+        // Aliases
+        "Sekretariat Jenderal": [
+          "Biro Perencanaan",
+          "Biro Kepegawaian",
+          "Biro Keuangan",
+          "Biro Hukum",
+          "Biro Umum",
+          "Pusdatin",
+        ],
+        "Inspektorat Jenderal": [
+          "Sekretariat Itjen",
+          "Inspektorat I",
+          "Inspektorat II",
+          "Inspektorat III",
+          "Inspektorat IV",
+        ],
+      };
+
+      // Create change handler
+      const changeHandler = function () {
+        const selectedUnitOrg = this.value;
+        console.log("🔄 Unit organisasi changed to:", selectedUnitOrg);
+
+        // Clear unit kerja dropdown
+        unitKerjaSelect.innerHTML =
+          '<option value="">Pilih Unit Kerja</option>';
+
+        if (selectedUnitOrg && unitKerjaMapping[selectedUnitOrg]) {
+          // Populate unit kerja options
+          unitKerjaMapping[selectedUnitOrg].forEach(function (unitKerja) {
+            const option = document.createElement("option");
+            option.value = unitKerja;
+            option.textContent = unitKerja;
+            unitKerjaSelect.appendChild(option);
+          });
+
+          // Enable unit kerja dropdown
+          unitKerjaSelect.disabled = false;
+          unitKerjaSelect.required = true;
+          console.log("✅ Unit kerja options populated for:", selectedUnitOrg);
+        } else {
+          // Disable unit kerja dropdown
+          unitKerjaSelect.disabled = true;
+          unitKerjaSelect.required = false;
+          console.log("❌ No unit kerja mapping found for:", selectedUnitOrg);
+        }
+      };
+
+      // Add event listener
+      unitOrgSelect._changeHandler = changeHandler;
+      unitOrgSelect.addEventListener("change", changeHandler);
+
+      console.log("✅ Request confirm unit kerja dropdown setup completed");
+      return true;
+    }
 
     // ✅ TRIPLE CHECK: Clear lagi setelah modal terbuka
     clearAllPreviousData();
