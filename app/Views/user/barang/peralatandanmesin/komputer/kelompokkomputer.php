@@ -85,6 +85,9 @@
             background-color: #2c5282 !important;
             color: white;
             font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         .table-bordered {
             border-color: #d4d4d4;
@@ -139,6 +142,387 @@
                         linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
             background-size: 10px 10px;
             background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
+        .qr-text-display {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .qr-text-display:hover {
+            background: #e9ecef;
+        }
+
+        /* ========== COMPACT TABLE STYLES ========== */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .table-header-controls {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .column-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .column-toggle-btn {
+            padding: 3px 8px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+
+        .column-toggle-btn.active {
+            background: #2c5282;
+            color: white;
+            border-color: #2c5282;
+        }
+
+        .column-toggle-btn:hover {
+            background: #e9ecef;
+        }
+
+        .column-toggle-btn.active:hover {
+            background: #1e3a5f;
+        }
+
+        .compact-table-responsive {
+            max-height: 70vh;
+            overflow: auto;
+            border: 1px solid #dee2e6;
+        }
+
+        .compact-table {
+            margin-bottom: 0;
+            font-size: 11px;
+            width: auto;
+            min-width: 100%;
+        }
+
+        .compact-table th {
+            background-color: #2c5282 !important;
+            color: white !important;
+            font-weight: 600;
+            padding: 8px 4px;
+            text-align: center;
+            vertical-align: middle;
+            border: none;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            white-space: nowrap;
+            font-size: 10px;
+            max-width: none !important;
+        }
+
+        .compact-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #dee2e6;
+            border-right: 1px solid #f1f3f5;
+            vertical-align: top;
+            font-size: 11px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 60px;
+            line-height: 1.3;
+        }
+
+        .compact-table td:last-child {
+            border-right: none;
+        }
+
+        .compact-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* FIXED COLUMN WIDTHS - ADJUSTED */
+        .compact-table th:nth-child(1),  /* No */
+        .compact-table td:nth-child(1) {
+            width: 35px;
+            max-width: 35px;
+        }
+
+        .compact-table th:nth-child(2),  /* Kode */
+        .compact-table td:nth-child(2) {
+            width: 80px;
+            max-width: 80px;
+        }
+
+        .compact-table th:nth-child(3),  /* Bidang */
+        .compact-table td:nth-child(3) {
+            width: 45px;
+            max-width: 45px;
+        }
+
+        .compact-table th:nth-child(4),  /* Nama Barang */
+        .compact-table td:nth-child(4) {
+            width: 120px;
+            max-width: 120px;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(5),  /* Merk */
+        .compact-table td:nth-child(5) {
+            width: 60px;
+            max-width: 60px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(6),  /* NUP */
+        .compact-table td:nth-child(6) {
+            width: 45px;
+            max-width: 45px;
+        }
+
+        .compact-table th:nth-child(7),  /* Kelompok */
+        .compact-table td:nth-child(7) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(8),  /* Processor */
+        .compact-table td:nth-child(8) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(9),  /* Memori */
+        .compact-table td:nth-child(9) {
+            width: 50px;
+            max-width: 50px;
+        }
+
+        .compact-table th:nth-child(10), /* Hardisk */
+        .compact-table td:nth-child(10) {
+            width: 60px;
+            max-width: 60px;
+        }
+
+        .compact-table th:nth-child(11), /* Tanggal */
+        .compact-table td:nth-child(11) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(12), /* Nilai */
+        .compact-table td:nth-child(12) {
+            width: 100px;
+            max-width: 100px;
+        }
+
+        .compact-table th:nth-child(13), /* User Sebelumnya */
+        .compact-table td:nth-child(13) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(14), /* User Sekarang */
+        .compact-table td:nth-child(14) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(15), /* Kondisi */
+        .compact-table td:nth-child(15) {
+            width: 60px;
+            max-width: 60px;
+        }
+
+        .compact-table th:nth-child(16), /* Status Pakai */
+        .compact-table td:nth-child(16) {
+            width: 60px;
+            max-width: 60px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(17), /* Status Barang */
+        .compact-table td:nth-child(17) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(18), /* Keterangan */
+        .compact-table td:nth-child(18) {
+            width: 90px;
+            max-width: 90px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(19), /* QR Code */
+        .compact-table td:nth-child(19) {
+            width: 50px;
+            max-width: 50px;
+        }
+
+        .compact-table th:nth-child(20), /* Aksi */
+        .compact-table td:nth-child(20) {
+            width: 80px;
+            max-width: 80px;
+        }
+
+        /* Column visibility controls */
+        .col-processor,
+        .col-memory, 
+        .col-hardisk,
+        .col-monitor,
+        .col-user-prev,
+        .col-status-usage,
+        .col-keterangan,
+        .col-spek-lain {
+            display: table-cell;
+        }
+
+        .col-processor.hidden,
+        .col-memory.hidden,
+        .col-hardisk.hidden, 
+        .col-monitor.hidden,
+        .col-user-prev.hidden,
+        .col-status-usage.hidden,
+        .col-keterangan.hidden,
+        .col-spek-lain.hidden {
+            display: none;
+        }
+
+        /* Action buttons improvements */
+        .action-buttons {
+            display: flex;
+            gap: 1px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            padding: 2px 4px;
+            font-size: 10px;
+            min-width: 24px;
+            border-radius: 3px;
+        }
+
+        /* QR Code improvements */
+        .qr-cell {
+            text-align: center;
+            padding: 2px;
+        }
+
+        .qr-image {
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            transition: transform 0.2s;
+        }
+
+        .qr-image:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .qr-placeholder {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #ddd;
+            border-radius: 3px;
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        /* Badge improvements */
+        .compact-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        /* Tooltip for truncated content */
+        .truncated {
+            cursor: help;
+            position: relative;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .table-header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .column-controls {
+                justify-content: center;
+            }
+            
+            .compact-table-responsive {
+                max-height: 60vh;
+            }
+            
+            .compact-table {
+                font-size: 10px;
+            }
+            
+            .compact-table th,
+            .compact-table td {
+                padding: 4px 2px;
+            }
+        }
+
+        /* Money formatting */
+        .money-value {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #28a745;
+            font-size: 9px;
         }
     </style>
 </head>
@@ -419,139 +803,152 @@
     <?php endif; ?>
 
     <?php if (!empty($komputerList)): ?>
-    <div class="table-responsive mt-5">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-premium-blue">
-                <tr>
-                    <th class="text-center">No</th>
-                    <th class="text-center">Kode Barang</th> 
-                    <th class="text-center">Bidang</th>
-                    <th class="text-center">Nama Barang</th>
-                    <th class="text-center">Merk</th>
-                    <th class="text-center">NUP</th>
-                    <th class="text-center">Kelompok</th>
-                    <th class="text-center">Processor</th>
-                    <th class="text-center">Memori</th>
-                    <th class="text-center">Hardisk</th>
-                    <th class="text-center">Tanggal Perolehan</th>
-                    <th class="text-center">Nilai Perolehan</th>
-                    <th class="text-center">Pengguna Sebelumnya</th>
-                    <th class="text-center">Pengguna Sekarang</th>
-                    <th class="text-center">Kondisi</th>
-                    <th class="text-center">Status Penggunaan</th>
-                    <th class="text-center">Status Barang</th>
-                    <th class="text-center">Keterangan</th>
-                    <!-- KOLOM BARU: QR CODE setelah Keterangan -->
-                    <th class="text-center">QR Code</th>
-                    <th class="text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $no = 1; foreach ($komputerList as $item): ?>
+    
+    <!-- COMPACT TABLE WITH COLUMN CONTROLS -->
+    <div class="table-container">
+        <!-- Table Header Controls -->
+        <div class="table-header-controls">
+            <div>
+                <h6 class="mb-0"><i class="bi bi-table me-2"></i>Data Tabel</h6>
+                <small class="text-muted">Klik tombol untuk hide/show kolom</small>
+            </div>
+            <div class="column-controls">
+                <span class="text-muted me-2" style="font-size: 11px;">Tampilkan:</span>
+                <button class="column-toggle-btn active" data-column="processor">Processor</button>
+                <button class="column-toggle-btn active" data-column="memory">Memory</button>
+                <button class="column-toggle-btn active" data-column="hardisk">Hardisk</button>
+                <button class="column-toggle-btn active" data-column="user-prev">User Lama</button>
+                <button class="column-toggle-btn active" data-column="status-usage">Status Pakai</button>
+                <button class="column-toggle-btn active" data-column="keterangan">Keterangan</button>
+            </div>
+        </div>
+
+        <!-- Compact Table -->
+        <div class="compact-table-responsive">
+            <table class="compact-table table table-hover">
+                <thead>
                     <tr>
-                        <td class="text-center"><?= $no++ ?></td>
-                        <td class="fw-medium"><?= esc($item['kode_barang'] ?? '-') ?></td> 
-                        <td><?= esc($item['bidang'] ?? '-') ?></td>
-                        <td class="fw-medium"><?= esc($item['nama_barang'] ?? '-') ?></td>
-                        <td><?= esc($item['merk'] ?? '-') ?></td>
-                        <td><?= esc($item['nup'] ?? '-') ?></td>
-                        <td>
-                            <span class="badge bg-<?= (strtolower($item['kelompok'] ?? '') === 'komputer unit') ? 'primary' : 'info' ?>">
-                                <?= esc($item['kelompok'] ?? '-') ?>
-                            </span>
-                        </td>
-                        <td><?= esc($item['processor'] ?? '-') ?></td>
-                        <td><?= esc($item['memori'] ?? '-') ?></td>
-                        <td><?= esc($item['hardisk'] ?? '-') ?></td>
-                        <td>
-                            <?php if (!empty($item['tanggal_perolehan'])): ?>
-                                <?= date('d-m-Y', strtotime($item['tanggal_perolehan'])) ?>
-                            <?php else: ?>
-                                -
-                            <?php endif; ?>
-                        </td>
-                        <td class="fw-medium">
-                            <?php if (!empty($item['nilai_perolehan']) && $item['nilai_perolehan'] > 0): ?>
-                                Rp <?= number_format(floatval($item['nilai_perolehan']), 0, ',', '.') ?>
-                            <?php else: ?>
-                                -
-                            <?php endif; ?>
-                        </td>
-                        <td><?= esc($item['pengguna_sebelumnya'] ?? '-') ?></td>
-                        <td><?= esc($item['pengguna_sekarang'] ?? '-') ?></td>
-                        <td class="text-center">
-                            <?php 
-                                $kondisiClass = 'secondary';
-                                if (!empty($item['kondisi'])) {
-                                    $kondisi = strtolower($item['kondisi']);
-                                    if (strpos($kondisi, 'baik') !== false) {
-                                        $kondisiClass = 'success';
-                                    } elseif (strpos($kondisi, 'rusak ringan') !== false) {
-                                        $kondisiClass = 'warning';
-                                    } elseif (strpos($kondisi, 'rusak berat') !== false || strpos($kondisi, 'rusak') !== false) {
-                                        $kondisiClass = 'danger';
-                                    }
-                                }
-                            ?>
-                            <span class="badge bg-<?= $kondisiClass ?>"><?= esc($item['kondisi'] ?? '-') ?></span>
-                        </td>
-                        <td class="text-center">
-                            <?php 
-                                $statusClass = 'secondary';
-                                if (!empty($item['status_penggunaan'])) {
-                                    $status = strtolower($item['status_penggunaan']);
-                                    if (strpos($status, 'digunakan') !== false || strpos($status, 'aktif') !== false) {
-                                        $statusClass = 'success';
-                                    } elseif (strpos($status, 'proses') !== false || strpos($status, 'perbaikan') !== false) {
-                                        $statusClass = 'warning';
-                                    } elseif (strpos($status, 'tidak') !== false || strpos($status, 'rusak') !== false) {
-                                        $statusClass = 'danger';
-                                    }
-                                }
-                            ?>
-                            <span class="badge bg-<?= $statusClass ?>"><?= esc($item['status_penggunaan'] ?? '-') ?></span>
-                        </td>
-                        <td><?= esc($item['status_barang'] ?? '-') ?></td>
-                        <td><?= esc($item['keterangan'] ?? '-') ?></td>
-                        <!-- KOLOM BARU: QR CODE dengan GAMBAR BARCODE -->
-                        <td class="text-center">
-                            <?php if (!empty($item['qr_code']) && trim($item['qr_code']) !== ''): ?>
-                                <div class="qr-code-container">
-                                    <img src="<?= base_url('qrcode/generate/' . urlencode($item['qr_code']) . '/100') ?>" 
-                                         alt="QR Code" 
-                                         title="Klik untuk lihat detail QR Code"
-                                         style="width: 80px; height: 80px; border: 1px solid #ddd; cursor: pointer;"
-                                         onclick="showQrCodeModal('<?= esc($item['qr_code']) ?>')">
-                                </div>
-                            <?php else: ?>
-                                <div class="qr-code-placeholder">
-                                    <img src="<?= base_url('qrcode/placeholder') ?>" 
-                                         alt="No QR Code" 
-                                         style="width: 80px; height: 80px; border: 1px solid #ddd; opacity: 0.3;">
-                                </div>
-                            <?php endif; ?>
-                        </td>
-                        <td class="text-center">
-                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/detail/' . $item['id']) ?>" class="btn btn-sm btn-info mb-1">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/edit/' . $item['id']) ?>" class="btn btn-sm btn-primary mb-1">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="<?= base_url('user/barang/peralatandanmesin/komputer/hapus/' . $item['id']) ?>" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
+                        <th>No</th>
+                        <th>Kode</th> 
+                        <th>Bidang</th>
+                        <th>Nama Barang</th>
+                        <th>Merk</th>
+                        <th>NUP</th>
+                        <th>Kelompok</th>
+                        <th class="col-processor">Processor</th>
+                        <th class="col-memory">Memory</th>
+                        <th class="col-hardisk">Hardisk</th>
+                        <th>Tanggal</th>
+                        <th>Nilai</th>
+                        <th class="col-user-prev">User Lama</th>
+                        <th>User Sekarang</th>
+                        <th>Kondisi</th>
+                        <th class="col-status-usage">Status Pakai</th>
+                        <th>Status Barang</th>
+                        <th class="col-keterangan">Keterangan</th>
+                        <th>QR</th>
+                        <th>Aksi</th>
                     </tr>
-                <?php endforeach ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($komputerList as $item): ?>
+                        <tr>
+                            <td><?= $no++ ?></td>
+                            <td><?= esc($item['kode_barang'] ?? '-') ?></td> 
+                            <td><?= esc(!empty($item['bidang']) ? $item['bidang'] : '') ?></td>
+                            <td title="<?= esc($item['nama_barang'] ?? '') ?>">
+                                <strong><?= esc($item['nama_barang'] ?? '-') ?></strong>
+                            </td>
+                            <td title="<?= esc($item['merk'] ?? '') ?>">
+                                <?= esc($item['merk'] ?? '-') ?>
+                            </td>
+                            <td><?= esc($item['nup'] ?? '-') ?></td>
+                            <td style="white-space: normal; word-wrap: break-word; line-height: 1.2;">
+                                <?= esc($item['kelompok'] ?? '-') ?>
+                            </td>
+                            <td class="col-processor truncated" title="<?= esc($item['processor'] ?? '') ?>">
+                                <?= esc(strlen($item['processor'] ?? '') > 10 ? substr($item['processor'], 0, 7) . '...' : ($item['processor'] ?? '-')) ?>
+                            </td>
+                            <td class="col-memory"><?= esc($item['memori'] ?? '-') ?></td>
+                            <td class="col-hardisk truncated" title="<?= esc($item['hardisk'] ?? '') ?>">
+                                <?= esc(strlen($item['hardisk'] ?? '') > 8 ? substr($item['hardisk'], 0, 5) . '...' : ($item['hardisk'] ?? '-')) ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($item['tanggal_perolehan'])): ?>
+                                    <?= date('d/m/y', strtotime($item['tanggal_perolehan'])) ?>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($item['nilai_perolehan']) && $item['nilai_perolehan'] > 0): ?>
+                                    Rp <?= number_format(floatval($item['nilai_perolehan']), 0, ',', '.') ?>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td class="col-user-prev" title="<?= esc($item['pengguna_sebelumnya'] ?? '') ?>">
+                                <?= esc($item['pengguna_sebelumnya'] ?? '-') ?>
+                            </td>
+                            <td title="<?= esc($item['pengguna_sekarang'] ?? '') ?>">
+                                <?= esc($item['pengguna_sekarang'] ?? '-') ?>
+                            </td>
+                            <td>
+                                <?= !empty($item['kondisi']) ? esc($item['kondisi']) : '' ?>
+                            </td>
+                            <td class="col-status-usage" title="<?= esc($item['status_penggunaan'] ?? '') ?>">
+                                <?= !empty($item['status_penggunaan']) ? esc($item['status_penggunaan']) : '' ?>
+                            </td>
+                            <td title="<?= esc($item['status_barang'] ?? '') ?>">
+                                <?= esc($item['status_barang'] ?? '-') ?>
+                            </td>
+                            <td class="col-keterangan" title="<?= esc($item['keterangan'] ?? '') ?>">
+                                <?= !empty($item['keterangan']) ? esc($item['keterangan']) : '' ?>
+                            </td>
+                            
+                            <!-- QR Code Column -->
+                            <td class="qr-cell">
+                                <?php if (!empty($item['qr_code']) && trim($item['qr_code']) !== ''): ?>
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=<?= urlencode($item['qr_code']) ?>" 
+                                         class="qr-image" 
+                                         alt="QR"
+                                         onclick="showQRPreview('<?= esc(addslashes($item['qr_code'])) ?>')"
+                                         title="Klik untuk preview: <?= esc($item['qr_code']) ?>">
+                                <?php else: ?>
+                                    <div class="qr-placeholder">
+                                        <i class="bi bi-dash"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            
+                            <!-- Action Column -->
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/detail/' . $item['id']) ?>" 
+                                       class="btn btn-info btn-sm" title="Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/edit/' . $item['id']) ?>" 
+                                       class="btn btn-primary btn-sm" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/hapus/' . $item['id']) ?>" 
+                                       class="btn btn-danger btn-sm" title="Hapus"
+                                       onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-4">
         <div>
-            <!-- Menampilkan jumlah data yang ditampilkan dan total data -->
             <p class="mb-0">Menampilkan <?= count($komputerList) ?> dari <?= isset($totalItems) ? esc($totalItems) : count($komputerList) ?> data</p>
         </div>
         <div>
@@ -610,43 +1007,44 @@
 
     </div>
 
-    <!-- Modal QR Code Detail -->
-    <div class="modal fade" id="qrCodeDetailModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <!-- QR Preview Modal -->
+    <div class="modal fade" id="qrPreviewModal" tabindex="-1" aria-labelledby="qrPreviewModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="qrCodeModalLabel">
-                        <i class="bi bi-qr-code"></i> QR Code Detail
-                    </h5>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrPreviewModalLabel">QR Code Preview</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <div class="mb-3">
-                        <img id="qrCodeLargeImage" 
-                             src="" 
-                             alt="QR Code" 
-                             style="width: 200px; height: 200px; border: 2px solid #007bff;">
+                    <div id="qrPreviewImage" class="mb-3">
+                        <!-- QR Code image will be inserted here -->
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">QR Code Text:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="qrCodeTextInput" readonly>
-                            <button class="btn btn-outline-secondary" type="button" onclick="copyQrCodeText()">
-                                <i class="bi bi-clipboard"></i> Copy
-                            </button>
+                    <div class="alert alert-light">
+                        <strong>Isi QR Code:</strong>
+                        <div id="qrPreviewText" class="mt-2" style="font-family: monospace; font-size: 14px; word-break: break-all;">
+                            <!-- QR Code text will be inserted here -->
                         </div>
                     </div>
-                    <div class="alert alert-info small">
-                        <i class="bi bi-info-circle"></i> 
-                        Scan QR Code dengan aplikasi scanner untuk melihat isi text
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="copyQRText()">
+                        <i class="bi bi-clipboard"></i> Copy Text
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    // Global variable to store current QR text for copying
+    let currentQRText = '';
+
+    // Form toggle functionality - EXISTING
     document.getElementById('toggleFormBtn')?.addEventListener('click', function () {
         const form = document.getElementById('formTambahKomputer');
         form.style.display = (form.style.display === 'none') ? 'block' : 'none';
@@ -655,53 +1053,93 @@
             : '<i class="bi bi-plus-lg"></i> Tambah Aset';
     });
 
-    // Function untuk show QR Code modal
-    function showQrCodeModal(qrCodeText) {
-        // Set QR Code image dengan size besar
-        const qrImageUrl = '<?= base_url('qrcode/generate/') ?>' + encodeURIComponent(qrCodeText) + '/200';
-        document.getElementById('qrCodeLargeImage').src = qrImageUrl;
+    // QR Preview Modal function
+    function showQRPreview(qrText) {
+        currentQRText = qrText;
         
-        // Set QR Code text
-        document.getElementById('qrCodeTextInput').value = qrCodeText;
+        // Create large QR code image
+        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrText)}`;
+        
+        // Update modal content
+        document.getElementById('qrPreviewImage').innerHTML = `
+            <img src="${qrImageUrl}" alt="QR Code" class="img-fluid" style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px;">
+        `;
+        
+        document.getElementById('qrPreviewText').textContent = qrText;
         
         // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('qrCodeDetailModal'));
+        const modal = new bootstrap.Modal(document.getElementById('qrPreviewModal'));
         modal.show();
     }
 
-    // Function untuk copy QR Code text
-    function copyQrCodeText() {
-        const qrCodeText = document.getElementById('qrCodeTextInput').value;
-        
-        navigator.clipboard.writeText(qrCodeText).then(function() {
-            showToast('QR Code text berhasil di-copy: ' + qrCodeText, 'success');
-        }, function(err) {
-            // Fallback for older browsers
-            const textArea = document.createElement("textarea");
-            textArea.value = qrCodeText;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            showToast('QR Code text berhasil di-copy', 'success');
-        });
+    // Copy QR text function
+    function copyQRText() {
+        if (currentQRText) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(currentQRText).then(() => {
+                    showToast('QR Code berhasil disalin: ' + currentQRText, 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(currentQRText);
+                });
+            } else {
+                fallbackCopyTextToClipboard(currentQRText);
+            }
+        }
     }
 
-    // Function untuk show toast notification
-    function showToast(message, type) {
+    // Legacy copy to clipboard function - keep for compatibility
+    function copyToClipboard(text, element) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('QR Code berhasil disalin: ' + text, 'success');
+                // Visual feedback
+                if (element) {
+                    element.style.background = '#d4edda';
+                    setTimeout(() => {
+                        element.style.background = '#f8f9fa';
+                    }, 1000);
+                }
+            }).catch(() => {
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            showToast('QR Code berhasil disalin!', 'success');
+        } catch (err) {
+            showToast('Gagal menyalin QR Code', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    // Toast notification function - EXISTING
+    function showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-        toast.style.top = '20px';
-        toast.style.right = '20px';
-        toast.style.zIndex = '9999';
-        toast.style.maxWidth = '350px';
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+        toast.style.minWidth = '300px';
         toast.innerHTML = `
-            <strong>${type === 'success' ? 'Berhasil!' : 'Error!'}</strong> ${message}
+            <strong>${type === 'success' ? 'Berhasil!' : type === 'error' ? 'Error!' : 'Info!'}</strong> ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         
-        document.body.appendChild(toast);
+        document.getElementById('toast-container').appendChild(toast);
         
+        // Auto remove after 3 seconds
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.remove();
@@ -709,21 +1147,27 @@
         }, 3000);
     }
 
-    // Preload QR Code images saat halaman load (untuk performa)
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cache QR Code images
-        const qrImages = document.querySelectorAll('img[src*="qrcode/generate"]');
-        qrImages.forEach(function(img) {
-            // Add error handling untuk QR images
-            img.onerror = function() {
-                this.src = '<?= base_url('qrcode/placeholder') ?>';
-                this.style.opacity = '0.3';
-            };
+    // Column toggle functionality
+    document.querySelectorAll('.column-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const column = this.dataset.column;
+            const isActive = this.classList.contains('active');
             
-            // Add loading effect
-            img.onload = function() {
-                this.style.opacity = '1';
-            };
+            // Toggle button state
+            if (isActive) {
+                this.classList.remove('active');
+            } else {
+                this.classList.add('active');
+            }
+            
+            // Toggle column visibility
+            document.querySelectorAll(`.col-${column}`).forEach(cell => {
+                if (isActive) {
+                    cell.classList.add('hidden');
+                } else {
+                    cell.classList.remove('hidden');
+                }
+            });
         });
     });
     </script>
