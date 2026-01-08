@@ -1016,20 +1016,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <div id="qrPreviewImage" class="mb-3">
+                    <div id="qrPreviewImage" class="mb-3" onclick="copyQRText()" style="cursor: pointer;">
                         <!-- QR Code image will be inserted here -->
                     </div>
-                    <div class="alert alert-light">
-                        <strong>Isi QR Code:</strong>
-                        <div id="qrPreviewText" class="mt-2" style="font-family: monospace; font-size: 14px; word-break: break-all;">
-                            <!-- QR Code text will be inserted here -->
-                        </div>
-                    </div>
+                    <small class="text-muted">Click QR Code to copy</small>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="copyQRText()">
-                        <i class="bi bi-clipboard"></i> Copy Text
-                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1062,10 +1054,10 @@
         
         // Update modal content
         document.getElementById('qrPreviewImage').innerHTML = `
-            <img src="${qrImageUrl}" alt="QR Code" class="img-fluid" style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px;">
+            <img src="${qrImageUrl}" alt="QR Code" class="img-fluid" 
+                 style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;" 
+                 title="Click to copy QR Code text">
         `;
-        
-        document.getElementById('qrPreviewText').textContent = qrText;
         
         // Show modal
         const modal = new bootstrap.Modal(document.getElementById('qrPreviewModal'));

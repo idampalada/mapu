@@ -1,831 +1,1036 @@
+<?= $this->extend('admin/layouts/app') ?>
+<?= $this->section('content') ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Improved Computer Asset Table Layout</title>
+    <title>Kategori Komputer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        :root {
-            --primary-color: #2c5282;
-            --accent-color: #3182ce;
-            --success-color: #38a169;
-            --warning-color: #d69e2e;
-            --danger-color: #e53e3e;
-            --border-color: #e2e8f0;
-            --bg-subtle: #f7fafc;
-            --text-primary: #2d3748;
-            --text-secondary: #4a5568;
-            --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --border-radius: 8px;
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-subtle);
-            color: var(--text-primary);
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
         }
-
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
         }
-
-        .page-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-            color: white;
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-card);
-        }
-
-        .category-nav {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
         }
-
-        .category-item {
-            background: white;
-            border: 2px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
+        .item {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            padding: 25px;
             text-align: center;
-            text-decoration: none;
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-subtle);
-        }
-
-        .category-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .category-item.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        /* SOLUTION 1: Card-based Layout */
-        .asset-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .asset-card {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .asset-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-card);
-        }
-
-        .card-header {
-            background: var(--bg-subtle);
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-title {
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 1rem;
-            margin: 0;
-        }
-
-        .card-body {
-            padding: 1.5rem;
-        }
-
-        .asset-detail {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .detail-item {
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
             flex-direction: column;
-        }
-
-        .detail-label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.25rem;
-        }
-
-        .detail-value {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .qr-section {
-            display: flex;
             justify-content: center;
-            padding: 1rem;
-            background: var(--bg-subtle);
-            border-radius: var(--border-radius);
-            margin: 1rem 0;
+            align-items: center;
+            height: 150px;
+            text-decoration: none;
+            border: 1px solid #e0e0e0;
         }
-
-        .qr-code {
-            width: 80px;
-            height: 80px;
-            border: 1px solid var(--border-color);
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-color: #f8f8f8;
+        }
+        .item.active {
+            background-color: #2c5282;
+            color: white;
+            border-color: #1e3a5f;
+        }
+        .item.active .icon i,
+        .item.active .item-title {
+            color: white;
+        }
+        .icon i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #2c5282;
+        }
+        .item-title {
+            font-weight: 600;
+            color: #2c5282;
+            font-size: 18px;
+        }
+        h1 {
+            color: #2c5282;
+            margin-bottom: 30px;
+            font-size: 32px;
+            position: relative;
+            padding-bottom: 15px;
+            text-align: center;
+        }
+        h1:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: #2c5282;
+        }
+        .table-premium-blue th {
+            background-color: #2c5282 !important;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .table-bordered {
+            border-color: #d4d4d4;
+        }
+        .table-bordered tbody tr:hover {
+            background-color: #f2f2f2;
+        }
+        .table-bordered td {
+            border-color: #e6e6e6;
+        }
+        .badge.bg-light {
+            background-color: #e6e6e6 !important;
+            color: #333333 !important;
+            border: 1px solid #d4d4d4;
+        }
+        .badge.bg-success {
+            background-color: #3c8765 !important;
+        }
+        .badge.bg-warning {
+            background-color: #d19a26 !important;
+            color: #ffffff !important;
+        }
+        .badge.bg-danger {
+            background-color: #b54b4b !important;
+        }
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+        }
+        .badge.bg-primary {
+            background-color: #2c5282 !important;
+        }
+        .badge.bg-info {
+            background-color: #17a2b8 !important;
+        }
+        /* Style untuk QR Code Images */
+        .qr-code-container {
+            display: inline-block;
+            position: relative;
+        }
+        .qr-code-container img {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             border-radius: 4px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
         }
-
-        .qr-code:hover {
+        .qr-code-container img:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .qr-code-placeholder {
+            background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
+        .qr-text-display {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .qr-text-display:hover {
+            background: #e9ecef;
         }
 
-        .card-actions {
-            display: flex;
-            gap: 0.5rem;
-            padding: 1rem 1.5rem;
-            background: var(--bg-subtle);
-            border-top: 1px solid var(--border-color);
-        }
-
-        /* SOLUTION 2: Responsive Table with Collapsible Columns */
-        .responsive-table-wrapper {
+        /* ========== COMPACT TABLE STYLES ========== */
+        .table-container {
             background: white;
-            border-radius: var(--border-radius);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             overflow: hidden;
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
+            margin-top: 20px;
         }
 
-        .table-controls {
-            padding: 1rem 1.5rem;
-            background: var(--bg-subtle);
-            border-bottom: 1px solid var(--border-color);
+        .table-header-controls {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 8px;
         }
 
-        .column-toggle {
+        .column-controls {
             display: flex;
-            gap: 0.5rem;
             flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
         }
 
-        .column-btn {
-            padding: 0.25rem 0.75rem;
-            border: 1px solid var(--border-color);
+        .column-toggle-btn {
+            padding: 3px 8px;
+            border: 1px solid #dee2e6;
             background: white;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            border-radius: 12px;
+            font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .column-btn.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .responsive-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-
-        .responsive-table th {
-            background: var(--primary-color);
-            color: white;
-            padding: 0.75rem;
-            text-align: left;
-            font-weight: 600;
+            transition: all 0.2s;
+            color: #6c757d;
             white-space: nowrap;
         }
 
-        .responsive-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
+        .column-toggle-btn.active {
+            background: #2c5282;
+            color: white;
+            border-color: #2c5282;
+        }
+
+        .column-toggle-btn:hover {
+            background: #e9ecef;
+        }
+
+        .column-toggle-btn.active:hover {
+            background: #1e3a5f;
+        }
+
+        .compact-table-responsive {
+            max-height: 70vh;
+            overflow: auto;
+            border: 1px solid #dee2e6;
+        }
+
+        .compact-table {
+            margin-bottom: 0;
+            font-size: 11px;
+            width: auto;
+            min-width: 100%;
+        }
+
+        .compact-table th {
+            background-color: #2c5282 !important;
+            color: white !important;
+            font-weight: 600;
+            padding: 8px 4px;
+            text-align: center;
             vertical-align: middle;
-        }
-
-        .responsive-table tr:hover {
-            background: var(--bg-subtle);
-        }
-
-        /* SOLUTION 3: Master-Detail View */
-        .master-detail-layout {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
-            height: 600px;
-        }
-
-        .master-list {
-            background: white;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
-        }
-
-        .list-header {
-            padding: 1rem 1.5rem;
-            background: var(--primary-color);
-            color: white;
-            font-weight: 600;
-        }
-
-        .list-body {
-            height: calc(600px - 60px);
-            overflow-y: auto;
-        }
-
-        .list-item {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .list-item:hover {
-            background: var(--bg-subtle);
-        }
-
-        .list-item.active {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .item-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .item-subtitle {
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-
-        .detail-panel {
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        .detail-header {
-            padding: 1rem 1.5rem;
-            background: var(--bg-subtle);
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 600;
-        }
-
-        .detail-content {
-            padding: 1.5rem;
-            height: calc(600px - 120px);
-            overflow-y: auto;
-        }
-
-        .detail-grid {
-            display: grid;
-            gap: 1rem;
-        }
-
-        /* Utility Classes */
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .badge-primary { background: var(--primary-color); color: white; }
-        .badge-success { background: var(--success-color); color: white; }
-        .badge-warning { background: var(--warning-color); color: white; }
-        .badge-danger { background: var(--danger-color); color: white; }
-        .badge-light { background: var(--border-color); color: var(--text-primary); }
-
-        .btn {
-            padding: 0.5rem 1rem;
             border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s ease;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            white-space: nowrap;
+            font-size: 10px;
+            max-width: none !important;
         }
 
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-success { background: var(--success-color); color: white; }
-        .btn-warning { background: var(--warning-color); color: white; }
-        .btn-danger { background: var(--danger-color); color: white; }
-        .btn-outline { background: white; border: 1px solid var(--border-color); color: var(--text-primary); }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            opacity: 0.9;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-        }
-
-        .text-currency {
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-weight: 600;
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .master-detail-layout {
-                grid-template-columns: 1fr;
-                height: auto;
-            }
-
-            .asset-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .category-nav {
-                grid-template-columns: 1fr;
-            }
-
-            .table-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-
-        /* Tab System */
-        .tab-nav {
-            display: flex;
-            background: white;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            border: 1px solid var(--border-color);
-            border-bottom: none;
+        .compact-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #dee2e6;
+            border-right: 1px solid #f1f3f5;
+            vertical-align: top;
+            font-size: 11px;
+            text-align: center;
+            white-space: nowrap;
             overflow: hidden;
+            text-overflow: ellipsis;
+            height: 60px;
+            line-height: 1.3;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            background: var(--bg-subtle);
-            cursor: pointer;
-            font-weight: 500;
-            border-right: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn:last-child {
+        .compact-table td:last-child {
             border-right: none;
         }
 
-        .tab-btn.active {
-            background: white;
-            color: var(--primary-color);
+        .compact-table tbody tr:hover {
+            background-color: #f8f9fa;
         }
 
-        .tab-content {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 0 0 var(--border-radius) var(--border-radius);
-            min-height: 500px;
+        /* FIXED COLUMN WIDTHS - ADJUSTED */
+        .compact-table th:nth-child(1),  /* No */
+        .compact-table td:nth-child(1) {
+            width: 35px;
+            max-width: 35px;
         }
 
-        .tab-pane {
+        .compact-table th:nth-child(2),  /* Kode */
+        .compact-table td:nth-child(2) {
+            width: 80px;
+            max-width: 80px;
+        }
+
+        .compact-table th:nth-child(3),  /* Bidang */
+        .compact-table td:nth-child(3) {
+            width: 45px;
+            max-width: 45px;
+        }
+
+        .compact-table th:nth-child(4),  /* Nama Barang */
+        .compact-table td:nth-child(4) {
+            width: 120px;
+            max-width: 120px;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(5),  /* Merk */
+        .compact-table td:nth-child(5) {
+            width: 60px;
+            max-width: 60px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(6),  /* NUP */
+        .compact-table td:nth-child(6) {
+            width: 45px;
+            max-width: 45px;
+        }
+
+        .compact-table th:nth-child(7),  /* Kelompok */
+        .compact-table td:nth-child(7) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(8),  /* Processor */
+        .compact-table td:nth-child(8) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(9),  /* Memori */
+        .compact-table td:nth-child(9) {
+            width: 50px;
+            max-width: 50px;
+        }
+
+        .compact-table th:nth-child(10), /* Hardisk */
+        .compact-table td:nth-child(10) {
+            width: 60px;
+            max-width: 60px;
+        }
+
+        .compact-table th:nth-child(11), /* Tanggal */
+        .compact-table td:nth-child(11) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(12), /* Nilai */
+        .compact-table td:nth-child(12) {
+            width: 100px;
+            max-width: 100px;
+        }
+
+        .compact-table th:nth-child(13), /* User Sebelumnya */
+        .compact-table td:nth-child(13) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(14), /* User Sekarang */
+        .compact-table td:nth-child(14) {
+            width: 80px;
+            max-width: 80px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(15), /* Kondisi */
+        .compact-table td:nth-child(15) {
+            width: 60px;
+            max-width: 60px;
+        }
+
+        .compact-table th:nth-child(16), /* Status Pakai */
+        .compact-table td:nth-child(16) {
+            width: 60px;
+            max-width: 60px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(17), /* Status Barang */
+        .compact-table td:nth-child(17) {
+            width: 70px;
+            max-width: 70px;
+        }
+
+        .compact-table th:nth-child(18), /* Keterangan */
+        .compact-table td:nth-child(18) {
+            width: 90px;
+            max-width: 90px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+
+        .compact-table th:nth-child(19), /* QR Code */
+        .compact-table td:nth-child(19) {
+            width: 50px;
+            max-width: 50px;
+        }
+
+        .compact-table th:nth-child(20), /* Aksi */
+        .compact-table td:nth-child(20) {
+            width: 80px;
+            max-width: 80px;
+        }
+
+        /* Column visibility controls */
+        .col-processor,
+        .col-memory, 
+        .col-hardisk,
+        .col-monitor,
+        .col-user-prev,
+        .col-status-usage,
+        .col-keterangan,
+        .col-spek-lain {
+            display: table-cell;
+        }
+
+        .col-processor.hidden,
+        .col-memory.hidden,
+        .col-hardisk.hidden, 
+        .col-monitor.hidden,
+        .col-user-prev.hidden,
+        .col-status-usage.hidden,
+        .col-keterangan.hidden,
+        .col-spek-lain.hidden {
             display: none;
-            padding: 2rem;
         }
 
-        .tab-pane.active {
-            display: block;
+        /* Action buttons improvements */
+        .action-buttons {
+            display: flex;
+            gap: 1px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons .btn {
+            padding: 2px 4px;
+            font-size: 10px;
+            min-width: 24px;
+            border-radius: 3px;
+        }
+
+        /* QR Code improvements */
+        .qr-cell {
+            text-align: center;
+            padding: 2px;
+        }
+
+        .qr-image {
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            transition: transform 0.2s;
+        }
+
+        .qr-image:hover {
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .qr-placeholder {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #ddd;
+            border-radius: 3px;
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        /* Badge improvements */
+        .compact-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        /* Tooltip for truncated content */
+        .truncated {
+            cursor: help;
+            position: relative;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .table-header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .column-controls {
+                justify-content: center;
+            }
+            
+            .compact-table-responsive {
+                max-height: 60vh;
+            }
+            
+            .compact-table {
+                font-size: 10px;
+            }
+            
+            .compact-table th,
+            .compact-table td {
+                padding: 4px 2px;
+            }
+        }
+
+        /* Money formatting */
+        .money-value {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #28a745;
+            font-size: 9px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Page Header -->
-        <div class="page-header">
-            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700;">
-                <i class="bi bi-pc-display me-3"></i>
-                Manajemen Aset Komputer
-            </h1>
-            <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1.1rem;">
-                Sistem pengelolaan aset komputer dengan tampilan yang lebih user-friendly
-            </p>
+    <h1>Kategori Komputer</h1>
+
+    <!-- Pesan Flash -->
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= session()->getFlashdata('error') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-
-        <!-- Category Navigation -->
-        <div class="category-nav">
-            <a href="#" class="category-item active" data-category="komputer-unit">
-                <i class="bi bi-pc-display" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
-                <strong>Komputer Unit</strong>
-            </a>
-            <a href="#" class="category-item" data-category="peralatan-komputer">
-                <i class="bi bi-keyboard" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
-                <strong>Peralatan Komputer</strong>
-            </a>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    <?php endif; ?>
 
-        <!-- Tab Navigation for Different Views -->
-        <div class="tab-nav">
-            <button class="tab-btn active" data-tab="cards">
-                <i class="bi bi-grid-3x3-gap me-2"></i>
-                Card View
+    <!-- Tombol Import yang diperbarui dengan tambahan Import Excel -->
+    <div class="mb-3 text-end">
+        <!-- Tombol Import Excel baru -->
+        <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+            <i class="bi bi-file-excel"></i> Import Excel
+        </button>
+        
+        <!-- Tombol Import/Sync dari API (tetap seperti sebelumnya) -->
+        <form action="<?= base_url('user/barang/peralatandanmesin/komputer/importFromApi') ?>" method="post" class="d-inline">
+            <button type="submit" class="btn btn-success" onclick="return confirm('Import/sync data dari API PM-TIK? (Data existing akan di-update, data baru akan ditambahkan)')">
+                <i class="bi bi-cloud-download"></i> Import/Sync API
             </button>
-            <button class="tab-btn" data-tab="table">
-                <i class="bi bi-table me-2"></i>
-                Table View
+        </form>
+        
+        <!-- Tombol Reset Data (tetap seperti sebelumnya) -->
+        <form action="<?= base_url('user/barang/peralatandanmesin/komputer/resetData') ?>" method="post" class="d-inline">
+            <button type="submit" class="btn btn-danger" onclick="return confirm('PERINGATAN: Ini akan menghapus SEMUA data komputer! Yakin ingin melanjutkan?')">
+                <i class="bi bi-trash"></i> Reset Data
             </button>
-            <button class="tab-btn" data-tab="detail">
-                <i class="bi bi-layout-sidebar me-2"></i>
-                Master-Detail
-            </button>
-        </div>
+        </form>
+    </div>
 
-        <!-- Tab Content -->
-        <div class="tab-content">
-            <!-- Card View -->
-            <div class="tab-pane active" id="cards">
-                <div class="asset-cards">
-                    <!-- Sample Card 1 -->
-                    <div class="asset-card">
-                        <div class="card-header">
-                            <h3 class="card-title">ASUS ZENBOOK PRO OLED5911</h3>
-                            <span class="badge badge-primary">KOMPUTER UNIT</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="asset-detail">
-                                <div class="detail-item">
-                                    <span class="detail-label">Kode Barang</span>
-                                    <span class="detail-value">56</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Bidang</span>
-                                    <span class="detail-value">BDI</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">NUP</span>
-                                    <span class="detail-value">56</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Merk</span>
-                                    <span class="detail-value">Lap Top</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Pengguna</span>
-                                    <span class="detail-value">Najib Baedlowi</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Kondisi</span>
-                                    <span class="badge badge-success">Baik</span>
-                                </div>
-                            </div>
-                            
-                            <div class="qr-section">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=ASUS-ZENBOOK-PRO-OLED5911" 
-                                     class="qr-code" 
-                                     alt="QR Code"
-                                     onclick="copyToClipboard('ASUS-ZENBOOK-PRO-OLED5911')"
-                                     title="Klik untuk copy QR Code">
-                            </div>
+    <!-- Info bantuan untuk user - diperbarui dengan QR Code -->
+    <div class="alert alert-info mb-3">
+        <h6><i class="bi bi-info-circle"></i> Petunjuk Import:</h6>
+        <ul class="mb-0">
+            <li><strong>Import Excel:</strong> Mengimpor data dari file Excel (format: .xlsx). <strong>Kolom M akan dibaca sebagai QR CODE dan ditampilkan sebagai barcode</strong></li>
+            <li><strong>Import/Sync API:</strong> Mengambil data dari API PM-TIK, update data yang sudah ada, tambah data baru</li>
+            <li><strong>Reset Data:</strong> Menghapus semua data dari database (gunakan dengan hati-hati!)</li>
+            <li><strong>QR Code:</strong> Klik pada barcode untuk melihat detail dan copy text</li>
+        </ul>
+    </div>
 
-                            <div class="detail-item">
-                                <span class="detail-label">Nilai Perolehan</span>
-                                <span class="detail-value text-currency">Rp 35.500.000</span>
+    <!-- Modal Import Excel baru -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="importExcelModalLabel">Import Data dari Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="<?= base_url('user/barang/peralatandanmesin/komputer/importFromExcel') ?>" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="excelFile" class="form-label">Pilih File Excel (.xlsx)</label>
+                            <input type="file" class="form-control" id="excelFile" name="excelFile" accept=".xlsx" required>
+                            <div class="form-text text-muted">
+                                File harus berformat .xlsx dan memiliki sheet: Master Aset, MTI, BDI, TU, dll.<br>
+                                <strong>Kolom M di sheet "Master Aset" akan dibaca sebagai QR CODE dan ditampilkan sebagai barcode yang bisa di-scan</strong>
                             </div>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye"></i> Detail
-                            </button>
-                            <button class="btn btn-outline btn-sm">
-                                <i class="bi bi-pencil"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                    <!-- Sample Card 2 -->
-                    <div class="asset-card">
-                        <div class="card-header">
-                            <h3 class="card-title">HP OMEN 16</h3>
-                            <span class="badge badge-primary">KOMPUTER UNIT</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="asset-detail">
-                                <div class="detail-item">
-                                    <span class="detail-label">Kode Barang</span>
-                                    <span class="detail-value">54</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Bidang</span>
-                                    <span class="detail-value">BDI</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">NUP</span>
-                                    <span class="detail-value">54</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Merk</span>
-                                    <span class="detail-value">Lap Top</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Pengguna</span>
-                                    <span class="detail-value">Muhammad Ibnu Fadinaldi</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-label">Kondisi</span>
-                                    <span class="badge badge-success">Baik</span>
-                                </div>
-                            </div>
+    <!-- Pencarian -->
+    <form method="GET" class="d-flex mb-4">
+        <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan nama, kode, merk, processor, memori, QR Code" value="<?= esc($searchTerm ?? '') ?>">
+        <button type="submit" class="btn btn-primary ms-2">Cari</button>
+    </form>
+
+    <?php
+        $active = strtoupper($activeKelompok ?? '');
+    ?>
+
+    <!-- Kategori Komputer -->
+    <div class="grid mb-4">
+        <?php
+            $buttons = [
+                'KOMPUTER UNIT' => 'bi-pc-display',
+                'PERALATAN KOMPUTER' => 'bi-keyboard',
+            ];
+            foreach ($buttons as $label => $icon):
+                $isActive = $active === $label;
+        ?>
+        <a href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($label)) ?>"
+           class="item <?= $isActive ? 'active' : '' ?>">
+            <div class="icon"><i class="bi <?= $icon ?>"></i></div>
+            <div class="item-title"><?= $label ?></div>
+        </a>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Tombol Urutkan Data dan Ekspor -->
+    <div class="d-flex justify-content-between mb-3">
+        <!-- Dropdown untuk Urutkan Data -->
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-sort"></i> Urutkan Data
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'kode_barang' && isset($order) && $order == 'asc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=kode_barang&order=asc') ?>">
+                    <i class="fas fa-sort-alpha-down"></i> Kode Barang (A-Z)
+                </a></li>
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'kode_barang' && isset($order) && $order == 'desc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=kode_barang&order=desc') ?>">
+                    <i class="fas fa-sort-alpha-up-alt"></i> Kode Barang (Z-A)
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'nama_barang' && isset($order) && $order == 'asc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=nama_barang&order=asc') ?>">
+                    <i class="fas fa-sort-alpha-down"></i> Nama Barang (A-Z)
+                </a></li>
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'nama_barang' && isset($order) && $order == 'desc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=nama_barang&order=desc') ?>">
+                    <i class="fas fa-sort-alpha-up-alt"></i> Nama Barang (Z-A)
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'nilai_perolehan' && isset($order) && $order == 'asc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=nilai_perolehan&order=asc') ?>">
+                    <i class="fas fa-sort-numeric-down"></i> Nilai Perolehan (Terendah)
+                </a></li>
+                <li><a class="dropdown-item <?= (isset($sort) && $sort == 'nilai_perolehan' && isset($order) && $order == 'desc') ? 'active' : '' ?>" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($active) . '?sort=nilai_perolehan&order=desc') ?>">
+                    <i class="fas fa-sort-numeric-up-alt"></i> Nilai Perolehan (Tertinggi)
+                </a></li>
+            </ul>
+        </div>
+
+        <!-- Tombol Ekspor Data (muncul sesuai kategori yang dipilih) -->
+        <div>
+            <?php if ($active === 'KOMPUTER UNIT'): ?>
+                <a href="<?= base_url('user/barang/peralatandanmesin/komputer/exportKomputerList/komputer-unit') ?>" class="btn btn-success">Ekspor Data Komputer Unit</a>
+            <?php elseif ($active === 'PERALATAN KOMPUTER'): ?>
+                <a href="<?= base_url('user/barang/peralatandanmesin/komputer/exportKomputerList/peralatan-komputer') ?>" class="btn btn-success">Ekspor Data Peralatan Komputer</a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php if (!empty($activeKelompok)): ?>
+    <div class="mb-3 text-end">
+        <button class="btn btn-primary" id="toggleFormBtn">
+            <i class="bi bi-plus-lg"></i> Tambah Aset
+        </button>
+    </div>
+
+    <!-- Form Tambah Komputer - diperbarui dengan field baru -->
+    <div class="card mb-4" id="formTambahKomputer" style="display: none;">
+        <div class="card-header bg-primary text-white">
+            <strong>Form Tambah <?= esc($activeKelompok) ?></strong>
+        </div>
+        <div class="card-body">
+            <form action="<?= base_url('user/barang/peralatandanmesin/komputer/tambah') ?>" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="kode_barang" class="form-label">Kode Barang</label>
+                        <input type="text" name="kode_barang" class="form-control" required value="<?= old('kode_barang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="nama_barang" class="form-label">Nama Barang</label>
+                        <input type="text" name="nama_barang" class="form-control" required value="<?= old('nama_barang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="nup" class="form-label">NUP</label>
+                        <input type="text" name="nup" class="form-control" value="<?= old('nup') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="merk" class="form-label">Merk</label>
+                        <input type="text" name="merk" class="form-control" value="<?= old('merk') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="bidang" class="form-label">Bidang</label>
+                        <select name="bidang" class="form-select">
+                            <option value="">-- Pilih Bidang --</option>
+                            <option value="MTI" <?= old('bidang') === 'MTI' ? 'selected' : '' ?>>MTI</option>
+                            <option value="BDI" <?= old('bidang') === 'BDI' ? 'selected' : '' ?>>BDI</option>
+                            <option value="TU" <?= old('bidang') === 'TU' ? 'selected' : '' ?>>TU</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="kelompok" class="form-label">Kelompok</label>
+                        <select name="kelompok" class="form-select" required>
+                            <option value="">-- Pilih Kelompok --</option>
+                            <option value="KOMPUTER UNIT" <?= ($activeKelompok === 'KOMPUTER UNIT' || old('kelompok') === 'KOMPUTER UNIT') ? 'selected' : '' ?>>Komputer Unit</option>
+                            <option value="PERALATAN KOMPUTER" <?= ($activeKelompok === 'PERALATAN KOMPUTER' || old('kelompok') === 'PERALATAN KOMPUTER') ? 'selected' : '' ?>>Peralatan Komputer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="kondisi" class="form-label">Kondisi</label>
+                        <select name="kondisi" class="form-select">
+                            <option value="">-- Pilih Kondisi --</option>
+                            <option value="BAIK" <?= old('kondisi') === 'BAIK' ? 'selected' : '' ?>>Baik</option>
+                            <option value="RUSAK RINGAN" <?= old('kondisi') === 'RUSAK RINGAN' ? 'selected' : '' ?>>Rusak Ringan</option>
+                            <option value="RUSAK BERAT" <?= old('kondisi') === 'RUSAK BERAT' ? 'selected' : '' ?>>Rusak Berat</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="processor" class="form-label">Processor</label>
+                        <input type="text" name="processor" class="form-control" placeholder="Intel Core i5, AMD Ryzen, dll" value="<?= old('processor') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="memori" class="form-label">Memori (RAM)</label>
+                        <input type="text" name="memori" class="form-control" placeholder="8GB, 16GB, dll" value="<?= old('memori') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="hardisk" class="form-label">Hardisk/Storage</label>
+                        <input type="text" name="hardisk" class="form-control" placeholder="500GB HDD, 1TB SSD, dll" value="<?= old('hardisk') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="monitor" class="form-label">Monitor</label>
+                        <input type="text" name="monitor" class="form-control" placeholder="LED 21 inch, LCD 19 inch, dll" value="<?= old('monitor') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="kuantitas" class="form-label">Kuantitas</label>
+                        <input type="number" name="kuantitas" class="form-control" value="<?= old('kuantitas') ?: 1 ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="status_penggunaan" class="form-label">Status Penggunaan</label>
+                        <input type="text" name="status_penggunaan" class="form-control" value="<?= old('status_penggunaan') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="nilai_perolehan" class="form-label">Nilai Perolehan</label>
+                        <input type="number" name="nilai_perolehan" step="0.01" class="form-control" value="<?= old('nilai_perolehan') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="tanggal_perolehan" class="form-label">Tanggal Perolehan</label>
+                        <input type="date" name="tanggal_perolehan" class="form-control" value="<?= old('tanggal_perolehan') ?>">
+                    </div>
+                    <!-- Field Baru -->
+                    <div class="col-md-6 mb-3">
+                        <label for="pengguna_sebelumnya" class="form-label">Pengguna Sebelumnya</label>
+                        <input type="text" name="pengguna_sebelumnya" class="form-control" value="<?= old('pengguna_sebelumnya') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="pengguna_sekarang" class="form-label">Pengguna Sekarang</label>
+                        <input type="text" name="pengguna_sekarang" class="form-control" value="<?= old('pengguna_sekarang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="status_barang" class="form-label">Status Barang</label>
+                        <input type="text" name="status_barang" class="form-control" value="<?= old('status_barang') ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="keterangan" class="form-label">Keterangan</label>
+                        <textarea name="keterangan" class="form-control" rows="1"><?= old('keterangan') ?></textarea>
+                    </div>
+                    <!-- TAMBAHAN BARU: QR Code field -->
+                    <div class="col-md-6 mb-3">
+                        <label for="qr_code" class="form-label">QR Code</label>
+                        <input type="text" name="qr_code" class="form-control" placeholder="Masukkan QR Code jika ada" value="<?= old('qr_code') ?>">
+                        <small class="form-text text-muted">QR Code akan ditampilkan sebagai barcode yang bisa di-scan</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="spek_lain" class="form-label">Spesifikasi Lain</label>
+                        <textarea name="spek_lain" class="form-control" rows="1" placeholder="Spesifikasi tambahan lainnya"><?= old('spek_lain') ?></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success mt-3">
+                    <i class="bi bi-check-circle"></i> Simpan <?= esc($activeKelompok) ?>
+                </button>
+            </form>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($komputerList)): ?>
+    
+    <!-- COMPACT TABLE WITH COLUMN CONTROLS -->
+    <div class="table-container">
+        <!-- Table Header Controls -->
+        <div class="table-header-controls">
+            <div>
+                <h6 class="mb-0"><i class="bi bi-table me-2"></i>Data Tabel</h6>
+                <small class="text-muted">Klik tombol untuk hide/show kolom</small>
+            </div>
+            <div class="column-controls">
+                <span class="text-muted me-2" style="font-size: 11px;">Tampilkan:</span>
+                <button class="column-toggle-btn active" data-column="processor">Processor</button>
+                <button class="column-toggle-btn active" data-column="memory">Memory</button>
+                <button class="column-toggle-btn active" data-column="hardisk">Hardisk</button>
+                <button class="column-toggle-btn active" data-column="user-prev">User Lama</button>
+                <button class="column-toggle-btn active" data-column="status-usage">Status Pakai</button>
+                <button class="column-toggle-btn active" data-column="keterangan">Keterangan</button>
+            </div>
+        </div>
+
+        <!-- Compact Table -->
+        <div class="compact-table-responsive">
+            <table class="compact-table table table-hover">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Kode</th> 
+                        <th>Bidang</th>
+                        <th>Nama Barang</th>
+                        <th>Merk</th>
+                        <th>NUP</th>
+                        <th>Kelompok</th>
+                        <th class="col-processor">Processor</th>
+                        <th class="col-memory">Memory</th>
+                        <th class="col-hardisk">Hardisk</th>
+                        <th>Tanggal</th>
+                        <th>Nilai</th>
+                        <th class="col-user-prev">User Lama</th>
+                        <th>User Sekarang</th>
+                        <th>Kondisi</th>
+                        <th class="col-status-usage">Status Pakai</th>
+                        <th>Status Barang</th>
+                        <th class="col-keterangan">Keterangan</th>
+                        <th>QR</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php $no = 1; foreach ($komputerList as $item): ?>
+                        <tr>
+                            <td><?= $no++ ?></td>
+                            <td><?= esc($item['kode_barang'] ?? '-') ?></td> 
+                            <td><?= esc(!empty($item['bidang']) ? $item['bidang'] : '') ?></td>
+                            <td title="<?= esc($item['nama_barang'] ?? '') ?>">
+                                <strong><?= esc($item['nama_barang'] ?? '-') ?></strong>
+                            </td>
+                            <td title="<?= esc($item['merk'] ?? '') ?>">
+                                <?= esc($item['merk'] ?? '-') ?>
+                            </td>
+                            <td><?= esc($item['nup'] ?? '-') ?></td>
+                            <td style="white-space: normal; word-wrap: break-word; line-height: 1.2;">
+                                <?= esc($item['kelompok'] ?? '-') ?>
+                            </td>
+                            <td class="col-processor truncated" title="<?= esc($item['processor'] ?? '') ?>">
+                                <?= esc(strlen($item['processor'] ?? '') > 10 ? substr($item['processor'], 0, 7) . '...' : ($item['processor'] ?? '-')) ?>
+                            </td>
+                            <td class="col-memory"><?= esc($item['memori'] ?? '-') ?></td>
+                            <td class="col-hardisk truncated" title="<?= esc($item['hardisk'] ?? '') ?>">
+                                <?= esc(strlen($item['hardisk'] ?? '') > 8 ? substr($item['hardisk'], 0, 5) . '...' : ($item['hardisk'] ?? '-')) ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($item['tanggal_perolehan'])): ?>
+                                    <?= date('d/m/y', strtotime($item['tanggal_perolehan'])) ?>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($item['nilai_perolehan']) && $item['nilai_perolehan'] > 0): ?>
+                                    Rp <?= number_format(floatval($item['nilai_perolehan']), 0, ',', '.') ?>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td class="col-user-prev" title="<?= esc($item['pengguna_sebelumnya'] ?? '') ?>">
+                                <?= esc($item['pengguna_sebelumnya'] ?? '-') ?>
+                            </td>
+                            <td title="<?= esc($item['pengguna_sekarang'] ?? '') ?>">
+                                <?= esc($item['pengguna_sekarang'] ?? '-') ?>
+                            </td>
+                            <td>
+                                <?= !empty($item['kondisi']) ? esc($item['kondisi']) : '' ?>
+                            </td>
+                            <td class="col-status-usage" title="<?= esc($item['status_penggunaan'] ?? '') ?>">
+                                <?= !empty($item['status_penggunaan']) ? esc($item['status_penggunaan']) : '' ?>
+                            </td>
+                            <td title="<?= esc($item['status_barang'] ?? '') ?>">
+                                <?= esc($item['status_barang'] ?? '-') ?>
+                            </td>
+                            <td class="col-keterangan" title="<?= esc($item['keterangan'] ?? '') ?>">
+                                <?= !empty($item['keterangan']) ? esc($item['keterangan']) : '' ?>
+                            </td>
                             
-                            <div class="qr-section">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=HP-OMEN-16" 
-                                     class="qr-code" 
-                                     alt="QR Code"
-                                     onclick="copyToClipboard('HP-OMEN-16')"
-                                     title="Klik untuk copy QR Code">
-                            </div>
+                            <!-- QR Code Column -->
+                            <td class="qr-cell">
+                                <?php if (!empty($item['qr_code']) && trim($item['qr_code']) !== ''): ?>
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=<?= urlencode($item['qr_code']) ?>" 
+                                         class="qr-image" 
+                                         alt="QR"
+                                         onclick="showQRPreview('<?= esc(addslashes($item['qr_code'])) ?>')"
+                                         title="Klik untuk preview: <?= esc($item['qr_code']) ?>">
+                                <?php else: ?>
+                                    <div class="qr-placeholder">
+                                        <i class="bi bi-dash"></i>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            
+                            <!-- Action Column -->
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/detail/' . $item['id']) ?>" 
+                                       class="btn btn-info btn-sm" title="Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/edit/' . $item['id']) ?>" 
+                                       class="btn btn-primary btn-sm" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="<?= base_url('user/barang/peralatandanmesin/komputer/hapus/' . $item['id']) ?>" 
+                                       class="btn btn-danger btn-sm" title="Hapus"
+                                       onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                            <div class="detail-item">
-                                <span class="detail-label">Nilai Perolehan</span>
-                                <span class="detail-value text-currency">Rp 41.000.000</span>
-                            </div>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye"></i> Detail
-                            </button>
-                            <button class="btn btn-outline btn-sm">
-                                <i class="bi bi-pencil"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Hapus
-                            </button>
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div>
+            <p class="mb-0">Menampilkan <?= count($komputerList) ?> dari <?= isset($totalItems) ? esc($totalItems) : count($komputerList) ?> data</p>
+        </div>
+        <div>
+            <?php if (isset($pager) && isset($totalPages) && $totalPages > 1): ?>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <?php if (isset($currentPage) && $currentPage > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($activeKelompok)) ?>?page=1<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?><?= !empty($sort) && !empty($order) ? '&sort=' . urlencode($sort) . '&order=' . urlencode($order) : '' ?>" aria-label="First">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($activeKelompok)) ?>?page=<?= $currentPage - 1 ?><?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?><?= !empty($sort) && !empty($order) ? '&sort=' . urlencode($sort) . '&order=' . urlencode($order) : '' ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php
+                        $start = isset($currentPage) && isset($totalPages) ? max(1, $currentPage - 2) : 1;
+                        $end = isset($currentPage) && isset($totalPages) ? min($totalPages, $currentPage + 2) : 1;
+                        
+                        for ($i = $start; $i <= $end; $i++): ?>
+                            <li class="page-item <?= isset($currentPage) && $i == $currentPage ? 'active' : '' ?>">
+                                <a class="page-link" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($activeKelompok)) ?>?page=<?= $i ?><?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?><?= !empty($sort) && !empty($order) ? '&sort=' . urlencode($sort) . '&order=' . urlencode($order) : '' ?>">
+                                    <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <?php if (isset($currentPage) && isset($totalPages) && $currentPage < $totalPages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($activeKelompok)) ?>?page=<?= $currentPage + 1 ?><?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?><?= !empty($sort) && !empty($order) ? '&sort=' . urlencode($sort) . '&order=' . urlencode($order) : '' ?>" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="<?= base_url('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($activeKelompok)) ?>?page=<?= $totalPages ?><?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?><?= !empty($sort) && !empty($order) ? '&sort=' . urlencode($sort) . '&order=' . urlencode($order) : '' ?>" aria-label="Last">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <?php else: ?>
+        <div class="alert alert-info text-center">
+            <h5>Tidak ada data untuk kelompok ini.</h5>
+            <p>Silakan gunakan tombol "Import/Sync API" atau "Import Excel" untuk mengimpor data ke database.</p>
+        </div>
+    <?php endif; ?>
+
+    </div>
+
+    <!-- QR Preview Modal -->
+    <div class="modal fade" id="qrPreviewModal" tabindex="-1" aria-labelledby="qrPreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrPreviewModalLabel">QR Code Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrPreviewImage" class="mb-3">
+                        <!-- QR Code image will be inserted here -->
+                    </div>
+                    <div class="alert alert-light">
+                        <strong>Isi QR Code:</strong>
+                        <div id="qrPreviewText" class="mt-2" style="font-family: monospace; font-size: 14px; word-break: break-all;">
+                            <!-- QR Code text will be inserted here -->
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Responsive Table View -->
-            <div class="tab-pane" id="table">
-                <div class="responsive-table-wrapper">
-                    <div class="table-controls">
-                        <h4 style="margin: 0;">Data Tabel</h4>
-                        <div class="column-toggle">
-                            <span style="font-size: 0.875rem; font-weight: 500; margin-right: 0.5rem;">Tampilkan kolom:</span>
-                            <button class="column-btn active" data-column="processor">Processor</button>
-                            <button class="column-btn active" data-column="memory">Memory</button>
-                            <button class="column-btn active" data-column="hardisk">Hardisk</button>
-                            <button class="column-btn active" data-column="monitor">Monitor</button>
-                            <button class="column-btn active" data-column="user-prev">User Sebelumnya</button>
-                            <button class="column-btn active" data-column="status">Status</button>
-                            <button class="column-btn active" data-column="keterangan">Keterangan</button>
-                        </div>
-                    </div>
-                    <div style="overflow-x: auto;">
-                        <table class="responsive-table">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Kode</th>
-                                    <th>Bidang</th>
-                                    <th>Nama Barang</th>
-                                    <th>Merk</th>
-                                    <th>Pengguna</th>
-                                    <th>Kondisi</th>
-                                    <th>Nilai</th>
-                                    <th>QR Code</th>
-                                    <th class="col-processor">Processor</th>
-                                    <th class="col-memory">Memory</th>
-                                    <th class="col-hardisk">Hardisk</th>
-                                    <th class="col-monitor">Monitor</th>
-                                    <th class="col-user-prev">User Sebelumnya</th>
-                                    <th class="col-status">Status</th>
-                                    <th class="col-keterangan">Keterangan</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td><strong>56</strong></td>
-                                    <td>BDI</td>
-                                    <td><strong>ASUS ZENBOOK PRO OLED5911</strong></td>
-                                    <td>Lap Top</td>
-                                    <td>Najib Baedlowi</td>
-                                    <td><span class="badge badge-success">Baik</span></td>
-                                    <td class="text-currency">Rp 35.500.000</td>
-                                    <td>
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=ASUS-ZENBOOK-PRO-OLED5911" 
-                                             style="width: 40px; height: 40px; cursor: pointer;" 
-                                             alt="QR Code"
-                                             onclick="copyToClipboard('ASUS-ZENBOOK-PRO-OLED5911')">
-                                    </td>
-                                    <td class="col-processor">Intel Core i7</td>
-                                    <td class="col-memory">16GB</td>
-                                    <td class="col-hardisk">512GB SSD</td>
-                                    <td class="col-monitor">15.6" OLED</td>
-                                    <td class="col-user-prev">-</td>
-                                    <td class="col-status"><span class="badge badge-success">Aktif</span></td>
-                                    <td class="col-keterangan">Akan ditransfer keluar ke SDA</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm me-1"><i class="bi bi-eye"></i></button>
-                                        <button class="btn btn-outline btn-sm me-1"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td><strong>54</strong></td>
-                                    <td>BDI</td>
-                                    <td><strong>HP OMEN 16</strong></td>
-                                    <td>Lap Top</td>
-                                    <td>Muhammad Ibnu Fadinaldi</td>
-                                    <td><span class="badge badge-success">Baik</span></td>
-                                    <td class="text-currency">Rp 41.000.000</td>
-                                    <td>
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=HP-OMEN-16" 
-                                             style="width: 40px; height: 40px; cursor: pointer;" 
-                                             alt="QR Code"
-                                             onclick="copyToClipboard('HP-OMEN-16')">
-                                    </td>
-                                    <td class="col-processor">AMD Ryzen 7</td>
-                                    <td class="col-memory">16GB</td>
-                                    <td class="col-hardisk">1TB SSD</td>
-                                    <td class="col-monitor">16" IPS</td>
-                                    <td class="col-user-prev">-</td>
-                                    <td class="col-status"><span class="badge badge-success">Aktif</span></td>
-                                    <td class="col-keterangan">-</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm me-1"><i class="bi bi-eye"></i></button>
-                                        <button class="btn btn-outline btn-sm me-1"><i class="bi bi-pencil"></i></button>
-                                        <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Master-Detail View -->
-            <div class="tab-pane" id="detail">
-                <div class="master-detail-layout">
-                    <div class="master-list">
-                        <div class="list-header">
-                            Daftar Aset Komputer
-                        </div>
-                        <div class="list-body">
-                            <div class="list-item active" data-item="1">
-                                <div class="item-title">ASUS ZENBOOK PRO OLED5911</div>
-                                <div class="item-subtitle">BDI • Najib Baedlowi • Rp 35.500.000</div>
-                            </div>
-                            <div class="list-item" data-item="2">
-                                <div class="item-title">HP OMEN 16</div>
-                                <div class="item-subtitle">BDI • Muhammad Ibnu Fadinaldi • Rp 41.000.000</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detail-panel">
-                        <div class="detail-header">
-                            Detail Aset
-                        </div>
-                        <div class="detail-content">
-                            <div class="detail-grid">
-                                <div style="text-align: center; margin-bottom: 1.5rem;">
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=ASUS-ZENBOOK-PRO-OLED5911" 
-                                         style="border: 1px solid var(--border-color); border-radius: 4px;"
-                                         alt="QR Code">
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Nama Barang</span>
-                                    <span class="detail-value">ASUS ZENBOOK PRO OLED5911</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Kode Barang</span>
-                                    <span class="detail-value">56</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Bidang</span>
-                                    <span class="detail-value">BDI</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Merk</span>
-                                    <span class="detail-value">Lap Top</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">NUP</span>
-                                    <span class="detail-value">56</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Kelompok</span>
-                                    <span class="badge badge-primary">KOMPUTER UNIT</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Processor</span>
-                                    <span class="detail-value">Intel Core i7</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Memory</span>
-                                    <span class="detail-value">16GB</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Hardisk</span>
-                                    <span class="detail-value">512GB SSD</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Monitor</span>
-                                    <span class="detail-value">15.6" OLED</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Pengguna Sekarang</span>
-                                    <span class="detail-value">Najib Baedlowi</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Kondisi</span>
-                                    <span class="badge badge-success">Baik</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Status Penggunaan</span>
-                                    <span class="badge badge-success">Aktif</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Nilai Perolehan</span>
-                                    <span class="detail-value text-currency">Rp 35.500.000</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Keterangan</span>
-                                    <span class="detail-value">Akan ditransfer keluar ke SDA</span>
-                                </div>
-                            </div>
-                            
-                            <div style="margin-top: 2rem; display: flex; gap: 0.5rem;">
-                                <button class="btn btn-primary">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </button>
-                                <button class="btn btn-danger">
-                                    <i class="bi bi-trash"></i> Hapus
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="copyQRText()">
+                        <i class="bi bi-clipboard"></i> Copy Text
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -836,84 +1041,138 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Tab functionality
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all tabs
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                btn.classList.add('active');
-                const tabId = btn.dataset.tab;
-                document.getElementById(tabId).classList.add('active');
-            });
-        });
+    // Global variable to store current QR text for copying
+    let currentQRText = '';
 
-        // Column toggle functionality
-        document.querySelectorAll('.column-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const column = btn.dataset.column;
-                const isActive = btn.classList.contains('active');
-                
-                if (isActive) {
-                    btn.classList.remove('active');
-                    document.querySelectorAll(`.col-${column}`).forEach(col => {
-                        col.style.display = 'none';
-                    });
-                } else {
-                    btn.classList.add('active');
-                    document.querySelectorAll(`.col-${column}`).forEach(col => {
-                        col.style.display = '';
-                    });
-                }
-            });
-        });
+    // Form toggle functionality - EXISTING
+    document.getElementById('toggleFormBtn')?.addEventListener('click', function () {
+        const form = document.getElementById('formTambahKomputer');
+        form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+        this.innerHTML = form.style.display === 'block'
+            ? '<i class="bi bi-dash-circle"></i> Sembunyikan Form'
+            : '<i class="bi bi-plus-lg"></i> Tambah Aset';
+    });
 
-        // Master-detail functionality
-        document.querySelectorAll('.list-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.list-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-            });
-        });
+    // QR Preview Modal function
+    function showQRPreview(qrText) {
+        currentQRText = qrText;
+        
+        // Create large QR code image
+        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrText)}`;
+        
+        // Update modal content
+        document.getElementById('qrPreviewImage').innerHTML = `
+            <img src="${qrImageUrl}" alt="QR Code" class="img-fluid" style="max-width: 200px; border: 1px solid #ddd; border-radius: 8px;">
+        `;
+        
+        document.getElementById('qrPreviewText').textContent = qrText;
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('qrPreviewModal'));
+        modal.show();
+    }
 
-        // Copy to clipboard
-        function copyToClipboard(text) {
+    // Copy QR text function
+    function copyQRText() {
+        if (currentQRText) {
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('QR Code berhasil disalin: ' + text, 'success');
+                navigator.clipboard.writeText(currentQRText).then(() => {
+                    showToast('QR Code berhasil disalin: ' + currentQRText, 'success');
+                }).catch(() => {
+                    fallbackCopyTextToClipboard(currentQRText);
                 });
+            } else {
+                fallbackCopyTextToClipboard(currentQRText);
             }
         }
+    }
 
-        // Toast notification
-        function showToast(message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `alert alert-${type === 'success' ? 'success' : 'info'} alert-dismissible fade show`;
-            toast.style.minWidth = '300px';
-            toast.innerHTML = `
-                <strong>${type === 'success' ? 'Berhasil!' : 'Info!'}</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            document.getElementById('toast-container').appendChild(toast);
-            
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
+    // Legacy copy to clipboard function - keep for compatibility
+    function copyToClipboard(text, element) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('QR Code berhasil disalin: ' + text, 'success');
+                // Visual feedback
+                if (element) {
+                    element.style.background = '#d4edda';
+                    setTimeout(() => {
+                        element.style.background = '#f8f9fa';
+                    }, 1000);
                 }
-            }, 3000);
+            }).catch(() => {
+                fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text);
         }
+    }
 
-        // Category navigation
-        document.querySelectorAll('.category-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            showToast('QR Code berhasil disalin!', 'success');
+        } catch (err) {
+            showToast('Gagal menyalin QR Code', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    // Toast notification function - EXISTING
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+        toast.style.minWidth = '300px';
+        toast.innerHTML = `
+            <strong>${type === 'success' ? 'Berhasil!' : type === 'error' ? 'Error!' : 'Info!'}</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.getElementById('toast-container').appendChild(toast);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+
+    // Column toggle functionality
+    document.querySelectorAll('.column-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const column = this.dataset.column;
+            const isActive = this.classList.contains('active');
+            
+            // Toggle button state
+            if (isActive) {
+                this.classList.remove('active');
+            } else {
+                this.classList.add('active');
+            }
+            
+            // Toggle column visibility
+            document.querySelectorAll(`.col-${column}`).forEach(cell => {
+                if (isActive) {
+                    cell.classList.add('hidden');
+                } else {
+                    cell.classList.remove('hidden');
+                }
             });
         });
+    });
     </script>
+
 </body>
 </html>
+
+<?= $this->endSection() ?>
