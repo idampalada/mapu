@@ -77,18 +77,6 @@ $routes->group('', ['filter' => 'login'], function ($routes) {
 
 
 
-    
-// });
-$routes->group('admin/User/Barang', ['filter' => 'role:admin,admin_gedungutama'], function($routes) {
-    $routes->post('verifikasiPeminjaman', 'User\Barang::verifikasiPeminjaman');
-    $routes->post('verifikasiPengembalian', 'User\Barang::verifikasiPengembalian');
-    $routes->post('kembalikan', 'User\Barang::kembalikan');
-    $routes->post('/user/barang/kembalikan', 'User\Barang::kembalikan');
-    $routes->post('/admin/User/Barang/verifikasiPengembalian', 'User\Barang::verifikasiPengembalian');
-    
-});
-
-
 $routes->group('user/barang', ['filter' => 'login'], function($routes) {
     $routes->get('', 'User\Barang::dashboard'); // halaman awal dashboardbarang.php
     $routes->get('index', 'User\Barang::index'); 
@@ -110,6 +98,24 @@ $routes->group('User/Barang', ['filter' => 'role:admin,admin_gedungutama'], func
 $routes->post('admin/User/Barang/verifikasiPeminjaman', 'User\Barang::verifikasiPeminjaman', ['filter' => 'role:admin,admin_gedungutama']);
 $routes->post('user/barang/kembalikanById', 'User\Barang::kembalikanById');
 
+// USER SCAN ROUTES
+   $routes->group('user/scan', function($routes) {
+       $routes->get('', 'User\Scan::index');
+       $routes->post('validateQR', 'User\Scan::validateQR');
+       $routes->post('submitPinjam', 'User\Scan::submitPinjam');
+       $routes->get('getMyHistory', 'User\Scan::getMyHistory');
+   });
+
+
+   // ADMIN SCAN BARANG ROUTES - menggunakan User\Barang controller existing
+$routes->group('admin/user/barang', ['filter' => 'role:admin,admin_gedungutama'], function($routes) {
+    $routes->get('getPendingScan', 'User\Barang::getPendingScan');
+    $routes->get('getDipinjamScan', 'User\Barang::getDipinjamScan');
+    $routes->get('getPengembalianScan', 'User\Barang::getPengembalianScan');
+    $routes->get('getStatistikScan', 'User\Barang::getStatistikScan');
+    $routes->post('verifikasiPeminjaman', 'User\Barang::verifikasiPeminjaman');
+    $routes->post('verifikasiPengembalian', 'User\Barang::verifikasiPengembalian');
+});
     $routes->group('user/ruangan', function($routes) {
             // Booking langsung routes
     $routes->post('bookingLangsung', 'User\Ruangan::bookingLangsung');

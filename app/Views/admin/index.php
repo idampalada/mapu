@@ -351,155 +351,61 @@
     </div>
 </div>
 
-<?php if (in_groups('admin') || in_groups('admin_gedungutama')): ?><div class="modal fade" id="modalVerifikasiBarang" tabindex="-1" data-bs-backdrop="static"
+<?php if (in_groups('admin') || in_groups('admin_gedungutama')): ?>
+<div class="modal fade" id="modalVerifikasiBarang" tabindex="-1" data-bs-backdrop="static"
     aria-labelledby="modalVerifikasiBarangLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalVerifikasiBarangLabel">Verifikasi Peminjaman & Pengembalian Barang</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <ul class="nav nav-tabs" id="verificationBarangTabs" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="peminjaman-barang-tab" data-bs-toggle="tab" href="#peminjaman-barang" role="tab">
-              Peminjaman Barang Pending
-              <?php if (!empty($barang_pending)): ?>
-                <span class="badge bg-danger"><?= count($barang_pending) ?></span>
-              <?php endif; ?>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="pengembalian-barang-tab" data-bs-toggle="tab" href="#pengembalian-barang" role="tab">
-              Pengembalian Barang Pending
-              <?php if (!empty($pengembalian_barang_pending)): ?>
-                <span class="badge bg-danger"><?= count($pengembalian_barang_pending) ?></span>
-              <?php endif; ?>
-            </a>
-          </li>
-        </ul>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalVerifikasiBarangLabel">Verifikasi Peminjaman & Pengembalian Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="verificationBarangTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="peminjaman-barang-tab" data-bs-toggle="tab" href="#peminjaman-barang" role="tab">
+                            Peminjaman Barang Pending
+                            <span class="badge bg-danger" id="pending-scan-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="pengembalian-barang-tab" data-bs-toggle="tab" href="#pengembalian-barang" role="tab">
+                            Pengembalian Barang Pending
+                            <span class="badge bg-danger" id="pengembalian-scan-count">0</span>
+                        </a>
+                    </li>
+                </ul>
 
-        <div class="tab-content mt-3">
-          <!-- Tab Peminjaman Barang -->
-          <div class="tab-pane fade show active" id="peminjaman-barang">
-            <?php if (empty($barang_pending)): ?>
-              <div class="alert alert-info">
-                Tidak ada peminjaman barang yang menunggu verifikasi
-              </div>
-            <?php else: ?>
-              <div class="table-responsive">
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Tanggal</th>
-                      <th>Nama Peminjam</th>
-                      <th>Barang</th>
-                      <th>Keperluan</th>
-                      <th>Jadwal</th>
-                      <th>Status</th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php foreach ($barang_pending as $pinjam): ?>
-                      <tr>
-                        <td><?= date('d/m/Y', strtotime($pinjam['created_at'])) ?></td>
-                        <td><?= esc($pinjam['nama_peminjam']) ?></td>
-                        <td><?= esc($pinjam['nama_barang']) ?></td>
-                        <td><?= esc($pinjam['keperluan']) ?></td>
-                        <td>
-                          <?= date('d/m/Y', strtotime($pinjam['tanggal'])) ?><br>
-                          <?= esc($pinjam['waktu_mulai']) ?> - <?= esc($pinjam['waktu_selesai']) ?>
-                        </td>
-                        <td><span class="badge bg-warning">Pending</span></td>
-                        <td>
-                          <button class="btn btn-sm btn-success"
-                            onclick="verifikasiPeminjamanBarang(<?= $pinjam['id'] ?>, 'disetujui')">
-                            Setujui
-                          </button>
-                          <button class="btn btn-sm btn-danger"
-        data-tipe="barang" 
-        data-id="<?= $pinjam['id'] ?>"
-        onclick="showTolakModal('barang', <?= $pinjam['id'] ?>)">
-    Tolak
-</button>
-                        </td>
-                      </tr>
-                    <?php endforeach; ?>
-                  </tbody>
-                </table>
-              </div>
-            <?php endif; ?>
-          </div>
+                <div class="tab-content mt-3">
+                    <!-- Tab Peminjaman Barang -->
+                    <div class="tab-pane fade show active" id="peminjaman-barang">
+                        <div id="pending-scan-container">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Memuat data peminjaman...</p>
+                            </div>
+                        </div>
+                    </div>
 
-         <!-- Tab Pengembalian Barang -->
-<div class="tab-pane fade" id="pengembalian-barang">
-  <?php if (empty($pengembalian_barang_pending)): ?>
-    <div class="alert alert-info mt-3">
-      Tidak ada pengembalian barang yang pending saat ini.
-    </div>
-  <?php else: ?>
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Tanggal</th>
-            <th>Nama Peminjam</th>
-            <th>Barang</th>
-            <th>Lokasi</th>
-            <th>Status</th>
-            <th>Dokumen</th>
-            <th>Tanggal Pinjam</th>
-            <th>Tanggal Kembali</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($pengembalian_barang_pending as $item): ?>
-            <tr>
-              <td><?= date('d/m/Y', strtotime($item['created_at'])) ?></td>
-              <td><?= esc($item['nama_peminjam']) ?></td>
-              <td><?= esc($item['nama_barang']) ?></td>
-              <td><?= esc($item['lokasi']) ?></td>
-              <td><span class="badge bg-warning">Pending</span></td>
-              <td><?= $item['tanggal'] ?? '-' ?></td>
-              <td><?= $item['updated_at'] ?? '-' ?></td>
-              <td><?= !empty($item['tanggal_kembali']) ? date('d/m/Y H:i:s', strtotime($item['tanggal_kembali'])) : '-' ?></td>
-              <td>
-              <button class="btn btn-sm btn-success"
-                onclick="verifikasiPengembalianBarang(<?= $item['id'] ?>, 'disetujui')">
-                Setujui
-                </button>
-                <button class="btn btn-sm btn-danger"
-  onclick="verifikasiPengembalianBarang(<?= $item['id'] ?>, 'ditolak')">
-  Tolak
-<!-- </button> jika mau menggunakan pdf saat menolak
-                <button class="btn btn-sm btn-danger"
-                  onclick="showTolakModal('pengembalian_barang', <?= $item['id'] ?>)">
-                  Tolak
-                          </button> -->
-                        </td>
-                      </tr>
-                    <?php endforeach; ?>
-                  </tbody>
-                </table>
-              </div>
-            <?php endif; ?>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-      </div>
-    </div>
-  </div>
-</div>
+                    <!-- Tab Pengembalian Barang -->
+                    <div class="tab-pane fade" id="pengembalian-barang">
+                        <div id="pengembalian-scan-container">
+                            <div class="alert alert-info text-center">
+                                <i class="bi bi-info-circle me-2"></i>Klik tab ini untuk melihat pengembalian yang pending
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
 </div>
 <?php endif; ?>
-
 
 <?php if (in_groups('admin_gedungutama') || 
                 in_groups('admin_pusdatin') || 
@@ -1321,14 +1227,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-6">
-    <div class="card h-100 pilih-card" onclick="showTambahBarang()">
-        <div class="card-body text-center">
-            <i class="bi bi-box-seam fs-1 text-info mb-2"></i>
-            <h6 class="card-title">Tambah Barang</h6>
-        </div>
-    </div>
-</div>
                 </div>
             </div>
         </div>

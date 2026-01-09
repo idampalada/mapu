@@ -83,6 +83,7 @@
 <script src="<?= base_url(); ?>/assets/js/ttesurat.js"></script>
     <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>
     <script src="<?= base_url(); ?>/assets/js/mainpage.js"></script>
+    <script src="<?= base_url(); ?>/assets/js/scanbarang.js"></script>
 
     <script src="<?= base_url('assets/js/pinjam-barang.js') ?>"></script>
 
