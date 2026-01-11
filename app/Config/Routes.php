@@ -83,6 +83,7 @@ $routes->group('user/barang', ['filter' => 'login'], function($routes) {
     $routes->get('kategori/(:segment)', 'User\Barang::detail/$1');
     $routes->post('pinjam', 'User\Barang::pinjam');
     $routes->post('kembalikan', 'User\Barang::kembalikan'); 
+    $routes->post('kembalikanWithForm', 'User\Barang::kembalikanWithForm');
 });
 
 $routes->group('admin/barang', ['filter' => 'role:admin,admin_gedungutama'], function($routes) {
@@ -115,6 +116,7 @@ $routes->group('admin/user/barang', ['filter' => 'role:admin,admin_gedungutama']
     $routes->get('getStatistikScan', 'User\Barang::getStatistikScan');
     $routes->post('verifikasiPeminjaman', 'User\Barang::verifikasiPeminjaman');
     $routes->post('verifikasiPengembalian', 'User\Barang::verifikasiPengembalian');
+    $routes->get('getFoto/(:segment)', 'User\Barang::getFoto/$1');
 });
     $routes->group('user/ruangan', function($routes) {
             // Booking langsung routes

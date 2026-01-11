@@ -200,6 +200,9 @@ function displayPendingScan(data) {
 // UPDATE method displayPengembalianScan di index.php JavaScript
 
 // Display pengembalian scan - SIMPLE VERSION seperti peminjaman
+// UPDATE displayPengembalianScan untuk admin dashboard - DENGAN KOLOM TANGGAL & JAM KEMBALI
+// SIMPLE FIX - GANTI FUNCTION displayPengembalianScan DENGAN ONCLICK YANG BENAR
+
 function displayPengembalianScan(data) {
   const container = document.getElementById("pengembalian-scan-container");
 
@@ -210,37 +213,267 @@ function displayPengembalianScan(data) {
   }
 
   let html = '<div class="table-responsive">';
-  html += '<table class="table">';
+  html += '<table class="table table-striped">';
   html += "<thead>";
   html += "<tr>";
-  html += "<th>Tanggal</th>";
   html += "<th>Nama Peminjam</th>";
   html += "<th>Barang</th>";
-  html += "<th>Status</th>";
-  html += "<th>Tanggal Pinjam</th>";
+  html += "<th>Kondisi</th>";
   html += "<th>Tanggal Kembali</th>";
+  html += "<th>Jam Kembali</th>";
+  html += "<th>Lihat Foto</th>";
   html += "<th>Aksi</th>";
   html += "</tr>";
   html += "</thead>";
   html += "<tbody>";
 
   data.forEach((item) => {
+    // Format tanggal dan jam kembali
+    let tanggalKembali = "-";
+    let jamKembali = "-";
+
+    if (item.tanggal_kembali) {
+      const dateObj = new Date(item.tanggal_kembali);
+      tanggalKembali = dateObj.toLocaleDateString("id-ID");
+      jamKembali = dateObj.toLocaleTimeString("id-ID");
+    }
+
+    // Badge kondisi
+    let kondisiBadge = "bg-secondary";
+    if (item.kondisi_pengembalian === "Baik") kondisiBadge = "bg-success";
+    else if (item.kondisi_pengembalian === "Rusak Ringan")
+      kondisiBadge = "bg-warning text-dark";
+    else if (item.kondisi_pengembalian === "Rusak Berat")
+      kondisiBadge = "bg-danger";
+
+    // Foto button dengan escape JSON yang benar
+    let fotoButton = '<span class="text-muted">-</span>';
+    if (item.foto_pengembalian) {
+      try {
+        const fotoArray = JSON.parse(item.foto_pengembalian);
+        if (fotoArray && fotoArray.length > 0) {
+          // Escape JSON untuk onclick
+          const escapedJson = item.foto_pengembalian.replace(/"/g, "&quot;");
+          fotoButton = `<button class="btn btn-sm btn-outline-primary" onclick="showFotoModal('${escapedJson}')">
+                                     <i class="bi bi-images me-1"></i>${fotoArray.length} Foto
+                                  </button>`;
+        }
+      } catch (e) {
+        console.error("Error parsing foto_pengembalian:", e);
+      }
+    }
+
     html += "<tr>";
-    html += `<td>${formatDate(item.created_at)}</td>`;
-    html += `<td>${item.nama_peminjam}</td>`;
-    html += `<td>${item.nama_barang}</td>`;
-    html += `<td><span class="badge bg-warning">Pending</span></td>`;
-    html += `<td>${formatDate(item.tanggal)}</td>`;
-    html += `<td>${formatDateTime(item.tanggal_kembali)}</td>`;
-    html += `<td>`;
-    html += `<button class="btn btn-sm btn-success" onclick="verifikasiPengembalianBarang(${item.id}, 'disetujui')">Setujui</button> `;
-    html += `<button class="btn btn-sm btn-danger" onclick="verifikasiPengembalianBarang(${item.id}, 'ditolak')">Tolak</button>`;
-    html += `</td>`;
+    html += `<td>
+                    <div class="fw-bold">${item.nama_peminjam}</div>
+                    <small class="text-muted">${
+                      item.email_peminjam || ""
+                    }</small>
+                 </td>`;
+    html += `<td>
+                    <div class="fw-bold text-primary">${item.nama_barang}</div>
+                    <small class="text-muted">Dipinjam: ${formatDate(
+                      item.tanggal
+                    )}</small>
+                 </td>`;
+    html += `<td>
+                    <span class="badge ${kondisiBadge}">${
+      item.kondisi_pengembalian || "Tidak disebutkan"
+    }</span>
+                    ${
+                      item.keterangan
+                        ? '<br><small class="text-muted mt-1 d-block">' +
+                          item.keterangan +
+                          "</small>"
+                        : ""
+                    }
+                 </td>`;
+    html += `<td><strong>${tanggalKembali}</strong></td>`;
+    html += `<td><strong>${jamKembali}</strong></td>`;
+    html += `<td>${fotoButton}</td>`;
+    html += `<td>
+                    <button class="btn btn-sm btn-success me-1" onclick="verifikasiPengembalianBarang(${item.id}, 'disetujui')">Setujui</button>
+                    <button class="btn btn-sm btn-danger" onclick="verifikasiPengembalianBarang(${item.id}, 'ditolak')">Tolak</button>
+                 </td>`;
     html += "</tr>";
   });
 
   html += "</tbody></table></div>";
   container.innerHTML = html;
+}
+
+// OPTION 1: FIX PATH FOTO DENGAN BASE_URL YANG BENAR
+
+function showFotoModal(fotoJson) {
+  try {
+    const unescapedJson = fotoJson.replace(/&quot;/g, '"');
+    const fotoArray = JSON.parse(unescapedJson);
+
+    if (!fotoArray || fotoArray.length === 0) {
+      alert("Tidak ada foto untuk ditampilkan");
+      return;
+    }
+
+    let modalContent = `
+            <div class="modal fade" id="fotoModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Foto Pengembalian (${fotoArray.length} foto)</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+        `;
+
+    fotoArray.forEach((foto, index) => {
+      // FIX: Gunakan controller untuk serve foto
+      const fotoUrl = `/admin/user/barang/getFoto/${foto}`;
+
+      modalContent += `
+                <div class="col-md-3 col-6 mb-3">
+                    <img src="${fotoUrl}" 
+                         class="img-fluid rounded" 
+                         style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;"
+                         onclick="window.open('${fotoUrl}', '_blank')"
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM5OTkiPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
+                    <small class="d-block text-center mt-1">Foto ${
+                      index + 1
+                    }</small>
+                </div>
+            `;
+    });
+
+    modalContent += `
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    // Remove existing modal
+    const existingModal = document.getElementById("fotoModal");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add new modal
+    document.body.insertAdjacentHTML("beforeend", modalContent);
+
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById("fotoModal"));
+    modal.show();
+  } catch (error) {
+    console.error("Error showing foto modal:", error);
+    alert("Gagal menampilkan foto: " + error.message);
+  }
+}
+
+// Function untuk lihat foto pengembalian - UPDATED
+function lihatFotoPengembalian(pinjamId, fotoJson) {
+  try {
+    const fotoArray = JSON.parse(fotoJson);
+
+    if (!fotoArray || fotoArray.length === 0) {
+      alert("Tidak ada foto untuk ditampilkan");
+      return;
+    }
+
+    let modalHtml = `
+            <div class="modal fade" id="modalFotoPengembalian" tabindex="-1" aria-labelledby="modalFotoPengembalianLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalFotoPengembalianLabel">
+                                <i class="bi bi-images me-2"></i>Dokumentasi Pengembalian Barang
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted mb-3">Total ${fotoArray.length} foto dokumentasi pengembalian barang</p>
+                            <div class="row">
+        `;
+
+    fotoArray.forEach((foto, index) => {
+      const fotoUrl =
+        "<?= base_url() ?>/writable/uploads/barang_returns/" + foto;
+      modalHtml += `
+                <div class="col-md-4 col-6 mb-3">
+                    <div class="card shadow-sm">
+                        <img src="${fotoUrl}" class="card-img-top" style="height: 250px; object-fit: cover; cursor: pointer;" 
+                             alt="Foto ${
+                               index + 1
+                             }" onclick="window.open('${fotoUrl}', '_blank')">
+                        <div class="card-body py-2 text-center">
+                            <small class="text-muted">Foto ${index + 1}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+    });
+
+    modalHtml += `
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Tip:</strong> Klik pada foto untuk membuka dalam tab baru dan melihat detail lebih jelas.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i>Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    // Remove existing modal
+    const existingModal = document.getElementById("modalFotoPengembalian");
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Add modal to body
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    // Show modal
+    const modal = new bootstrap.Modal(
+      document.getElementById("modalFotoPengembalian")
+    );
+    modal.show();
+  } catch (error) {
+    console.error("Error displaying photos:", error);
+    alert("Gagal menampilkan foto");
+  }
+}
+
+// Helper function untuk format tanggal yang konsisten
+function formatDate(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function formatDateTime(dateString) {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 // UPDATE method verifikasiPengembalianBarang juga
 function verifikasiPengembalianBarang(id, status) {
@@ -396,3 +629,73 @@ function formatDateTime(dateString) {
     date.toLocaleDateString("id-ID") + " " + date.toLocaleTimeString("id-ID")
   );
 }
+
+// DEBUG FUNCTION - PASTE DI CONSOLE BROWSER UNTUK TEST
+function debugFotoPreview() {
+  console.log("=== DEBUG FOTO PREVIEW ===");
+
+  // Test 1: Cek apakah function ada
+  if (typeof lihatFotoPengembalian === "function") {
+    console.log("✅ Function lihatFotoPengembalian exists");
+  } else {
+    console.log("❌ Function lihatFotoPengembalian NOT FOUND!");
+    return;
+  }
+
+  // Test 2: Cek button yang diklik
+  const buttons = document.querySelectorAll(
+    '[onclick*="lihatFotoPengembalian"]'
+  );
+  console.log("📷 Found foto buttons:", buttons.length);
+
+  if (buttons.length > 0) {
+    const button = buttons[0];
+    const onclickAttr = button.getAttribute("onclick");
+    console.log("🔗 Button onclick:", onclickAttr);
+
+    // Extract parameters from onclick
+    const match = onclickAttr.match(
+      /lihatFotoPengembalian\('(\d+)',\s*'(.+)'\)/
+    );
+    if (match) {
+      const pinjamId = match[1];
+      const fotoJson = match[2];
+      console.log("🆔 Pinjam ID:", pinjamId);
+      console.log("📸 Foto JSON:", fotoJson);
+
+      try {
+        const fotoArray = JSON.parse(fotoJson);
+        console.log("📁 Parsed foto array:", fotoArray);
+
+        // Test foto URLs
+        fotoArray.forEach((foto, index) => {
+          const fotoUrl = `/writable/uploads/barang_returns/${foto}`;
+          console.log(`📸 Foto ${index + 1} URL:`, fotoUrl);
+        });
+      } catch (e) {
+        console.log("❌ Error parsing foto JSON:", e.message);
+      }
+    }
+  }
+}
+
+// Manual test function
+function testLihatFoto() {
+  // Ambil data dari button yang ada
+  const button = document.querySelector('[onclick*="lihatFotoPengembalian"]');
+  if (button) {
+    const onclickAttr = button.getAttribute("onclick");
+    console.log("Testing with onclick:", onclickAttr);
+
+    // Execute onclick manually
+    try {
+      eval(onclickAttr);
+    } catch (e) {
+      console.error("Error executing onclick:", e);
+    }
+  }
+}
+
+console.log("Debug functions loaded. Run:");
+console.log("debugFotoPreview() - untuk debug");
+console.log("testLihatFoto() - untuk test manual");

@@ -28,6 +28,8 @@ class PinjamBarangModel extends Model
         'verified_at',
         'verified_by',
         'tanggal_kembali',
+            'kondisi_pengembalian',    // ← TAMBAH INI
+    'foto_pengembalian',       // ← TAMBAH INI
         'created_at',
         'updated_at',
         'deleted_at'

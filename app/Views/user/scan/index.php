@@ -704,78 +704,298 @@ function getActionButtons(item) {
     }
 }
 
-// TAMBAH function kembalikanBarang
+// COMPLETE REPLACEMENT - COPY PASTE LANGSUNG
 function kembalikanBarang(pinjamId) {
-    Swal.fire({
-        title: 'Konfirmasi Pengembalian',
-        text: 'Apakah Anda yakin ingin mengembalikan barang ini?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#ffc107',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Ya, Kembalikan',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading
-            Swal.fire({
-                title: 'Memproses...',
-                text: 'Sedang memproses pengembalian',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+    // Buat modal form pengembalian dengan camera interface
+    const modalHtml = `
+        <div class="modal fade" id="modalPengembalianBarang" tabindex="-1" aria-labelledby="modalPengembalianBarangLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPengembalianBarangLabel">
+                            <i class="bi bi-arrow-return-left me-2"></i>Form Pengembalian Barang
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formPengembalianBarang">
+                        <div class="modal-body">
+                            <input type="hidden" name="pinjam_id" value="${pinjamId}">
+                            
+                            <!-- Kondisi Barang -->
+                            <div class="mb-3">
+                                <label for="kondisi_barang" class="form-label fw-bold">
+                                    Kondisi Barang <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="kondisi_barang" name="kondisi_barang" required>
+                                    <option value="">Pilih kondisi barang</option>
+                                    <option value="Baik">Baik</option>
+                                    <option value="Rusak Ringan">Rusak Ringan</option>
+                                    <option value="Rusak Berat">Rusak Berat</option>
+                                </select>
+                            </div>
 
-            // Send AJAX request
-            const formData = new FormData();
-            formData.append('pinjam_id', pinjamId);
+                            <!-- Keterangan -->
+                            <div class="mb-3">
+                                <label for="keterangan_pengembalian" class="form-label fw-bold">
+                                    Keterangan Pengembalian
+                                </label>
+                                <textarea class="form-control" id="keterangan_pengembalian" name="keterangan" rows="3" 
+                                          placeholder="Jelaskan kondisi barang..."></textarea>
+                            </div>
 
-            fetch('<?= base_url('/user/barang/kembalikan') ?>', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                            <!-- Camera Interface -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Foto Barang <span class="text-danger">*</span>
+                                </label>
+                                
+                                <!-- Camera Controls -->
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-primary" id="startCamera">
+                                        <i class="bi bi-camera-fill me-1"></i>Buka Kamera
+                                    </button>
+                                    <button type="button" class="btn btn-success" id="capturePhoto" style="display:none;">
+                                        <i class="bi bi-camera2 me-1"></i>Ambil Foto
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="stopCamera" style="display:none;">
+                                        <i class="bi bi-stop-circle me-1"></i>Tutup Kamera
+                                    </button>
+                                </div>
+                                
+                                <!-- Camera Video -->
+                                <div id="cameraContainer" class="mb-3" style="display:none;">
+                                    <video id="cameraVideo" class="w-100 rounded" style="max-height: 300px;" autoplay playsinline></video>
+                                    <canvas id="cameraCanvas" style="display:none;"></canvas>
+                                </div>
+                                
+                                <!-- Photo Preview -->
+                                <div id="photoPreview" class="mb-3">
+                                    <div class="row" id="capturedPhotos"></div>
+                                </div>
+                                
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> 
+                                    Ambil foto barang saat pengembalian (maksimal 5 foto)
+                                </small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i>Batal
+                            </button>
+                            <button type="submit" class="btn btn-warning" id="btnSubmitPengembalian">
+                                <i class="bi bi-arrow-return-left me-1"></i>Kembalikan Barang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal
+    const existingModal = document.getElementById('modalPengembalianBarang');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('modalPengembalianBarang'));
+    modal.show();
+    
+    // Setup camera functionality
+    setupCameraControls();
+    
+    // Setup form submit
+    document.getElementById('formPengembalianBarang').addEventListener('submit', submitPengembalianBarang);
+}
+
+// Global variables for camera
+let currentStream = null;
+let capturedPhotos = [];
+
+// Setup camera controls
+function setupCameraControls() {
+    const startBtn = document.getElementById('startCamera');
+    const captureBtn = document.getElementById('capturePhoto');
+    const stopBtn = document.getElementById('stopCamera');
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    const container = document.getElementById('cameraContainer');
+    
+    // Start Camera
+    startBtn.addEventListener('click', async function() {
+        try {
+            const constraints = {
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: data.message,
-                        showConfirmButton: false,
-                        timer: 2000
-                    }).then(() => {
-                        // Reload history untuk update data
-                        loadHistory();
-                    });
-                } else {
-                    throw new Error(data.message || 'Terjadi kesalahan');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: error.message,
-                    confirmButtonText: 'Tutup'
-                });
-            });
+            };
+            
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = currentStream;
+            
+            container.style.display = 'block';
+            startBtn.style.display = 'none';
+            captureBtn.style.display = 'inline-block';
+            stopBtn.style.display = 'inline-block';
+            
+        } catch (error) {
+            console.error('Error accessing camera:', error);
+            alert('Tidak dapat mengakses kamera. Pastikan memberikan izin akses kamera.');
         }
+    });
+    
+    // Capture Photo
+    captureBtn.addEventListener('click', function() {
+        if (capturedPhotos.length >= 5) {
+            alert('Maksimal 5 foto saja');
+            return;
+        }
+        
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        canvas.toBlob(function(blob) {
+            const photoFile = new File([blob], `foto_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            capturedPhotos.push(photoFile);
+            displayCapturedPhotos();
+        }, 'image/jpeg', 0.8);
+    });
+    
+    // Stop Camera
+    stopBtn.addEventListener('click', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+        
+        container.style.display = 'none';
+        startBtn.style.display = 'inline-block';
+        captureBtn.style.display = 'none';
+        stopBtn.style.display = 'none';
     });
 }
 
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('id-ID');
+// Display captured photos
+function displayCapturedPhotos() {
+    const container = document.getElementById('capturedPhotos');
+    container.innerHTML = '';
+    
+    capturedPhotos.forEach((photo, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 col-6 mb-2';
+            col.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-thumbnail" style="width: 100%; height: 120px; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0" 
+                            onclick="removePhoto(${index})" style="margin: 2px;">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    <small class="text-center d-block mt-1">Foto ${index + 1}</small>
+                </div>
+            `;
+            container.appendChild(col);
+        };
+        reader.readAsDataURL(photo);
+    });
 }
 
-function formatDateTime(dateString) {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('id-ID');
+// Remove photo
+function removePhoto(index) {
+    capturedPhotos.splice(index, 1);
+    displayCapturedPhotos();
+}
+
+// Submit form with captured photos
+async function submitPengembalianBarang(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData();
+    const submitBtn = document.getElementById('btnSubmitPengembalian');
+    
+    const kondisi = document.getElementById('kondisi_barang').value;
+    const keterangan = document.getElementById('keterangan_pengembalian').value;
+    const pinjamId = form.querySelector('input[name="pinjam_id"]').value;
+    
+    if (!kondisi) {
+        alert('Pilih kondisi barang terlebih dahulu');
+        return;
+    }
+    
+    if (capturedPhotos.length === 0) {
+        alert('Ambil minimal 1 foto barang');
+        return;
+    }
+    
+    formData.append('pinjam_id', pinjamId);
+    formData.append('kondisi_barang', kondisi);
+    formData.append('keterangan', keterangan);
+    
+    capturedPhotos.forEach((photo, index) => {
+        formData.append('foto_barang[]', photo);
+    });
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
+    
+    try {
+        const response = await fetch('/user/barang/kembalikanWithForm', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalPengembalianBarang'));
+            modal.hide();
+            
+            capturedPhotos = [];
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: `Pengembalian berhasil diajukan dengan dokumentasi foto`,
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                loadHistory();
+            });
+            
+        } else {
+            throw new Error(data.message || 'Terjadi kesalahan');
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: error.message,
+            confirmButtonText: 'Tutup'
+        });
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-arrow-return-left me-1"></i>Kembalikan Barang';
+    }
 }
 
 function showAlert(type, message) {

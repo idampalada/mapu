@@ -664,5 +664,198 @@ class Barang extends BaseController
             ]);
         }
     }
+    /**
+     * Pengembalian barang dengan form upload foto dan kondisi - UPDATED TIMESTAMP
+     */
+    public function kembalikanWithForm()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Invalid request'
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $pinjam_id = $this->request->getPost('pinjam_id');
+            $kondisi_barang = $this->request->getPost('kondisi_barang');
+            $keterangan = $this->request->getPost('keterangan') ?? '';
+            
+            if (!$pinjam_id || !$kondisi_barang) {
+                throw new \Exception('Data tidak lengkap');
+            }
+
+            // Cek apakah peminjaman milik user yang login
+            $peminjaman = $this->pinjamBarangModel
+                ->where('id', $pinjam_id)
+                ->where('user_id', user()->id)
+                ->first();
+                
+            if (!$peminjaman) {
+                throw new \Exception('Peminjaman tidak ditemukan atau bukan milik Anda');
+            }
+            
+            // Cek status harus 'dipinjam'
+            if ($peminjaman['status'] !== 'dipinjam') {
+                throw new \Exception('Status peminjaman tidak valid untuk pengembalian');
+            }
+
+            // Handle upload foto barang
+            $uploadedFiles = [];
+            $fotoFiles = $this->request->getFiles();
+            
+            if (isset($fotoFiles['foto_barang'])) {
+                foreach ($fotoFiles['foto_barang'] as $file) {
+                    if ($file->isValid() && !$file->hasMoved()) {
+                        // Generate unique filename dengan timestamp
+                        $fileName = 'pengembalian_barang_' . $pinjam_id . '_' . date('YmdHis') . '_' . uniqid() . '.' . $file->getExtension();
+                        
+                        // Move file to uploads/barang_returns/
+                        if (!is_dir(WRITEPATH . 'uploads/barang_returns/')) {
+                            mkdir(WRITEPATH . 'uploads/barang_returns/', 0777, true);
+                        }
+                        
+                        if ($file->move(WRITEPATH . 'uploads/barang_returns/', $fileName)) {
+                            $uploadedFiles[] = $fileName;
+                            log_message('debug', 'Foto barang uploaded: ' . $fileName);
+                        } else {
+                            log_message('error', 'Failed to upload foto: ' . $file->getName());
+                        }
+                    }
+                }
+            }
+
+            if (empty($uploadedFiles)) {
+                throw new \Exception('Minimal upload 1 foto barang');
+            }
+
+            // TIMESTAMP OTOMATIS - Tanggal dan jam kembali saat ini
+            $timestampKembali = date('Y-m-d H:i:s');
+            
+            // Update status ke 'proses_pengembalian' dengan timestamp otomatis
+            $updateData = [
+                'status' => 'proses_pengembalian',
+                'tanggal_kembali' => $timestampKembali, // TIMESTAMP OTOMATIS
+                'kondisi_pengembalian' => $kondisi_barang,
+                'keterangan' => $keterangan,
+                'foto_pengembalian' => json_encode($uploadedFiles),
+                'updated_at' => $timestampKembali
+            ];
+
+            $updated = $this->pinjamBarangModel->update($pinjam_id, $updateData);
+            
+            if (!$updated) {
+                throw new \Exception('Gagal memproses pengembalian');
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Transaksi database gagal');
+            }
+
+            // Format timestamp untuk response
+            $tanggalKembaliFormatted = date('d/m/Y H:i:s', strtotime($timestampKembali));
+            
+            log_message('info', 'User ' . user()->id . ' returned barang with form, pinjam_id: ' . $pinjam_id . ', kondisi: ' . $kondisi_barang . ', timestamp: ' . $timestampKembali . ', foto: ' . count($uploadedFiles));
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Pengembalian berhasil diajukan dengan ' . count($uploadedFiles) . ' foto dokumentasi.',
+                'data' => [
+                    'pinjam_id' => $pinjam_id,
+                    'kondisi' => $kondisi_barang,
+                    'foto_count' => count($uploadedFiles),
+                    'tanggal_kembali' => $timestampKembali,
+                    'tanggal_kembali_formatted' => $tanggalKembaliFormatted
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            
+            // Delete uploaded files if transaction failed
+            if (!empty($uploadedFiles)) {
+                foreach ($uploadedFiles as $fileName) {
+                    $filePath = WRITEPATH . 'uploads/barang_returns/' . $fileName;
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                }
+            }
+            
+            log_message('error', 'Error in kembalikanWithForm: ' . $e->getMessage());
+            
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Serve foto pengembalian barang - untuk admin dashboard
+     */
+    public function getFoto($filename)
+    {
+        try {
+            $filePath = WRITEPATH . 'uploads/barang_returns/' . $filename;
+            
+            // Check if file exists
+            if (!file_exists($filePath)) {
+                throw new \Exception('File not found');
+            }
+            
+            // Get file info
+            $fileInfo = pathinfo($filePath);
+            $mimeType = 'image/jpeg'; // default
+            
+            // Set proper mime type
+            switch (strtolower($fileInfo['extension'])) {
+                case 'jpg':
+                case 'jpeg':
+                    $mimeType = 'image/jpeg';
+                    break;
+                case 'png':
+                    $mimeType = 'image/png';
+                    break;
+                case 'gif':
+                    $mimeType = 'image/gif';
+                    break;
+                case 'webp':
+                    $mimeType = 'image/webp';
+                    break;
+            }
+            
+            // Security: Only allow image files
+            if (!in_array(strtolower($fileInfo['extension']), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                throw new \Exception('Invalid file type');
+            }
+            
+            // Security: Sanitize filename (prevent path traversal)
+            if (strpos($filename, '..') !== false || strpos($filename, '/') !== false || strpos($filename, '\\') !== false) {
+                throw new \Exception('Invalid filename');
+            }
+            
+            // Set headers
+            $this->response->setHeader('Content-Type', $mimeType);
+            $this->response->setHeader('Content-Length', filesize($filePath));
+            $this->response->setHeader('Cache-Control', 'public, max-age=3600'); // Cache 1 hour
+            
+            // Output file
+            $this->response->setBody(file_get_contents($filePath));
+            
+            return $this->response;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error serving foto: ' . $e->getMessage());
+            
+            // Return 404 or placeholder image
+            return $this->response->setStatusCode(404)->setBody('File not found');
+        }
+    }
     
 }
