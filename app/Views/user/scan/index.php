@@ -5,22 +5,12 @@
 <title>Scan Barcode - Peminjaman Barang</title>
 
 
-<!-- Modern Header Section -->
-<div class="header-section py-4 px-3 mb-4 rounded-lg" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+<!-- Simple Header Section -->
+<div class="header-section py-3 px-3 mb-4">
     <div class="row align-items-center">
-        <div class="col-md-8">
-            <h2 class="text-white mb-1 display-6 fw-bold">
-                <i class="bi bi-qr-code-scan me-3"></i>Scan Barcode
-            </h2>
-            <p class="text-light mb-0 opacity-90">Scan QR Code untuk peminjaman barang dengan mudah</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="header-stats">
-                <div class="stat-item text-white">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <span class="fw-bold">Proses Cepat</span>
-                </div>
-            </div>
+        <div class="col-12">
+            <h4 class="text-dark mb-1 fw-bold">Scan Barcode - Peminjaman Barang</h4>
+            <p class="text-muted mb-0">Scan QR Code untuk peminjaman barang dengan mudah</p>
         </div>
     </div>
 </div>
@@ -32,11 +22,11 @@
     <div class="row">
         <!-- Scanner Section -->
         <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #133E87, #1e5bb8);">
-                    <h5 class="mb-0">
-                        <i class="bi bi-camera-fill me-2"></i>QR Code Scanner
-                    </h5>
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 text-dark fw-semibold">
+                        <i class="bi bi-camera-fill me-2 text-primary"></i>QR Code Scanner
+                    </h6>
                 </div>
                 <div class="card-body">
                     <!-- Scanner Container -->
@@ -66,10 +56,10 @@
 
                     <!-- Scanner Controls -->
                     <div class="text-center mb-3">
-                        <button id="start-scan" class="btn btn-success btn-lg me-2">
+                        <button id="start-scan" class="btn btn-primary btn-lg me-2">
                             <i class="bi bi-camera-fill me-2"></i>Mulai Scan
                         </button>
-                        <button id="stop-scan" class="btn btn-danger btn-lg" style="display: none;">
+                        <button id="stop-scan" class="btn btn-secondary btn-lg" style="display: none;">
                             <i class="bi bi-stop-circle me-2"></i>Berhenti
                         </button>
                     </div>
@@ -79,7 +69,7 @@
                         <label class="form-label fw-bold">Atau masukkan kode QR secara manual:</label>
                         <div class="input-group">
                             <input type="text" id="manual-qr" class="form-control form-control-lg" placeholder="Masukkan kode QR...">
-                            <button id="validate-manual" class="btn btn-primary">
+                            <button id="validate-manual" class="btn btn-outline-primary">
                                 <i class="bi bi-search me-2"></i>Cari
                             </button>
                         </div>
@@ -100,11 +90,11 @@
 
         <!-- Result Section -->
         <div class="col-lg-6 mb-4">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #6f42c1, #8b5cf6);">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle-fill me-2"></i>Hasil Scan
-                    </h5>
+            <div class="card border shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 text-dark fw-semibold">
+                        <i class="bi bi-info-circle-fill me-2 text-info"></i>Hasil Scan
+                    </h6>
                 </div>
                 <div class="card-body">
                     <!-- Default State -->
@@ -207,11 +197,11 @@
     <!-- History Section -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card border-0 shadow-lg">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #fd7e14, #f8961e);">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Riwayat Peminjaman Saya
-                    </h5>
+            <div class="card border shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0 text-dark fw-semibold">
+                        <i class="bi bi-clock-history me-2 text-warning"></i>Riwayat Peminjaman Saya
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div id="history-container">
@@ -277,7 +267,7 @@
     position: absolute;
     width: 30px;
     height: 30px;
-    border: 3px solid #28a745;
+    border: 3px solid #3182ce;
 }
 
 .crosshair-corner.top-left {
@@ -318,7 +308,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #28a745, transparent);
+    background: linear-gradient(90deg, transparent, #3182ce, transparent);
     animation: scanLine 2s linear infinite;
 }
 

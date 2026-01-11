@@ -22,66 +22,71 @@ class Scan extends BaseController
         return view('user/scan/index');
     }
 
+/**
+     * Validate QR Code - DEBUG VERSION
+     */
     public function validateQR()
     {
-        if (!$this->request->isAJAX()) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Invalid request method'
-            ]);
-        }
-
         try {
-            $qrCode = $this->request->getPost('qr_code');
+            $qrData = $this->request->getPost('qr_data');
             
-            if (empty($qrCode)) {
+            // Debug logging
+            log_message('debug', 'validateQR called with qr_data: ' . ($qrData ?? 'NULL'));
+            log_message('debug', 'Request method: ' . $this->request->getMethod());
+            log_message('debug', 'All POST data: ' . json_encode($this->request->getPost()));
+            
+            // Cek apakah qr_data kosong
+            if (empty($qrData)) {
+                log_message('error', 'QR Code kosong atau tidak ditemukan dalam request');
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'QR Code tidak boleh kosong'
+                    'message' => 'QR Code tidak boleh kosong',
+                    'debug' => [
+                        'qr_data' => $qrData,
+                        'post_data' => $this->request->getPost()
+                    ]
                 ]);
             }
 
-            // Cari barang berdasarkan QR code di tabel komputer
-            $barang = $this->komputerModel->where('qr_code', $qrCode)->first();
+            // Cari barang berdasarkan QR code
+            $barang = $this->komputerModel->where('qr_code', $qrData)->first();
             
+            log_message('debug', 'Barang found: ' . ($barang ? 'YES' : 'NO'));
+            if ($barang) {
+                log_message('debug', 'Barang data: ' . json_encode($barang));
+            }
+
             if (!$barang) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'QR Code tidak ditemukan dalam sistem'
+                    'message' => 'QR Code tidak ditemukan atau tidak valid',
+                    'debug' => [
+                        'searched_qr' => $qrData
+                    ]
                 ]);
             }
 
-            // Cek apakah barang sedang dipinjam
-            $existingPinjam = $this->pinjamBarangModel
-                ->where('barang_id', $barang['id'])
-                ->whereIn('status', ['diajukan', 'disetujui', 'dipinjam'])
-                ->first();
-
-            if ($existingPinjam) {
+            // Cek status barang
+            if (isset($barang['kondisi']) && strtolower($barang['kondisi']) === 'dipinjam') {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Barang sedang dipinjam oleh user lain'
                 ]);
             }
 
+            // Success response
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'QR Code valid',
-                'data' => [
-                    'id' => $barang['id'],
-                    'nama' => $barang['nama'],
-                    'merk' => $barang['merk'] ?? '',
-                    'type' => $barang['type'] ?? '',
-                    'spesifikasi' => $barang['spesifikasi'] ?? '',
-                    'qr_code' => $barang['qr_code']
-                ]
+                'barang' => $barang
             ]);
 
         } catch (\Exception $e) {
             log_message('error', 'Error in validateQR: ' . $e->getMessage());
+            
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
     }
