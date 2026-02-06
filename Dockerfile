@@ -12,7 +12,10 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd \
+RUN apt-get update && apt-get install -y \
+        libzip-dev zip unzip \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl
 
