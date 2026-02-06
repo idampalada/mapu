@@ -7,7 +7,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes = Services::routes();
 
 if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
-    require SYSTEMPATH . 'Config/Routes.php';
+    require SYSTEMPATH . 'Config/Routes.php'; // Perbaikan di sini, hapus tag <php yang tidak valid
 }
 
 $routes->setDefaultNamespace('App\Controllers');
@@ -23,6 +23,7 @@ $routes->setAutoRoute(true);
 
 // Public Routes
 $routes->get('/', 'Beranda::index');
+$routes->get('/login', 'Auth::login'); // Tambahan route untuk akses langsung ke login
 
 $routes->group('auth', function($routes) {
     $routes->get('register', 'Auth::register');
@@ -118,6 +119,7 @@ $routes->group('admin/user/barang', ['filter' => 'role:admin,admin_gedungutama']
     $routes->post('verifikasiPengembalian', 'User\Barang::verifikasiPengembalian');
     $routes->get('getFoto/(:segment)', 'User\Barang::getFoto/$1');
 });
+$routes->get('user/barang/debug-status', 'User\Barang::debugStatus');
     $routes->group('user/ruangan', function($routes) {
             // Booking langsung routes
     $routes->post('bookingLangsung', 'User\Ruangan::bookingLangsung');

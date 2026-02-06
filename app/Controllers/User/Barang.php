@@ -856,6 +856,201 @@ class Barang extends BaseController
             // Return 404 or placeholder image
             return $this->response->setStatusCode(404)->setBody('File not found');
         }
+    }/**
+     * Get data barang dengan status peminjaman untuk semua kategori
+     */
+/**
+ * Simple approach untuk testing PostgreSQL compatibility
+ */
+/**
+ * Advanced Query Builder with LEFT JOIN - One Query Approach
+ * Lebih efisien tapi sedikit lebih complex
+ */
+/**
+ * Get barang dengan status peminjaman menggunakan CodeIgniter Query Builder
+ * Simple approach yang mudah dan reliable
+ */
+public function getBarangWithStatus($kelompok = null)
+{
+
+    log_message('debug', '🔥 getBarangWithStatus CALLED with kelompok: ' . ($kelompok ?? 'NULL'));
+    $db = \Config\Database::connect();
+    $builder = $db->table('komputer k');
+    
+    // Step 1: Build basic query
+    $builder->select('k.*');
+    
+    if ($kelompok) {
+        $builder->where('k.kelompok', $kelompok);
+    }
+    
+    $builder->orderBy('k.id', 'ASC');
+    
+    // Get komputer data first
+    $komputers = $builder->get()->getResultArray();
+    
+    // Step 2: For each komputer, get loan status using Query Builder
+    foreach ($komputers as &$komputer) {
+        $loanBuilder = $db->table('pinjam_barang');
+        $loanBuilder->select('status, nama_peminjam, tanggal');
+        $loanBuilder->where('barang_id', $komputer['id']);
+        $loanBuilder->whereIn('status', ['dipinjam', 'diajukan', 'proses_pengembalian']);
+        $loanBuilder->orderBy('created_at', 'DESC');
+        $loanBuilder->limit(1);
+        
+        $loan = $loanBuilder->get()->getRowArray();
+        
+        // DEBUG: Log untuk ID 95 specifically
+        if ($komputer['id'] == 95) {
+            log_message('debug', 'ID 95 LOAN QUERY RESULT: ' . json_encode($loan));
+            log_message('debug', 'ID 95 LOAN STATUS: ' . ($loan['status'] ?? 'NULL'));
+        }
+        
+        if ($loan) {
+            // Determine status based on loan data
+            if ($loan['status'] === 'dipinjam') {
+                $komputer['status_peminjaman'] = 'In Use';
+            } elseif (in_array($loan['status'], ['diajukan', 'proses_pengembalian'])) {
+                $komputer['status_peminjaman'] = 'Pending';
+                
+                // DEBUG: Confirm Pending assignment for ID 95
+                if ($komputer['id'] == 95) {
+                    log_message('debug', 'ID 95 ASSIGNED STATUS: Pending (from status: ' . $loan['status'] . ')');
+                }
+            } else {
+                $komputer['status_peminjaman'] = 'Available';
+            }
+            
+            $komputer['dipinjam_oleh'] = $loan['nama_peminjam'];
+            $komputer['tanggal_pinjam'] = $loan['tanggal'];
+            $komputer['raw_status'] = $loan['status']; // For debugging
+        } else {
+            // DEBUG: Log when no loan found for ID 95
+            if ($komputer['id'] == 95) {
+                log_message('debug', 'ID 95 NO LOAN FOUND - Setting to Available');
+            }
+            
+            $komputer['status_peminjaman'] = 'Available';
+            $komputer['dipinjam_oleh'] = null;
+            $komputer['tanggal_pinjam'] = null;
+            $komputer['raw_status'] = null;
+        }
+    }
+    
+    // Debug log
+    log_message('debug', 'Query Builder getBarangWithStatus result count: ' . count($komputers));
+    
+    return $komputers;
+}
+
+public function index($kelompok = null)
+{
+    if ($kelompok) {
+        $kelompok = urldecode($kelompok);
+    }
+    
+    // FORCE DEBUG LANGSUNG
+    echo "<div style='background:red;color:white;padding:10px;'>CONTROLLER DEBUG: Method index() called</div>";
+    
+    // Test method langsung
+    $testData = $this->getBarangWithStatus($kelompok);
+    
+    // Find ID 95
+    foreach ($testData as $item) {
+        if ($item['id'] == 95) {
+            echo "<div style='background:red;color:white;padding:10px;'>CONTROLLER DEBUG ID 95: " . json_encode($item) . "</div>";
+            break;
+        }
+    }
+    
+    $data = [
+        'title' => $kelompok ? $kelompok : 'Semua Barang',
+        'kelompok' => $kelompok,
+        'komputerList' => $testData
+    ];
+
+    return view('user/barang/peralatandanmesin/komputer/index', $data);
+}
+    
+    /**
+     * Update method index untuk include status peminjaman
+     */
+    
+    /**
+     * DEBUG METHOD - Tambah method ini sementara di controller untuk debug
+     */
+    public function debugStatus()
+    {
+        $db = \Config\Database::connect();
+        
+        echo "<h3>🔍 DEBUG STATUS PEMINJAMAN</h3>";
+        
+        // 1. Cek data komputer ASUS ZENBOOK
+        echo "<h4>1. Data Komputer ASUS ZENBOOK:</h4>";
+        $komputer = $db->query("SELECT id, merk, kelompok, qr_code FROM komputer WHERE merk LIKE '%ASUS ZENBOOK PRO OLEDS911%'")->getResultArray();
+        echo "<pre>";
+        print_r($komputer);
+        echo "</pre>";
+        
+        if (!empty($komputer)) {
+            $komputer_id = $komputer[0]['id'];
+            
+            // 2. Cek data peminjaman untuk komputer ini
+            echo "<h4>2. Data Peminjaman untuk ID {$komputer_id}:</h4>";
+            $peminjaman = $db->query("SELECT * FROM pinjam_barang WHERE barang_id = {$komputer_id} ORDER BY created_at DESC")->getResultArray();
+            echo "<pre>";
+            print_r($peminjaman);
+            echo "</pre>";
+            
+            // 3. Test JOIN query
+            echo "<h4>3. Test JOIN Query:</h4>";
+            $joinQuery = "SELECT k.id, k.merk, k.kelompok,
+                         CASE 
+                           WHEN pb.status = 'dipinjam' THEN 'In Use'
+                           WHEN pb.status IN ('diajukan', 'proses_pengembalian') THEN 'Pending' 
+                           ELSE 'Available'
+                         END as status_peminjaman,
+                         pb.nama_peminjam as dipinjam_oleh,
+                         pb.status as raw_status,
+                         pb.tanggal as tanggal_pinjam
+                      FROM komputer k
+                      LEFT JOIN pinjam_barang pb ON pb.barang_id = k.id 
+                        AND pb.status IN ('dipinjam', 'diajukan', 'proses_pengembalian')
+                      WHERE k.merk LIKE '%ASUS ZENBOOK PRO OLEDS911%'";
+                      
+            $joinResult = $db->query($joinQuery)->getResultArray();
+            echo "<pre>";
+            print_r($joinResult);
+            echo "</pre>";
+        }
+        
+        // 4. Cek semua peminjaman aktif
+        echo "<h4>4. Semua Peminjaman Aktif:</h4>";
+        $activePeminjaman = $db->query("SELECT k.merk, pb.status, pb.nama_peminjam, pb.created_at, pb.barang_id
+                                      FROM pinjam_barang pb
+                                      JOIN komputer k ON k.id = pb.barang_id
+                                      WHERE pb.status IN ('dipinjam', 'diajukan', 'proses_pengembalian')
+                                      ORDER BY pb.created_at DESC")->getResultArray();
+        echo "<pre>";
+        print_r($activePeminjaman);
+        echo "</pre>";
+        
+        // 5. Test method getBarangWithStatus
+        echo "<h4>5. Test getBarangWithStatus Method:</h4>";
+        $result = $this->getBarangWithStatus('KOMPUTER UNIT');
+        foreach ($result as $item) {
+            if (strpos($item['merk'], 'ASUS ZENBOOK') !== false) {
+                echo "<strong>ASUS ZENBOOK Data:</strong><br>";
+                echo "ID: " . $item['id'] . "<br>";
+                echo "Merk: " . $item['merk'] . "<br>";
+                echo "Status Peminjaman: " . $item['status_peminjaman'] . "<br>";
+                echo "Dipinjam Oleh: " . ($item['dipinjam_oleh'] ?? 'NULL') . "<br>";
+                echo "Raw Status: " . ($item['raw_status'] ?? 'NULL') . "<br>";
+                break;
+            }
+        }
+        
+        die(); // Stop execution untuk debug
     }
     
 }

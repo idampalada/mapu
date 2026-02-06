@@ -847,10 +847,12 @@
                         <th>Status Barang</th>
                         <th class="col-keterangan">Keterangan</th>
                         <th>QR</th>
+                        <th>Status Peminjaman</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+
+<tbody>
                     <?php $no = 1; foreach ($komputerList as $item): ?>
                         <tr>
                             <td><?= $no++ ?></td>
@@ -920,6 +922,57 @@
                                     </div>
                                 <?php endif; ?>
                             </td>
+                            
+                           <!-- FIXED STATUS PEMINJAMAN COLUMN -->
+<td class="status-peminjaman-cell text-center">
+    <?php
+    // FIXED: Use the correct status from getBarangWithStatus method
+    $statusText = $item['status_peminjaman'] ?? 'Available';
+    
+    // DEBUG untuk ID 95 (hapus setelah fix)
+    if ($item['id'] == 95) {
+        echo "<!-- DEBUG ID 95: statusText = $statusText, raw = " . ($item['raw_status'] ?? 'NULL') . " -->";
+    }
+    
+    $statusClass = '';
+    $statusIcon = '';
+    
+    switch ($statusText) {
+        case 'Available':
+            $statusClass = 'badge bg-success';
+            $statusIcon = 'bi-check-circle';
+            break;
+        case 'In Use':
+            $statusClass = 'badge bg-danger';
+            $statusIcon = 'bi-exclamation-circle';
+            break;
+        case 'Pending':
+            $statusClass = 'badge bg-warning text-dark';
+            $statusIcon = 'bi-clock';
+            break;
+        default:
+            $statusClass = 'badge bg-secondary';
+            $statusIcon = 'bi-question-circle';
+    }
+    ?>
+    
+    <span class="<?= $statusClass ?> badge-status" title="Status peminjaman barang ini">
+        <i class="<?= $statusIcon ?> me-1"></i><?= $statusText ?>
+    </span>
+    
+    <!-- Info detail jika sedang dipinjam/pending -->
+    <?php if (($statusText === 'In Use' || $statusText === 'Pending') && !empty($item['dipinjam_oleh'])): ?>
+        <div class="peminjam-info mt-1">
+            <small class="text-muted">oleh: <?= esc($item['dipinjam_oleh']) ?></small>
+        </div>
+    <?php endif; ?>
+    
+    <?php if (($statusText === 'In Use' || $statusText === 'Pending') && !empty($item['tanggal_pinjam'])): ?>
+        <div class="peminjam-info">
+            <small class="text-muted">sejak: <?= date('d/m/y', strtotime($item['tanggal_pinjam'])) ?></small>
+        </div>
+    <?php endif; ?>
+</td>
                             
                             <!-- Action Column -->
                             <td>

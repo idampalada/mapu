@@ -86,7 +86,7 @@ class Komputer extends BaseController
         ]);
     }
 
-    public function kelompokDetail($kelompok)
+public function kelompokDetail($kelompok)
 {
     $searchTerm = $this->request->getGet('search') ?? '';
     $sort  = $this->request->getGet('sort') ?? 'nama_barang';
@@ -97,23 +97,29 @@ class Komputer extends BaseController
     $page    = max(1, (int) ($this->request->getGet('page') ?? 1));
     $offset  = ($page - 1) * $perPage;
 
-    // Ambil data + total via Model (search ke semua kolom)
-    $komputerList = $this->komputerModel->getSearchResults(
-        $searchTerm,
-        $kelompok,
-        $sort,
-        $order,
-        $perPage,
-        $offset
-    );
-    $totalItems = $this->komputerModel->countSearchResults($searchTerm, $kelompok);
+    // ✅ FIXED: Gunakan getBarangWithStatus() dari User\Barang
+    $barangController = new \App\Controllers\User\Barang();
+    $komputerList = $barangController->getBarangWithStatus($kelompok);
+    
+    // Apply search dan sorting ke hasil
+    if (!empty($searchTerm)) {
+        $komputerList = array_filter($komputerList, function($item) use ($searchTerm) {
+            return stripos($item['nama_barang'] ?? '', $searchTerm) !== false ||
+                   stripos($item['merk'] ?? '', $searchTerm) !== false ||
+                   stripos($item['processor'] ?? '', $searchTerm) !== false;
+        });
+    }
+    
+    $totalItems = count($komputerList);
     $totalPages = (int) ceil($totalItems / $perPage);
+    
+    // Apply pagination
+    $komputerList = array_slice($komputerList, $offset, $perPage);
 
-    // Setup pagination
     $pager = service('pager');
     $pager->setPath('user/barang/peralatandanmesin/komputer/kelompokkomputer/' . urlencode($kelompok));
 
-    return view('user/barang/peralatandanmesin/komputer/kelompokkomputer', [
+    return view('user/barang/peralatandanmesin/komputer/kelompokkomputer', [  // ← CHANGED VIEW PATH
         'komputerList'    => $komputerList,
         'kelompok'        => strtoupper($kelompok),
         'activeKelompok'  => strtoupper($kelompok),

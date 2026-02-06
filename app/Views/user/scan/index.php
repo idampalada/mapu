@@ -227,10 +227,6 @@
                 </div>
                 <h4 class="text-success mb-3">Pengajuan Berhasil!</h4>
                 <p class="text-muted mb-4">Pengajuan peminjaman Anda telah dikirim dan menunggu verifikasi admin.</p>
-                <div class="alert alert-light border">
-                    <strong>Kode Peminjaman:</strong><br>
-                    <code id="modal-kode-peminjaman" class="fs-5">-</code>
-                </div>
                 <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>
             </div>
         </div>
@@ -543,8 +539,7 @@ async function submitPinjam(event) {
         const data = await response.json();
         
         if (data.success) {
-            // Show success modal
-            document.getElementById('modal-kode-peminjaman').textContent = data.kode_peminjaman;
+
             const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             successModal.show();
             
