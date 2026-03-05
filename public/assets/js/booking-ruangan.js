@@ -63,557 +63,6 @@ const unitKerjaMapping = {
 };
 // ===== AKHIR PENAMBAHAN =====
 // BOOKING TIME PICKER VARIABLES
-let bookingSelectedStartTime = null;
-let bookingSelectedEndTime = null;
-let bookingExistingBookings = [];
-
-// BOOKING TIME PICKER FUNCTIONS
-function addBookingTimePickerStyles() {
-  // CSS sudah di-load dari file terpisah, tidak perlu inline CSS lagi
-  console.log("Booking time picker styles loaded from external CSS file");
-  return true;
-}
-
-function generateBookingTimeSlots() {
-  const slots = [];
-  // Mulai dari 07:30
-  let current = new Date("2000-01-01T07:30:00");
-  // Sampai 17:30
-  const end = new Date("2000-01-01T21:30:00");
-
-  while (current <= end) {
-    const hour = current.getHours().toString().padStart(2, "0");
-    const minute = current.getMinutes().toString().padStart(2, "0");
-    slots.push(`${hour}:${minute}`);
-
-    // Tambah 30 menit
-    current.setMinutes(current.getMinutes() + 30);
-  }
-
-  return slots;
-}
-
-function initializeBookingTimePicker(ruanganId) {
-  const timeSlots = generateBookingTimeSlots();
-  const timeRuler = document.getElementById("booking_time_ruler");
-
-  timeRuler.innerHTML = "";
-
-  timeSlots.forEach((time) => {
-    const slot = document.createElement("div");
-    slot.className = "time-slot available";
-    slot.textContent = time;
-    slot.dataset.time = time;
-    slot.tabIndex = 0;
-
-    slot.addEventListener("click", () =>
-      handleBookingTimeSlotClick(time, ruanganId),
-    );
-
-    slot.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        slot.click();
-      }
-    });
-
-    timeRuler.appendChild(slot);
-  });
-}
-
-function handleBookingTimeSlotClick(time, ruanganId) {
-  const slot = document.querySelector(`[data-time="${time}"]`);
-
-  // Check if slot is blocked
-  if (slot.classList.contains("booked") || isBookingTimeBooked(time)) {
-    const booking = getBookingBookingForTime(time);
-    const statusText = "sudah dibooking";
-
-    Swal.fire({
-      icon: "error",
-      title: "Waktu Tidak Tersedia",
-      html: `Waktu ini ${statusText}:<br>
-                   <strong>${booking?.waktu_mulai} - ${booking?.waktu_selesai}</strong><br>
-                   Keperluan: ${booking?.keperluan}<br>
-                   PIC: ${booking?.nama_penanggung_jawab}`,
-      confirmButtonColor: "#dc3545",
-    });
-    return false;
-  }
-
-  // Continue with normal selection logic
-  if (bookingSelectedStartTime === time || bookingSelectedEndTime === time) {
-    resetBookingTimeSelection();
-    return;
-  }
-
-  if (!bookingSelectedStartTime) {
-    bookingSelectedStartTime = time;
-    updateBookingTimeDisplay();
-    updateBookingTimeSlotStyles();
-  } else if (!bookingSelectedEndTime) {
-    if (time <= bookingSelectedStartTime) {
-      Swal.fire({
-        icon: "warning",
-        title: "Waktu Tidak Valid",
-        text: "Waktu selesai harus setelah waktu mulai",
-        confirmButtonColor: "#dc3545",
-      });
-      return;
-    }
-
-    bookingSelectedEndTime = time;
-
-    const hasConflict = checkBookingTimeConflict(
-      bookingSelectedStartTime,
-      bookingSelectedEndTime,
-    );
-    if (hasConflict) {
-      showBookingConflictWarning(hasConflict);
-      return;
-    }
-
-    updateBookingTimeDisplay();
-    updateBookingTimeSlotStyles();
-    enableBookingSubmitButton();
-  } else {
-    resetBookingTimeSelection();
-    bookingSelectedStartTime = time;
-    updateBookingTimeDisplay();
-    updateBookingTimeSlotStyles();
-  }
-}
-
-function resetBookingTimeSelection() {
-  bookingSelectedStartTime = null;
-  bookingSelectedEndTime = null;
-  updateBookingTimeDisplay();
-  updateBookingTimeSlotStyles();
-  disableBookingSubmitButton();
-  hideBookingConflictWarning();
-}
-
-function updateBookingTimeDisplay() {
-  document.getElementById("booking_display_waktu_mulai").textContent =
-    bookingSelectedStartTime || "Belum dipilih";
-  document.getElementById("booking_display_waktu_selesai").textContent =
-    bookingSelectedEndTime || "Belum dipilih";
-
-  document.getElementById("booking_waktu_mulai").value =
-    bookingSelectedStartTime || "";
-  document.getElementById("booking_waktu_selesai").value =
-    bookingSelectedEndTime || "";
-
-  if (bookingSelectedStartTime && bookingSelectedEndTime) {
-    const duration = calculateBookingDuration(
-      bookingSelectedStartTime,
-      bookingSelectedEndTime,
-    );
-    document.getElementById("booking_duration_text").textContent = duration;
-    document.getElementById("booking_duration_display").style.display = "block";
-  } else {
-    document.getElementById("booking_duration_display").style.display = "none";
-  }
-}
-
-function updateBookingTimeSlotStyles() {
-  document
-    .querySelectorAll("#booking_time_ruler .time-slot")
-    .forEach((slot) => {
-      const time = slot.dataset.time;
-
-      // Reset classes
-      slot.classList.remove(
-        "selected-start",
-        "selected-end",
-        "in-range",
-        "conflict-highlight",
-      );
-
-      // Set base class berdasarkan availability
-      if (isBookingTimeBooked(time)) {
-        slot.className = "time-slot booked";
-        const booking = getBookingBookingForTime(time);
-        if (booking) {
-          slot.title = `Dibooking: ${booking.waktu_mulai}-${booking.waktu_selesai}\nKeperluan: ${booking.keperluan}`;
-        }
-      } else {
-        slot.className = "time-slot available";
-        slot.title = "Klik untuk pilih waktu";
-      }
-    });
-
-  // Apply selection styles
-  if (bookingSelectedStartTime) {
-    const startSlot = document.querySelector(
-      `#booking_time_ruler [data-time="${bookingSelectedStartTime}"]`,
-    );
-    if (startSlot && !startSlot.classList.contains("booked")) {
-      startSlot.classList.remove("available");
-      startSlot.classList.add("selected-start");
-    }
-  }
-
-  if (bookingSelectedEndTime) {
-    const endSlot = document.querySelector(
-      `#booking_time_ruler [data-time="${bookingSelectedEndTime}"]`,
-    );
-    if (endSlot && !endSlot.classList.contains("booked")) {
-      endSlot.classList.remove("available");
-      endSlot.classList.add("selected-end");
-    }
-  }
-
-  // Apply range style
-  if (bookingSelectedStartTime && bookingSelectedEndTime) {
-    const timeSlots = Array.from(
-      document.querySelectorAll("#booking_time_ruler .time-slot"),
-    );
-    timeSlots.forEach((slot) => {
-      const time = slot.dataset.time;
-      if (
-        time > bookingSelectedStartTime &&
-        time < bookingSelectedEndTime &&
-        !slot.classList.contains("booked")
-      ) {
-        slot.classList.remove("available");
-        slot.classList.add("in-range");
-      }
-    });
-  }
-}
-
-function checkBookingTimeConflict(startTime, endTime) {
-  for (let booking of bookingExistingBookings) {
-    const bookingStart = booking.waktu_mulai.substring(0, 5);
-    const bookingEnd = booking.waktu_selesai.substring(0, 5);
-
-    // Cek berbagai jenis konflik
-    const conflict1 = startTime >= bookingStart && startTime < bookingEnd;
-    const conflict2 = endTime > bookingStart && endTime <= bookingEnd;
-    const conflict3 = startTime <= bookingStart && endTime >= bookingEnd;
-
-    const hasConflict = conflict1 || conflict2 || conflict3;
-
-    if (hasConflict) {
-      console.log(
-        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`,
-      );
-      return booking;
-    }
-  }
-
-  return null;
-}
-
-function showBookingConflictWarning(conflictBooking) {
-  const warningDiv = document.getElementById("booking_conflict_warning");
-  const messageDiv = document.getElementById("booking_conflict_message");
-
-  messageDiv.innerHTML = `
-    <div class="d-flex align-items-start">
-      <i class="bi bi-exclamation-triangle me-2 mt-1"></i>
-      <div>
-        <strong>Konflik Waktu!</strong><br>
-        Waktu yang dipilih bertabrakan dengan booking yang sudah ada:<br>
-        <div class="mt-2 p-2 bg-light rounded">
-          <strong>⏰ ${conflictBooking.waktu_mulai} - ${conflictBooking.waktu_selesai}</strong><br>
-          <small><strong>Keperluan:</strong> ${conflictBooking.keperluan}</small><br>
-          <small><strong>PIC:</strong> ${conflictBooking.nama_penanggung_jawab}</small>
-        </div>
-        <small class="text-muted mt-2 d-block">
-          💡 <strong>Saran:</strong> Pilih waktu yang tidak bersinggungan dengan booking di atas.
-        </small>
-      </div>
-    </div>
-  `;
-
-  warningDiv.style.display = "block";
-  warningDiv.scrollIntoView({ behavior: "smooth", block: "center" });
-
-  bookingSelectedEndTime = null;
-  updateBookingTimeDisplay();
-  updateBookingTimeSlotStyles();
-  disableBookingSubmitButton();
-}
-
-function hideBookingConflictWarning() {
-  document.getElementById("booking_conflict_warning").style.display = "none";
-}
-
-function calculateBookingDuration(startTime, endTime) {
-  const start = new Date(`2000-01-01T${startTime}:00`);
-  const end = new Date(`2000-01-01T${endTime}:00`);
-  const diffMs = end - start;
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-  if (diffHours > 0 && diffMinutes > 0) {
-    return `${diffHours} jam ${diffMinutes} menit`;
-  } else if (diffHours > 0) {
-    return `${diffHours} jam`;
-  } else {
-    return `${diffMinutes} menit`;
-  }
-}
-
-function enableBookingSubmitButton() {
-  const submitBtn = document.getElementById("booking_submit_booking");
-  if (submitBtn) {
-    submitBtn.disabled = false;
-  }
-}
-
-function disableBookingSubmitButton() {
-  const submitBtn = document.getElementById("booking_submit_booking");
-  if (submitBtn) {
-    submitBtn.disabled = true;
-  }
-}
-
-function loadBookingExistingBookings(ruanganId, tanggal) {
-  const baseUrl =
-    document.querySelector("base")?.href || window.location.origin;
-
-  console.log(`Loading bookings for ruangan ${ruanganId} on ${tanggal}`);
-
-  document.getElementById("booking_booking_list").innerHTML =
-    '<div class="text-center"><i class="bi bi-hourglass-split"></i> Memuat data booking...</div>';
-
-  resetBookingTimeSelection();
-
-  const url = `${baseUrl}/user/ruangan/getBookingByDate?ruangan_id=${ruanganId}&tanggal=${tanggal}`;
-
-  fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.success) {
-        bookingExistingBookings = data.data || [];
-
-        // Clean time format
-        if (bookingExistingBookings.length > 0) {
-          bookingExistingBookings = bookingExistingBookings.map((booking) => ({
-            ...booking,
-            waktu_mulai: booking.waktu_mulai.substring(0, 5),
-            waktu_selesai: booking.waktu_selesai.substring(0, 5),
-          }));
-        }
-
-        // Update displays
-        updateBookingExistingBookingsDisplay();
-        updateBookingBookedTimeSlots();
-        showBookingAvailabilityInfo();
-      } else {
-        throw new Error(data.message || "Server error");
-      }
-    })
-    .catch((error) => {
-      console.error("Error loading bookings:", error);
-      bookingExistingBookings = [];
-      updateBookingExistingBookingsDisplay();
-      updateBookingBookedTimeSlots();
-      showBookingToast(
-        "Gagal memuat data booking: " + error.message,
-        "error",
-        5000,
-      );
-    });
-}
-
-function updateBookingExistingBookingsDisplay() {
-  const bookingList = document.getElementById("booking_booking_list");
-  const existingBookingsDiv = document.getElementById(
-    "booking_existing_bookings",
-  );
-
-  if (bookingExistingBookings.length === 0) {
-    existingBookingsDiv.style.display = "none";
-    return;
-  }
-
-  existingBookingsDiv.style.display = "block";
-
-  const bookingsHtml = bookingExistingBookings
-    .map((booking) => {
-      return `
-      <div class="booking-item">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong>
-            <span class="badge bg-success ms-2">Dibooking</span>
-          </div>
-        </div>
-        <div class="mt-1">
-          <small><strong>Keperluan:</strong> ${
-            booking.keperluan || "Tidak ada keterangan"
-          }</small><br>
-          <small><strong>PIC:</strong> ${
-            booking.nama_penanggung_jawab || "-"
-          }</small>
-        </div>
-      </div>
-    `;
-    })
-    .join("");
-
-  bookingList.innerHTML = bookingsHtml;
-}
-
-function updateBookingBookedTimeSlots() {
-  document
-    .querySelectorAll("#booking_time_ruler .time-slot")
-    .forEach((slot) => {
-      const time = slot.dataset.time;
-      const isBooked = isBookingTimeBooked(time);
-
-      if (isBooked) {
-        slot.classList.remove(
-          "available",
-          "selected-start",
-          "selected-end",
-          "in-range",
-        );
-        slot.classList.add("booked");
-
-        const booking = getBookingBookingForTime(time);
-        if (booking) {
-          slot.title = `Dibooking: ${booking.waktu_mulai}-${booking.waktu_selesai}\nKeperluan: ${booking.keperluan}`;
-        }
-      } else {
-        slot.classList.remove("booked");
-        slot.classList.add("available");
-        slot.title = "Klik untuk pilih waktu";
-      }
-    });
-}
-
-function getBookingBookingForTime(time) {
-  return bookingExistingBookings.find((booking) => {
-    const bookingStart = booking.waktu_mulai.substring(0, 5);
-    const bookingEnd = booking.waktu_selesai.substring(0, 5);
-    const currentTime = time.substring(0, 5);
-
-    return currentTime >= bookingStart && currentTime < bookingEnd;
-  });
-}
-
-function isBookingTimeBooked(time) {
-  if (!bookingExistingBookings || bookingExistingBookings.length === 0) {
-    return false;
-  }
-
-  return bookingExistingBookings.some((booking) => {
-    const bookingStart = booking.waktu_mulai.substring(0, 5);
-    const bookingEnd = booking.waktu_selesai.substring(0, 5);
-    const currentTime = time.substring(0, 5);
-
-    // Cek apakah waktu berada dalam range booking (include start AND include end)
-    const isInRange =
-      (currentTime >= bookingStart && currentTime < bookingEnd) ||
-      currentTime === bookingEnd;
-
-    if (isInRange) {
-      console.log(
-        `Time ${currentTime} is BLOCKED by booking ${bookingStart}-${bookingEnd}`,
-      );
-    }
-
-    return isInRange;
-  });
-}
-
-function showBookingAvailabilityInfo() {
-  const totalSlots = document.querySelectorAll(
-    "#booking_time_ruler .time-slot",
-  ).length;
-  const bookedSlots = document.querySelectorAll(
-    "#booking_time_ruler .time-slot.booked",
-  ).length;
-  const availableSlots = totalSlots - bookedSlots;
-
-  const availabilityPercentage = Math.round(
-    (availableSlots / totalSlots) * 100,
-  );
-
-  let message = "";
-  let type = "info";
-
-  if (availabilityPercentage >= 80) {
-    message = `🟢 Ruangan sangat tersedia (${availabilityPercentage}% slot kosong)`;
-    type = "success";
-  } else if (availabilityPercentage >= 50) {
-    message = `🟡 Ruangan cukup tersedia (${availabilityPercentage}% slot kosong)`;
-    type = "info";
-  } else if (availabilityPercentage >= 20) {
-    message = `🟠 Ruangan terbatas (${availabilityPercentage}% slot kosong)`;
-    type = "warning";
-  } else {
-    message = `🔴 Ruangan sangat terbatas (${availabilityPercentage}% slot kosong)`;
-    type = "danger";
-  }
-
-  setTimeout(() => {
-    showBookingToast(message, type, 4000);
-  }, 500);
-}
-
-function showBookingToast(message, type = "info", duration = 3000) {
-  const toast = document.createElement("div");
-  const typeClass =
-    type === "info"
-      ? "info"
-      : type === "success"
-        ? "success"
-        : type === "warning"
-          ? "warning"
-          : "danger";
-
-  toast.className = `alert alert-${typeClass} position-fixed shadow-sm`;
-  toast.style.cssText = `
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    max-width: 350px;
-    animation: slideIn 0.3s ease-out;
-    border-left: 4px solid var(--bs-${typeClass});
-  `;
-  toast.innerHTML = `
-    <div class="d-flex align-items-start">
-      <i class="bi bi-${
-        type === "success"
-          ? "check-circle"
-          : type === "warning"
-            ? "exclamation-triangle"
-            : type === "danger"
-              ? "x-circle"
-              : "info-circle"
-      } me-2 mt-1"></i>
-      <div class="flex-grow-1">${message}</div>
-      <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
-    </div>
-  `;
-
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    if (toast.parentElement) {
-      toast.style.animation = "fadeOut 0.3s ease-out forwards";
-      setTimeout(() => toast.remove(), 300);
-    }
-  }, duration);
-}
 
 // MAIN MODAL FUNCTION
 function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
@@ -1308,6 +757,9 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
     .then((data) => {
       console.log("Booking data received:", data);
 
+      // TAMBAHKAN DEBUG DI SINI
+      console.log("Bookings count:", data.data.length);
+
       if (data.success && data.data && data.data.length > 0) {
         // Show existing bookings
         const existingBookingsDiv = document.getElementById(
@@ -1320,17 +772,28 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
           bookingList.innerHTML = "";
 
           data.data.forEach((booking) => {
+            console.log("Processing booking:", booking);
+
             const bookingItem = document.createElement("div");
             bookingItem.className = "booking-item";
             bookingItem.innerHTML = `
-              <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong><br>
-              <small>${booking.nama_penanggung_jawab} (${booking.keperluan})</small>
-            `;
+      <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong><br>
+      <small>${booking.nama_penanggung_jawab} (${booking.keperluan})</small>
+    `;
+
             bookingList.appendChild(bookingItem);
 
-            // Mark time slots as booked
-            const startTime = booking.waktu_mulai;
-            const endTime = booking.waktu_selesai;
+            // ambil waktu
+            let startTime = booking.waktu_mulai;
+            let endTime = booking.waktu_selesai;
+
+            // normalize format (handle 09:00:00 -> 09:00)
+            startTime = startTime.substring(0, 5);
+            endTime = endTime.substring(0, 5);
+
+            console.log("Marking slot:", startTime, "-", endTime);
+
+            // block slot
             markBookingTimeSlots(startTime, endTime);
           });
         }
@@ -1357,22 +820,16 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
 function markBookingTimeSlots(startTime, endTime) {
   const state = window.bookingTimePickerState;
 
-  // ambil HH:MM saja
   startTime = startTime.substring(0, 5);
   endTime = endTime.substring(0, 5);
 
-  const startIndex = state.timeSlots.indexOf(startTime);
-  const endIndex = state.timeSlots.indexOf(endTime);
-
-  if (startIndex !== -1 && endIndex !== -1) {
-    for (let i = startIndex; i < endIndex; i++) {
-      const slot = state.timeSlots[i];
-
+  state.timeSlots.forEach((slot) => {
+    if (slot >= startTime && slot < endTime) {
       if (!state.bookedSlots.includes(slot)) {
         state.bookedSlots.push(slot);
       }
     }
-  }
+  });
 }
 
 function handleBookingRuanganSubmit(event, formData) {
@@ -1455,42 +912,6 @@ function escapeHtml(unsafe) {
 }
 
 // ===== TAMBAHKAN DI SINI =====
-// Setup unit kerja dropdown
-function setupUnitKerjaDropdown() {
-  const unitOrgSelect = document.getElementById("booking_unit_organisasi");
-  const unitKerjaSelect = document.getElementById("booking_unit_kerja");
-
-  if (unitOrgSelect && unitKerjaSelect) {
-    unitOrgSelect.addEventListener("change", function () {
-      const selectedUnitOrg = this.value;
-
-      // Clear unit kerja dropdown
-      unitKerjaSelect.innerHTML = '<option value="">Pilih Unit Kerja</option>';
-
-      if (selectedUnitOrg && unitKerjaMapping[selectedUnitOrg]) {
-        // Populate unit kerja options
-        unitKerjaMapping[selectedUnitOrg].forEach(function (unitKerja) {
-          const option = document.createElement("option");
-          option.value = unitKerja;
-          option.textContent = unitKerja;
-          unitKerjaSelect.appendChild(option);
-        });
-
-        // Enable unit kerja dropdown
-        unitKerjaSelect.disabled = false;
-        unitKerjaSelect.required = true;
-      } else {
-        // Disable unit kerja dropdown if no unit organisasi selected
-        unitKerjaSelect.disabled = true;
-        unitKerjaSelect.required = false;
-      }
-    });
-
-    console.log("Unit kerja dropdown setup complete");
-  } else {
-    console.warn("Unit organisasi or unit kerja select not found");
-  }
-}
 
 // ===== TAMBAH FUNCTION BARU INI SETELAH setupUnitKerjaDropdown() =====
 // Setup unit kerja dropdown KHUSUS untuk booking modal
