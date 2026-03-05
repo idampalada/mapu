@@ -166,7 +166,7 @@ function setupUnitKerjaDropdown() {
       unitKerjaSelect.required = true;
 
       console.log(
-        `✅ Populated ${unitKerjaMapping[selectedUnitOrg].length} unit kerja options for: ${selectedUnitOrg}`
+        `✅ Populated ${unitKerjaMapping[selectedUnitOrg].length} unit kerja options for: ${selectedUnitOrg}`,
       );
     } else {
       // Disable if no valid unit organisasi
@@ -184,7 +184,7 @@ function setupUnitKerjaDropdown() {
   unitOrgSelect._setupCompleted = true;
 
   console.log(
-    "✅ Unit kerja dropdown setup completed with dual mapping support"
+    "✅ Unit kerja dropdown setup completed with dual mapping support",
   );
   return true;
 }
@@ -341,7 +341,7 @@ function checkRuanganAvailability() {
   const tanggalMulai = document.getElementById("tanggal_mulai").value;
   const tanggalSelesai = document.getElementById("tanggal_selesai").value;
   const submitButton = document.querySelector(
-    '#formPinjamRuangan button[type="submit"]'
+    '#formPinjamRuangan button[type="submit"]',
   );
 
   if (!ruanganId || !tanggalMulai || !tanggalSelesai) {
@@ -349,7 +349,7 @@ function checkRuanganAvailability() {
   }
 
   fetch(
-    `/user/ruangan/check-availability?ruangan_id=${ruanganId}&tanggal_mulai=${tanggalMulai}&tanggal_selesai=${tanggalSelesai}`
+    `/user/ruangan/check-availability?ruangan_id=${ruanganId}&tanggal_mulai=${tanggalMulai}&tanggal_selesai=${tanggalSelesai}`,
   )
     .then((response) => response.json())
     .then((data) => {
@@ -615,7 +615,7 @@ function updateTimeSlotStyles() {
       "selected-start",
       "selected-end",
       "in-range",
-      "conflict-highlight"
+      "conflict-highlight",
     );
 
     // Set base class berdasarkan availability
@@ -648,7 +648,7 @@ function updateTimeSlotStyles() {
   // Apply selection styles
   if (selectedStartTime) {
     const startSlot = document.querySelector(
-      `[data-time="${selectedStartTime}"]`
+      `[data-time="${selectedStartTime}"]`,
     );
     if (startSlot && !startSlot.classList.contains("booked")) {
       startSlot.classList.remove("available");
@@ -723,7 +723,7 @@ function loadTimePickerWithCooldown(
   ruanganId,
   tanggalElement,
   waktuMulaiElement,
-  waktuSelesaiElement
+  waktuSelesaiElement,
 ) {
   const tanggalInput = document.getElementById(tanggalElement);
   const tanggal = tanggalInput.value;
@@ -785,10 +785,10 @@ function checkTimeConflict(startTime, endTime) {
 
     if (hasConflict) {
       console.log(
-        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`
+        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`,
       );
       console.log(
-        `Conflicts: Regular(${conflict1},${conflict2},${conflict3}) Cooldown(${cooldownConflict1},${cooldownConflict2},${cooldownConflict3})`
+        `Conflicts: Regular(${conflict1},${conflict2},${conflict3}) Cooldown(${cooldownConflict1},${cooldownConflict2},${cooldownConflict3})`,
       );
 
       // Jika konflika dengan cooldown period, tampilkan pesan khusus
@@ -947,13 +947,13 @@ function validateTimeSlotBlocking() {
     console.log(
       `Booking ${index + 1}: ${booking.waktu_mulai} - ${
         booking.waktu_selesai
-      } (${booking.status})`
+      } (${booking.status})`,
     );
 
     // Generate all time slots yang harus ter-block untuk booking ini
     const blockedSlots = generateTimeSlotsBetween(
       booking.waktu_mulai,
-      booking.waktu_selesai
+      booking.waktu_selesai,
     );
 
     blockedSlots.forEach((timeSlot) => {
@@ -984,7 +984,7 @@ function generateTimeSlotsBetween(startTime, endTime) {
 
   console.log(
     `Generated blocked slots between ${startTime}-${endTime}:`,
-    slots
+    slots,
   );
   return slots;
 }
@@ -1054,7 +1054,7 @@ function updateBookedTimeSlots() {
         "available",
         "selected-start",
         "selected-end",
-        "in-range"
+        "in-range",
       );
       slot.classList.add("booked");
 
@@ -1088,7 +1088,7 @@ function showAvailabilityInfo() {
   const availableSlots = totalSlots - bookedSlots;
 
   const availabilityPercentage = Math.round(
-    (availableSlots / totalSlots) * 100
+    (availableSlots / totalSlots) * 100,
   );
 
   let message = "";
@@ -1119,10 +1119,10 @@ function showToast(message, type = "info", duration = 3000) {
     type === "info"
       ? "info"
       : type === "success"
-      ? "success"
-      : type === "warning"
-      ? "warning"
-      : "danger";
+        ? "success"
+        : type === "warning"
+          ? "warning"
+          : "danger";
 
   toast.className = `alert alert-${typeClass} position-fixed shadow-sm`;
   toast.style.cssText = `
@@ -1139,10 +1139,10 @@ function showToast(message, type = "info", duration = 3000) {
         type === "success"
           ? "check-circle"
           : type === "warning"
-          ? "exclamation-triangle"
-          : type === "danger"
-          ? "x-circle"
-          : "info-circle"
+            ? "exclamation-triangle"
+            : type === "danger"
+              ? "x-circle"
+              : "info-circle"
       } me-2 mt-1"></i>
       <div class="flex-grow-1">${message}</div>
       <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
@@ -1178,7 +1178,7 @@ function openEditRuangan(id) {
       if (data.success) {
         const ruangan = data.data;
         const modal = new bootstrap.Modal(
-          document.getElementById("modalEditRuangan")
+          document.getElementById("modalEditRuangan"),
         );
 
         const fasilitasExisting = ruangan.fasilitas || "";
@@ -1204,7 +1204,7 @@ function openEditRuangan(id) {
         fasilitasChecked.forEach((item) => {
           keteranganExisting = keteranganExisting.replace(
             new RegExp(item, "gi"),
-            ""
+            "",
           );
         });
 
@@ -1217,13 +1217,13 @@ function openEditRuangan(id) {
 
         document.getElementById("edit_ruangan_id").value = parseInt(ruangan.id);
         document.querySelector('input[name="nama_ruangan"]').value = escapeHtml(
-          ruangan.nama_ruangan
+          ruangan.nama_ruangan,
         );
         document.querySelector('input[name="lokasi"]').value = escapeHtml(
-          ruangan.lokasi
+          ruangan.lokasi,
         );
         document.querySelector('input[name="kapasitas"]').value = parseInt(
-          ruangan.kapasitas
+          ruangan.kapasitas,
         );
 
         // TAMBAH HANDLING LUAS RUANGAN - INI YANG BARU!
@@ -1233,13 +1233,13 @@ function openEditRuangan(id) {
         }
 
         const checkboxes = document.querySelectorAll(
-          'input[name="fasilitas[]"]'
+          'input[name="fasilitas[]"]',
         );
         checkboxes.forEach((cb) => (cb.checked = false));
 
         fasilitasChecked.forEach((fasilitas) => {
           const checkbox = document.querySelector(
-            `input[name="fasilitas[]"][value="${fasilitas}"]`
+            `input[name="fasilitas[]"][value="${fasilitas}"]`,
           );
           if (checkbox) {
             checkbox.checked = true;
@@ -1463,7 +1463,7 @@ function isTimeInCooldownPeriod(time, bookings) {
 
     if (isEndTime || isInCooldownPeriod) {
       console.log(
-        `Time ${time} is in COOLDOWN PERIOD after booking ending at ${bookingEnd}`
+        `Time ${time} is in COOLDOWN PERIOD after booking ending at ${bookingEnd}`,
       );
     }
 
@@ -1491,7 +1491,7 @@ function isTimeBooked(time) {
 
     if (isInRange) {
       console.log(
-        `Time ${currentTime} is BLOCKED by booking ${bookingStart}-${bookingEnd}`
+        `Time ${currentTime} is BLOCKED by booking ${bookingStart}-${bookingEnd}`,
       );
     }
 
@@ -1543,7 +1543,7 @@ function forceBlockTimeSlots() {
         "available",
         "selected-start",
         "selected-end",
-        "in-range"
+        "in-range",
       );
       slot.classList.add("booked");
 
@@ -1584,7 +1584,7 @@ function forceBlockTimeSlots() {
         "available",
         "selected-start",
         "selected-end",
-        "in-range"
+        "in-range",
       );
       slot.classList.add("booked");
       slot.classList.add("cooldown-period");
@@ -1615,7 +1615,7 @@ function forceBlockTimeSlots() {
   // Verify blocking worked
   const blockedSlots = document.querySelectorAll(".time-slot.booked");
   console.log(
-    `🎯 Successfully blocked ${blockedSlots.length} time slots (including cooldown periods)`
+    `🎯 Successfully blocked ${blockedSlots.length} time slots (including cooldown periods)`,
   );
 }
 
@@ -1730,9 +1730,8 @@ document.addEventListener("DOMContentLoaded", function () {
       "November",
       "Desember",
     ];
-    document.getElementById(
-      "currentMonthYear"
-    ).textContent = `${monthNames[month]} ${year}`;
+    document.getElementById("currentMonthYear").textContent =
+      `${monthNames[month]} ${year}`;
 
     // Clear calendar grid
     const calendarGrid = document.getElementById("calendarGrid");
@@ -1792,7 +1791,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Format tanggal untuk pencarian (YYYY-MM-DD)
       const currentDateStr = `${year}-${String(month + 1).padStart(
         2,
-        "0"
+        "0",
       )}-${String(day).padStart(2, "0")}`;
 
       // Get bookings for this date
@@ -1884,14 +1883,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showBookingDetails(date, bookings) {
     const modal = new bootstrap.Modal(
-      document.getElementById("modalDetailBooking")
+      document.getElementById("modalDetailBooking"),
     );
     const modalContent = document.getElementById("modalBookingContent");
 
     let content = `
             <div class="mb-3">
                 <h6><i class="bi bi-calendar3 me-2"></i>Tanggal: ${formatIndonesianDate(
-                  date
+                  date,
                 )}</h6>
                 <p class="text-muted">Total ${
                   bookings.length
@@ -1919,8 +1918,8 @@ document.addEventListener("DOMContentLoaded", function () {
                               booking.nama_ruangan || "Ruangan"
                             }</h6>
                             <span class="status-badge ${statusClass}">${
-          booking.status
-        }</span>
+                              booking.status
+                            }</span>
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
@@ -2049,7 +2048,7 @@ function openEditRuangan(id) {
 
         // Handle fasilitas (existing code)
         const fasilitasCheckboxes = document.querySelectorAll(
-          '#modalEditRuangan input[name="fasilitas[]"]'
+          '#modalEditRuangan input[name="fasilitas[]"]',
         );
         fasilitasCheckboxes.forEach((checkbox) => (checkbox.checked = false));
 
@@ -2069,25 +2068,25 @@ function openEditRuangan(id) {
             `edit_fasilitas_${item
               .toLowerCase()
               .replace(/\s+/g, "_")
-              .replace("microphone", "mic")}`
+              .replace("microphone", "mic")}`,
           );
           if (checkbox && fasilitasText.includes(item)) {
             checkbox.checked = true;
             keteranganExisting = keteranganExisting.replace(
               new RegExp(item + ",?\\s*", "gi"),
-              ""
+              "",
             );
           }
         });
 
         keteranganExisting = keteranganExisting.replace(
           /^[,.\s]+|[,.\s]+$/g,
-          ""
+          "",
         );
         document.getElementById("edit_keterangan").value = keteranganExisting;
 
         const modal = new bootstrap.Modal(
-          document.getElementById("modalEditRuangan")
+          document.getElementById("modalEditRuangan"),
         );
         const form = document.getElementById("formEditRuangan");
 
@@ -2101,7 +2100,7 @@ function openEditRuangan(id) {
           // DEBUG: Log checkbox state sebelum submit
           console.log(
             "Before submit - Checkbox checked:",
-            isActiveCheckbox.checked
+            isActiveCheckbox.checked,
           );
           console.log("Before submit - Will send is_active:", isActiveValue);
 
@@ -2599,7 +2598,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
       if (unitOrgSelect._changeHandler) {
         unitOrgSelect.removeEventListener(
           "change",
-          unitOrgSelect._changeHandler
+          unitOrgSelect._changeHandler,
         );
       }
 
@@ -2724,7 +2723,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
     // ✅ SECURITY: Pastikan ruangan ID konsisten
     if (window.currentModalRuanganId !== cleanRuanganId) {
       console.error(
-        `❌ RUANGAN MISMATCH: Expected ${cleanRuanganId}, current ${window.currentModalRuanganId}`
+        `❌ RUANGAN MISMATCH: Expected ${cleanRuanganId}, current ${window.currentModalRuanganId}`,
       );
       clearAllPreviousData();
       window.currentModalRuanganId = cleanRuanganId;
@@ -2810,7 +2809,7 @@ function bukaPinjamModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
         }
 
         const jumlahPeserta = parseInt(
-          document.getElementById("jumlah_peserta").value
+          document.getElementById("jumlah_peserta").value,
         );
         if (jumlahPeserta > cleanKapasitas) {
           Swal.fire({
@@ -2990,7 +2989,7 @@ function clearAllTimeSlotHighlights() {
         "selected",
         "selected-start",
         "selected-end",
-        "selected-range"
+        "selected-range",
       );
 
       // Remove inline styles
@@ -3022,7 +3021,7 @@ function loadPreviousBookingData(ruanganId) {
   // ✅ SECURITY CHECK: Pastikan ini ruangan yang benar
   if (window.currentModalRuanganId !== requestedRuanganId) {
     console.error(
-      `❌ CROSS-ROOM CACHE DETECTED: Current modal for ${window.currentModalRuanganId}, but requesting ${requestedRuanganId}`
+      `❌ CROSS-ROOM CACHE DETECTED: Current modal for ${window.currentModalRuanganId}, but requesting ${requestedRuanganId}`,
     );
     clearAllPreviousData();
     return;
@@ -3031,7 +3030,7 @@ function loadPreviousBookingData(ruanganId) {
   // ✅ PREVENT DUPLICATE CALLS
   if (window.lastAutoFillRuanganId === requestedRuanganId) {
     console.log(
-      `ℹ️ Auto-fill already processed for ruangan ${requestedRuanganId}, skipping`
+      `ℹ️ Auto-fill already processed for ruangan ${requestedRuanganId}, skipping`,
     );
     return;
   }
@@ -3047,7 +3046,7 @@ function loadPreviousBookingData(ruanganId) {
       // ✅ FINAL SECURITY CHECK setelah response
       if (window.currentModalRuanganId !== requestedRuanganId) {
         console.error(
-          `❌ RUANGAN CHANGED during fetch: Expected ${requestedRuanganId}, current ${window.currentModalRuanganId}`
+          `❌ RUANGAN CHANGED during fetch: Expected ${requestedRuanganId}, current ${window.currentModalRuanganId}`,
         );
         return;
       }
@@ -3058,7 +3057,7 @@ function loadPreviousBookingData(ruanganId) {
         // ✅ TRIPLE CHECK ruangan ID
         if (responseRuanganId !== requestedRuanganId) {
           console.error(
-            `❌ API MISMATCH: Requested ${requestedRuanganId}, got ${responseRuanganId}`
+            `❌ API MISMATCH: Requested ${requestedRuanganId}, got ${responseRuanganId}`,
           );
           showAutoFillErrorNotification(requestedRuanganId, responseRuanganId);
           return;
@@ -3116,7 +3115,7 @@ function loadPreviousBookingData(ruanganId) {
                       unitKerjaSelect.value = data.data.unit_kerja;
                       unitKerjaSelect.dataset.autoFilled = "true";
                       console.log(
-                        `✅ Auto-filled unit_kerja dropdown: ${data.data.unit_kerja}`
+                        `✅ Auto-filled unit_kerja dropdown: ${data.data.unit_kerja}`,
                       );
                     }
                   }, 100);
@@ -3142,7 +3141,7 @@ function loadPreviousBookingData(ruanganId) {
           const waktuSelesai = data.data.waktu_selesai.substring(0, 5);
 
           console.log(
-            `⏰ Auto-selecting time: ${waktuMulai} - ${waktuSelesai}`
+            `⏰ Auto-selecting time: ${waktuMulai} - ${waktuSelesai}`,
           );
 
           setTimeout(() => {
@@ -3153,15 +3152,15 @@ function loadPreviousBookingData(ruanganId) {
         showAutoFillNotificationCompleteFixed(
           data.data.source_type,
           data.data,
-          requestedRuanganId
+          requestedRuanganId,
         );
         console.log(
-          `🎉 Auto-fill completed for ruangan ${requestedRuanganId}. Fields filled: ${filledCount}`
+          `🎉 Auto-fill completed for ruangan ${requestedRuanganId}. Fields filled: ${filledCount}`,
         );
       } else {
         console.log(
           `ℹ️ No previous booking data found for ruangan ${requestedRuanganId}:`,
-          data.message
+          data.message,
         );
         showNoDataNotification(requestedRuanganId);
       }
@@ -3169,7 +3168,7 @@ function loadPreviousBookingData(ruanganId) {
     .catch((error) => {
       console.error(
         `❌ Auto-fill error for ruangan ${requestedRuanganId}:`,
-        error
+        error,
       );
       window.lastAutoFillRuanganId = null; // Reset pada error
       showErrorNotification(requestedRuanganId, error.message);
@@ -3184,7 +3183,7 @@ function loadPreviousBookingDataIfEnabled(ruanganId) {
 
   if (!ruanganId || isNaN(ruanganId)) {
     console.error(
-      `❌ No valid ruangan_id provided: ${ruanganId}, skipping auto-fill`
+      `❌ No valid ruangan_id provided: ${ruanganId}, skipping auto-fill`,
     );
     return;
   }
@@ -3231,7 +3230,7 @@ function clearAutoFilledDataFixed() {
   clearAllTimeSlotHighlights();
 
   const notification = document.querySelector(
-    ".alert-success.alert-dismissible"
+    ".alert-success.alert-dismissible",
   );
   if (notification) {
     notification.remove();
@@ -3280,7 +3279,7 @@ function showAutoFillNotificationCompleteFixed(sourceType, data, ruanganId) {
             data.waktu_mulai && data.waktu_selesai
               ? `${data.waktu_mulai.substring(
                   0,
-                  5
+                  5,
                 )} - ${data.waktu_selesai.substring(0, 5)}`
               : "Tidak ada"
           }
@@ -3387,7 +3386,7 @@ function showErrorNotification(ruanganId, errorMessage) {
 // Helper functions untuk time selection dan visual
 function autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai) {
   console.log(
-    `🎯 Auto-selecting time slots VISUALLY: ${waktuMulai} - ${waktuSelesai}`
+    `🎯 Auto-selecting time slots VISUALLY: ${waktuMulai} - ${waktuSelesai}`,
   );
 
   try {
@@ -3420,7 +3419,7 @@ function autoSelectTimeSlotsVisual(waktuMulai, waktuSelesai) {
     }
 
     console.log(
-      `✅ Auto-selected time VISUALLY: ${waktuMulai} - ${waktuSelesai}`
+      `✅ Auto-selected time VISUALLY: ${waktuMulai} - ${waktuSelesai}`,
     );
   } catch (error) {
     console.error("Error in autoSelectTimeSlotsVisual:", error);
@@ -3450,7 +3449,7 @@ function highlightTimeSlotsMultiple(waktuMulai, waktuSelesai) {
         "selected",
         "selected-start",
         "selected-end",
-        "selected-range"
+        "selected-range",
       );
 
       let slotTime = getTimeFromElement(slot);
@@ -3487,7 +3486,7 @@ function applyStartTimeStyles(element) {
   element.style.setProperty(
     "box-shadow",
     "0 0 0 3px rgba(40,167,69,0.3)",
-    "important"
+    "important",
   );
   element.style.setProperty("transform", "scale(1.05)", "important");
   element.style.setProperty("z-index", "10", "important");
@@ -3502,7 +3501,7 @@ function applyEndTimeStyles(element) {
   element.style.setProperty(
     "box-shadow",
     "0 0 0 3px rgba(220,53,69,0.3)",
-    "important"
+    "important",
   );
   element.style.setProperty("transform", "scale(1.05)", "important");
   element.style.setProperty("z-index", "10", "important");
@@ -3516,7 +3515,7 @@ function applyRangeTimeStyles(element) {
   element.style.setProperty(
     "box-shadow",
     "0 0 0 2px rgba(255,193,7,0.3)",
-    "important"
+    "important",
   );
   element.style.setProperty("transform", "scale(1.02)", "important");
   element.style.setProperty("z-index", "5", "important");
@@ -3663,7 +3662,7 @@ function debugAutoFillCache() {
       console.log(
         `${fieldId}:`,
         field.value,
-        field.dataset.autoFilled ? "(auto-filled)" : "(manual)"
+        field.dataset.autoFilled ? "(auto-filled)" : "(manual)",
       );
     }
   });

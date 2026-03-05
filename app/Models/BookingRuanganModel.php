@@ -79,74 +79,65 @@ class BookingRuanganModel extends Model
      * FIXED: Cek availability ruangan untuk booking langsung
      * Perbaikan struktur query untuk mencegah false positive
      */
-    public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSelesai)
-    {
-        // Log untuk debugging
-        log_message('debug', "checkAvailability called - Ruangan: {$ruanganId}, Tanggal: {$tanggal}, Waktu: {$waktuMulai}-{$waktuSelesai}");
-        
-        // Cek di tabel booking_ruangan (booking langsung) - FIXED QUERY
-        $existingBooking = $this->where('ruangan_id', $ruanganId)
-            ->where('tanggal', $tanggal)
-            ->where('status', 'aktif')
-            ->groupStart()
-                // PROPER GROUPING: Semua kondisi konflik dalam satu grup
-                ->groupStart()
-                    // Kondisi 1: Waktu mulai baru berada dalam range booking yang ada
-                    ->where('waktu_mulai <=', $waktuMulai)
-                    ->where('waktu_selesai >', $waktuMulai)
-                ->groupEnd()
-                ->orGroupStart()
-                    // Kondisi 2: Waktu selesai baru berada dalam range booking yang ada
-                    ->where('waktu_mulai <', $waktuSelesai) 
-                    ->where('waktu_selesai >=', $waktuSelesai)
-                ->groupEnd()
-                ->orGroupStart()
-                    // Kondisi 3: Booking baru menutupi booking yang ada sepenuhnya
-                    ->where('waktu_mulai >=', $waktuMulai)
-                    ->where('waktu_selesai <=', $waktuSelesai)
-                ->groupEnd()
-            ->groupEnd()
-            ->first();
-
-        if ($existingBooking) {
-            log_message('debug', 'Found conflict in booking_ruangan: ' . json_encode($existingBooking));
-            return $existingBooking;
-        }
-
-        // Cek juga di tabel pinjam_ruangan (request confirm yang disetujui) - FIXED QUERY
-        $pinjamModel = new \App\Models\PinjamRuanganModel();
-        $existingPinjam = $pinjamModel->where('ruangan_id', $ruanganId)
-            ->where('tanggal', $tanggal)
-            ->where('status', 'disetujui')
-            ->where('deleted_at', null)
-            ->groupStart()
-                // PROPER GROUPING: Semua kondisi konflik dalam satu grup
-                ->groupStart()
-                    // Kondisi 1: Waktu mulai baru berada dalam range booking yang ada
-                    ->where('waktu_mulai <=', $waktuMulai)
-                    ->where('waktu_selesai >', $waktuMulai)
-                ->groupEnd()
-                ->orGroupStart()
-                    // Kondisi 2: Waktu selesai baru berada dalam range booking yang ada
-                    ->where('waktu_mulai <', $waktuSelesai)
-                    ->where('waktu_selesai >=', $waktuSelesai)
-                ->groupEnd()
-                ->orGroupStart()
-                    // Kondisi 3: Booking baru menutupi booking yang ada sepenuhnya
-                    ->where('waktu_mulai >=', $waktuMulai)
-                    ->where('waktu_selesai <=', $waktuSelesai)
-                ->groupEnd()
-            ->groupEnd()
-            ->first();
-
-        if ($existingPinjam) {
-            log_message('debug', 'Found conflict in pinjam_ruangan: ' . json_encode($existingPinjam));
-            return $existingPinjam;
-        }
-
-        log_message('debug', 'No conflicts found - booking available');
-        return null; // Tidak ada konflik
+public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $userId = null)
+{
+    if (!$userId) {
+        $userId = session()->get('user_id');
     }
+
+    // =============================
+    // 1. CEK KONFLIK USER
+    // =============================
+    $userConflict = $this->where('user_id', $userId)
+        ->where('tanggal', $tanggal)
+        ->where('status', 'aktif')
+        ->groupStart()
+            ->where('waktu_mulai <', $waktuSelesai)
+            ->where('waktu_selesai >', $waktuMulai)
+        ->groupEnd()
+        ->first();
+
+    if ($userConflict) {
+        return $userConflict;
+    }
+
+    // =============================
+    // 2. CEK KONFLIK RUANGAN
+    // =============================
+    $roomConflict = $this->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+        ->where('status', 'aktif')
+        ->groupStart()
+            ->where('waktu_mulai <', $waktuSelesai)
+            ->where('waktu_selesai >', $waktuMulai)
+        ->groupEnd()
+        ->first();
+
+    if ($roomConflict) {
+        return $roomConflict;
+    }
+
+    // =============================
+    // 3. CEK pinjam_ruangan
+    // =============================
+    $pinjamModel = new \App\Models\PinjamRuanganModel();
+
+    $pinjamConflict = $pinjamModel->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+        ->where('status', 'disetujui')
+        ->groupStart()
+            ->where('waktu_mulai <', $waktuSelesai)
+            ->where('waktu_selesai >', $waktuMulai)
+        ->groupEnd()
+        ->first();
+
+    if ($pinjamConflict) {
+        return $pinjamConflict;
+    }
+
+    return null;
+}
+
 
     /**
      * Get booking aktif untuk notifikasi publik

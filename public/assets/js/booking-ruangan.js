@@ -107,7 +107,7 @@ function initializeBookingTimePicker(ruanganId) {
     slot.tabIndex = 0;
 
     slot.addEventListener("click", () =>
-      handleBookingTimeSlotClick(time, ruanganId)
+      handleBookingTimeSlotClick(time, ruanganId),
     );
 
     slot.addEventListener("keydown", (e) => {
@@ -166,7 +166,7 @@ function handleBookingTimeSlotClick(time, ruanganId) {
 
     const hasConflict = checkBookingTimeConflict(
       bookingSelectedStartTime,
-      bookingSelectedEndTime
+      bookingSelectedEndTime,
     );
     if (hasConflict) {
       showBookingConflictWarning(hasConflict);
@@ -207,7 +207,7 @@ function updateBookingTimeDisplay() {
   if (bookingSelectedStartTime && bookingSelectedEndTime) {
     const duration = calculateBookingDuration(
       bookingSelectedStartTime,
-      bookingSelectedEndTime
+      bookingSelectedEndTime,
     );
     document.getElementById("booking_duration_text").textContent = duration;
     document.getElementById("booking_duration_display").style.display = "block";
@@ -227,7 +227,7 @@ function updateBookingTimeSlotStyles() {
         "selected-start",
         "selected-end",
         "in-range",
-        "conflict-highlight"
+        "conflict-highlight",
       );
 
       // Set base class berdasarkan availability
@@ -246,7 +246,7 @@ function updateBookingTimeSlotStyles() {
   // Apply selection styles
   if (bookingSelectedStartTime) {
     const startSlot = document.querySelector(
-      `#booking_time_ruler [data-time="${bookingSelectedStartTime}"]`
+      `#booking_time_ruler [data-time="${bookingSelectedStartTime}"]`,
     );
     if (startSlot && !startSlot.classList.contains("booked")) {
       startSlot.classList.remove("available");
@@ -256,7 +256,7 @@ function updateBookingTimeSlotStyles() {
 
   if (bookingSelectedEndTime) {
     const endSlot = document.querySelector(
-      `#booking_time_ruler [data-time="${bookingSelectedEndTime}"]`
+      `#booking_time_ruler [data-time="${bookingSelectedEndTime}"]`,
     );
     if (endSlot && !endSlot.classList.contains("booked")) {
       endSlot.classList.remove("available");
@@ -267,7 +267,7 @@ function updateBookingTimeSlotStyles() {
   // Apply range style
   if (bookingSelectedStartTime && bookingSelectedEndTime) {
     const timeSlots = Array.from(
-      document.querySelectorAll("#booking_time_ruler .time-slot")
+      document.querySelectorAll("#booking_time_ruler .time-slot"),
     );
     timeSlots.forEach((slot) => {
       const time = slot.dataset.time;
@@ -297,7 +297,7 @@ function checkBookingTimeConflict(startTime, endTime) {
 
     if (hasConflict) {
       console.log(
-        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`
+        `Conflict detected with booking: ${bookingStart}-${bookingEnd}`,
       );
       return booking;
     }
@@ -427,7 +427,7 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
       showBookingToast(
         "Gagal memuat data booking: " + error.message,
         "error",
-        5000
+        5000,
       );
     });
 }
@@ -435,7 +435,7 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
 function updateBookingExistingBookingsDisplay() {
   const bookingList = document.getElementById("booking_booking_list");
   const existingBookingsDiv = document.getElementById(
-    "booking_existing_bookings"
+    "booking_existing_bookings",
   );
 
   if (bookingExistingBookings.length === 0) {
@@ -483,7 +483,7 @@ function updateBookingBookedTimeSlots() {
           "available",
           "selected-start",
           "selected-end",
-          "in-range"
+          "in-range",
         );
         slot.classList.add("booked");
 
@@ -526,7 +526,7 @@ function isBookingTimeBooked(time) {
 
     if (isInRange) {
       console.log(
-        `Time ${currentTime} is BLOCKED by booking ${bookingStart}-${bookingEnd}`
+        `Time ${currentTime} is BLOCKED by booking ${bookingStart}-${bookingEnd}`,
       );
     }
 
@@ -536,15 +536,15 @@ function isBookingTimeBooked(time) {
 
 function showBookingAvailabilityInfo() {
   const totalSlots = document.querySelectorAll(
-    "#booking_time_ruler .time-slot"
+    "#booking_time_ruler .time-slot",
   ).length;
   const bookedSlots = document.querySelectorAll(
-    "#booking_time_ruler .time-slot.booked"
+    "#booking_time_ruler .time-slot.booked",
   ).length;
   const availableSlots = totalSlots - bookedSlots;
 
   const availabilityPercentage = Math.round(
-    (availableSlots / totalSlots) * 100
+    (availableSlots / totalSlots) * 100,
   );
 
   let message = "";
@@ -575,10 +575,10 @@ function showBookingToast(message, type = "info", duration = 3000) {
     type === "info"
       ? "info"
       : type === "success"
-      ? "success"
-      : type === "warning"
-      ? "warning"
-      : "danger";
+        ? "success"
+        : type === "warning"
+          ? "warning"
+          : "danger";
 
   toast.className = `alert alert-${typeClass} position-fixed shadow-sm`;
   toast.style.cssText = `
@@ -595,10 +595,10 @@ function showBookingToast(message, type = "info", duration = 3000) {
         type === "success"
           ? "check-circle"
           : type === "warning"
-          ? "exclamation-triangle"
-          : type === "danger"
-          ? "x-circle"
-          : "info-circle"
+            ? "exclamation-triangle"
+            : type === "danger"
+              ? "x-circle"
+              : "info-circle"
       } me-2 mt-1"></i>
       <div class="flex-grow-1">${message}</div>
       <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
@@ -711,12 +711,20 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
                                            }">
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="booking_jumlah_peserta" class="form-label">Jumlah Peserta<span class="text-danger"> *</span></label>
-                                    <input type="number" class="form-control" id="booking_jumlah_peserta" name="jumlah_peserta" 
-                                           required min="1" max="10">
-                                    <div class="form-text">Maksimal 10 orang</div>
-                                </div>
+<div class="mb-3">
+    <label for="booking_jumlah_peserta" class="form-label">
+        Jumlah Peserta<span class="text-danger"> *</span>
+    </label>
+    <input type="number" 
+           class="form-control" 
+           id="booking_jumlah_peserta" 
+           name="jumlah_peserta" 
+           required 
+           min="1" 
+           max="${cleanKapasitas}">
+    <div class="form-text">Maksimal ${cleanKapasitas} orang</div>
+</div>
+
                                 
                                 <div class="mb-3">
                                     <label for="booking_keperluan" class="form-label">Keperluan<span class="text-danger"> *</span></label>
@@ -824,21 +832,23 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
         e.preventDefault();
 
         const jumlahPeserta = parseInt(
-          document.getElementById("booking_jumlah_peserta").value
+          document.getElementById("booking_jumlah_peserta").value,
         );
         if (jumlahPeserta > 10) {
-          Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: `Jumlah peserta tidak boleh lebih dari 10 orang`,
-            confirmButtonColor: "#dc3545",
-          });
-          return;
+          if (jumlahPeserta > cleanKapasitas) {
+            Swal.fire({
+              icon: "error",
+              title: "Error!",
+              text: `Jumlah peserta tidak boleh melebihi kapasitas ruangan (${cleanKapasitas} orang)`,
+              confirmButtonColor: "#dc3545",
+            });
+            return;
+          }
         }
 
         const waktuMulai = document.getElementById("booking_waktu_mulai").value;
         const waktuSelesai = document.getElementById(
-          "booking_waktu_selesai"
+          "booking_waktu_selesai",
         ).value;
 
         if (!waktuMulai || !waktuSelesai) {
@@ -864,7 +874,7 @@ function bukaBookingModal(ruanganId, namaRuangan, kapasitas, keterangan = "") {
 
       // Auto load booking untuk hari ini
       console.log(
-        `Auto-loading bookings for ruangan ${cleanRuanganId} on ${today}`
+        `Auto-loading bookings for ruangan ${cleanRuanganId} on ${today}`,
       );
       loadBookingExistingBookings(cleanRuanganId, today);
 
@@ -1282,7 +1292,7 @@ function updateBookingSubmitButton() {
 
 function loadBookingExistingBookings(ruanganId, tanggal) {
   console.log(
-    `Loading existing bookings for ruangan ${ruanganId} on ${tanggal}`
+    `Loading existing bookings for ruangan ${ruanganId} on ${tanggal}`,
   );
 
   // Clear previous bookings
@@ -1292,16 +1302,16 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
     document.querySelector("base")?.href || window.location.origin;
 
   fetch(
-    `${baseUrl}/user/ruangan/getBookingByDate?ruangan_id=${ruanganId}&tanggal=${tanggal}`
+    `${baseUrl}/user/ruangan/getBookingByDate?ruangan_id=${ruanganId}&tanggal=${tanggal}`,
   )
     .then((response) => response.json())
     .then((data) => {
       console.log("Booking data received:", data);
 
-      if (data.success && data.bookings && data.bookings.length > 0) {
+      if (data.success && data.data && data.data.length > 0) {
         // Show existing bookings
         const existingBookingsDiv = document.getElementById(
-          "booking_existing_bookings"
+          "booking_existing_bookings",
         );
         const bookingList = document.getElementById("booking_booking_list");
 
@@ -1309,7 +1319,7 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
           existingBookingsDiv.style.display = "block";
           bookingList.innerHTML = "";
 
-          data.bookings.forEach((booking) => {
+          data.data.forEach((booking) => {
             const bookingItem = document.createElement("div");
             bookingItem.className = "booking-item";
             bookingItem.innerHTML = `
@@ -1327,7 +1337,7 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
       } else {
         // Hide existing bookings if none
         const existingBookingsDiv = document.getElementById(
-          "booking_existing_bookings"
+          "booking_existing_bookings",
         );
         if (existingBookingsDiv) {
           existingBookingsDiv.style.display = "none";
@@ -1346,14 +1356,20 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
 
 function markBookingTimeSlots(startTime, endTime) {
   const state = window.bookingTimePickerState;
+
+  // ambil HH:MM saja
+  startTime = startTime.substring(0, 5);
+  endTime = endTime.substring(0, 5);
+
   const startIndex = state.timeSlots.indexOf(startTime);
   const endIndex = state.timeSlots.indexOf(endTime);
 
   if (startIndex !== -1 && endIndex !== -1) {
-    // Mark all slots from start to end (exclusive) as booked
     for (let i = startIndex; i < endIndex; i++) {
-      if (state.timeSlots[i]) {
-        state.bookedSlots.push(state.timeSlots[i]);
+      const slot = state.timeSlots[i];
+
+      if (!state.bookedSlots.includes(slot)) {
+        state.bookedSlots.push(slot);
       }
     }
   }
@@ -1392,14 +1408,18 @@ function handleBookingRuanganSubmit(event, formData) {
           showConfirmButton: false,
           timer: 2000,
         }).then(() => {
-          // Close modal
           const modal = bootstrap.Modal.getInstance(
-            document.getElementById("modalBookingRuangan")
+            document.getElementById("modalBookingRuangan"),
           );
           modal.hide();
 
-          // Reload page
-          location.reload();
+          // Tidak perlu reload halaman
+          // Kalau mau refresh data saja:
+          const tanggal = document.getElementById("booking_tanggal").value;
+          loadBookingExistingBookings(
+            window.bookingTimePickerState.ruanganId,
+            tanggal,
+          );
         });
       } else {
         Swal.fire({
@@ -1520,7 +1540,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Setup HP validation
       const hpInput = document.getElementById(
-        "booking_nomor_hp_penanggung_jawab"
+        "booking_nomor_hp_penanggung_jawab",
       );
       if (hpInput) {
         // Add validation
@@ -1549,7 +1569,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // 2. VALIDASI NOMOR HP
 function validateNomorHP() {
   const nomorHP = document.getElementById(
-    "booking_nomor_hp_penanggung_jawab"
+    "booking_nomor_hp_penanggung_jawab",
   ).value;
   const hpPattern = /^[0-9]{10,15}$/;
 
@@ -1581,7 +1601,7 @@ function setupNomorHPValidation() {
   if (modalElement) {
     modalElement.addEventListener("shown.bs.modal", function () {
       const nomorHPInput = document.getElementById(
-        "booking_nomor_hp_penanggung_jawab"
+        "booking_nomor_hp_penanggung_jawab",
       );
 
       if (nomorHPInput) {

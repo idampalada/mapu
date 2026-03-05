@@ -1564,17 +1564,21 @@ function loadBookingNotices() {
             }
 
             const html = bookings.map(item => {
+
                 const hari = getIndonesianDayName(item.tanggal);
-                const mulai = formatDateTime(item.tanggal, item.waktu_mulai);
-                const selesai = formatDateTime(item.tanggal, item.waktu_selesai);
-                
+                const tanggal = formatTanggal(item.tanggal);
+
+                const mulai = item.waktu_mulai.substring(0,5);
+                const selesai = item.waktu_selesai.substring(0,5);
+
                 return `
                     <div class="alert custom-alert-booking shadow-sm mb-2">
                         <i class="bi bi-calendar-event me-2 fs-4"></i>
                         <div>
                             <strong>${item.nama_ruangan}</strong> telah dibooking<br>
-                            Hari: <strong>${hari}</strong> <br>
-                            Tanggal & Waktu: <strong>${mulai}</strong> s.d. <strong>${selesai}</strong><br>
+                            Hari: <strong>${hari}</strong><br>
+                            Tanggal: <strong>${tanggal}</strong><br>
+                            Waktu: <strong>${mulai} - ${selesai} WIB</strong><br>
                             Keperluan: <em>${item.keperluan}</em>
                         </div>
                     </div>
@@ -1608,6 +1612,7 @@ function formatDateTime(dateStr, timeStr) {
 // Set base URL untuk JavaScript
 const baseUrl = '<?= base_url() ?>';
 </script>
+
 
 <!-- Load JavaScript files -->
 <script src="<?= base_url('assets/js/pinjam-ruangan.js') ?>"></script>
