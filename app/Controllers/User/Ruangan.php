@@ -992,96 +992,73 @@ public function edit($id)
 
 public function getBookingByDate()
 {
-    // FORCE JSON response header
     $this->response->setContentType('application/json');
     $this->response->setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     $this->response->setHeader('Pragma', 'no-cache');
     $this->response->setHeader('Expires', '0');
-    
+
     try {
-        // Support both GET and POST methods
+
         $ruanganId = $this->request->getGet('ruangan_id') ?? $this->request->getPost('ruangan_id');
-        $tanggal = $this->request->getGet('tanggal') ?? $this->request->getPost('tanggal');
-        
-        // Debug log untuk melihat parameter yang diterima
-        log_message('debug', "getBookingByDate called with ruangan_id: {$ruanganId}, tanggal: {$tanggal}");
-        log_message('debug', "Request method: " . $this->request->getMethod());
-        log_message('debug', "Request URI: " . $this->request->getUri());
-        
-        // Validation
+        $tanggal   = $this->request->getGet('tanggal') ?? $this->request->getPost('tanggal');
+        $lokasi    = $this->request->getGet('lokasi') ?? $this->request->getPost('lokasi');
+
         if (!$ruanganId || !$tanggal) {
-            log_message('error', 'Missing parameters in getBookingByDate');
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Parameter ruangan_id dan tanggal harus diisi',
-                'debug_info' => [
-                    'ruangan_id' => $ruanganId,
-                    'tanggal' => $tanggal,
-                    'method' => $this->request->getMethod()
-                ]
+                'message' => 'Parameter ruangan_id dan tanggal harus diisi'
             ]);
         }
-        
-        // Validate date format
+
         if (!$this->isValidDate($tanggal)) {
-            log_message('error', "Invalid date format: {$tanggal}");
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Format tanggal tidak valid (harus YYYY-MM-DD)',
-                'debug_info' => [
-                    'received_date' => $tanggal,
-                    'expected_format' => 'YYYY-MM-DD'
-                ]
+                'message' => 'Format tanggal tidak valid (YYYY-MM-DD)'
             ]);
         }
-        
+
         $pinjamModel = new PinjamRuanganModel();
-        
-        // Enhanced query dengan error handling
-        try {
-            $bookings = $pinjamModel->select('
-                    pinjam_ruangan.id,
-                    pinjam_ruangan.waktu_mulai,
-                    pinjam_ruangan.waktu_selesai,
-                    pinjam_ruangan.keperluan,
-                    pinjam_ruangan.nama_penanggung_jawab,
-                    pinjam_ruangan.unit_organisasi,
-                    pinjam_ruangan.status,
-                    pinjam_ruangan.user_id,
-                    pinjam_ruangan.tanggal,
-                    pinjam_ruangan.jumlah_peserta,
-                    ruangan.nama_ruangan
-                ')
-                ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id', 'left')
-                ->where('pinjam_ruangan.ruangan_id', $ruanganId)
-                ->where('pinjam_ruangan.tanggal', $tanggal)
-                ->whereIn('pinjam_ruangan.status', ['disetujui', 'pending', 'menunggu_verifikasi'])
-                ->where('pinjam_ruangan.deleted_at', null)
-                ->orderBy('pinjam_ruangan.waktu_mulai', 'ASC')
-                ->findAll();
-                
-        } catch (\Exception $queryError) {
-            log_message('error', 'Database query error: ' . $queryError->getMessage());
-            throw $queryError;
+
+        $query = $pinjamModel
+            ->select('
+                pinjam_ruangan.id,
+                pinjam_ruangan.waktu_mulai,
+                pinjam_ruangan.waktu_selesai,
+                pinjam_ruangan.keperluan,
+                pinjam_ruangan.nama_penanggung_jawab,
+                pinjam_ruangan.unit_organisasi,
+                pinjam_ruangan.status,
+                pinjam_ruangan.user_id,
+                pinjam_ruangan.tanggal,
+                pinjam_ruangan.jumlah_peserta,
+                ruangan.nama_ruangan,
+                ruangan.lokasi
+            ')
+            ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id', 'left')
+            ->where('pinjam_ruangan.ruangan_id', $ruanganId)
+            ->where('pinjam_ruangan.tanggal', $tanggal)
+            ->whereIn('pinjam_ruangan.status', ['disetujui','pending','menunggu_verifikasi'])
+            ->where('pinjam_ruangan.deleted_at', null)
+            ->orderBy('pinjam_ruangan.waktu_mulai', 'ASC');
+
+        // FILTER GEDUNG
+        if ($lokasi) {
+            $query->where('ruangan.lokasi', $lokasi);
         }
-        
-        // Debug log untuk melihat hasil query
-        log_message('debug', 'Raw query result count: ' . count($bookings));
-        
-        // Process booking data
+
+        $bookings = $query->findAll();
+
         $processedBookings = [];
         $currentUserId = user_id();
-        
+
         foreach ($bookings as $booking) {
-            // Clean time format (HH:MM only)
-            $waktuMulai = strlen($booking['waktu_mulai']) > 5 ? 
-                substr($booking['waktu_mulai'], 0, 5) : $booking['waktu_mulai'];
-            $waktuSelesai = strlen($booking['waktu_selesai']) > 5 ? 
-                substr($booking['waktu_selesai'], 0, 5) : $booking['waktu_selesai'];
-            
-            // Privacy protection untuk booking user lain
+
+            $waktuMulai = substr($booking['waktu_mulai'],0,5);
+            $waktuSelesai = substr($booking['waktu_selesai'],0,5);
+
             if ($booking['user_id'] != $currentUserId) {
-                $processedBooking = [
+
+                $processedBookings[] = [
                     'id' => $booking['id'],
                     'waktu_mulai' => $waktuMulai,
                     'waktu_selesai' => $waktuSelesai,
@@ -1095,8 +1072,10 @@ public function getBookingByDate()
                     'nama_ruangan' => $booking['nama_ruangan'],
                     'is_own_booking' => false
                 ];
+
             } else {
-                $processedBooking = [
+
+                $processedBookings[] = [
                     'id' => $booking['id'],
                     'waktu_mulai' => $waktuMulai,
                     'waktu_selesai' => $waktuSelesai,
@@ -1111,53 +1090,21 @@ public function getBookingByDate()
                     'is_own_booking' => true
                 ];
             }
-            
-            $processedBookings[] = $processedBooking;
-            
-            // Debug each booking
-            log_message('debug', "Processed booking: {$waktuMulai}-{$waktuSelesai} Status: {$booking['status']}");
         }
-        
-        // Prepare successful response
-        $response = [
+
+        return $this->response->setJSON([
             'success' => true,
             'data' => $processedBookings,
-            'message' => 'Data booking berhasil diambil',
-            'count' => count($processedBookings),
-            'debug_info' => [
-                'ruangan_id' => $ruanganId,
-                'tanggal' => $tanggal,
-                'total_bookings' => count($processedBookings),
-                'query_executed' => true,
-                'current_time' => date('Y-m-d H:i:s'),
-                'current_user_id' => $currentUserId,
-                'request_method' => $this->request->getMethod()
-            ]
-        ];
-        
-        log_message('debug', 'Sending JSON response with ' . count($processedBookings) . ' bookings');
-        
-        return $this->response->setJSON($response);
-        
+            'count' => count($processedBookings)
+        ]);
+
     } catch (\Exception $e) {
-        log_message('error', 'Error getBookingByDate: ' . $e->getMessage());
-        log_message('error', 'Stack trace: ' . $e->getTraceAsString());
-        
-        $errorResponse = [
+
+        return $this->response->setJSON([
             'success' => false,
-            'message' => 'Terjadi kesalahan saat mengambil data booking',
-            'error' => $e->getMessage(),
-            'debug_info' => [
-                'ruangan_id' => $ruanganId ?? 'null',
-                'tanggal' => $tanggal ?? 'null',
-                'error_line' => $e->getLine(),
-                'error_file' => basename($e->getFile()),
-                'request_method' => $this->request->getMethod(),
-                'timestamp' => date('Y-m-d H:i:s')
-            ]
-        ];
-        
-        return $this->response->setJSON($errorResponse);
+            'message' => 'Terjadi kesalahan saat mengambil booking',
+            'error' => $e->getMessage()
+        ]);
     }
 }
 
@@ -1381,79 +1328,86 @@ public function checkTimeConflict($ruanganId, $tanggal, $waktuMulai, $waktuSeles
 //         ]);
 //     }
 // }
-public function getBookingPublik()
+public function getBookingPublik($lokasi = null)
 {
-try {
+    try {
 
-    $today = date('Y-m-d');
+        $today = date('Y-m-d');
+
+        $bookingModel = new \App\Models\BookingRuanganModel();
+        $pinjamModel  = new \App\Models\PinjamRuanganModel();
+
+        // BOOKING LANGSUNG
+        $bookingLangsung = $bookingModel
+            ->select('
+                booking_ruangan.id,
+                booking_ruangan.tanggal,
+                booking_ruangan.waktu_mulai,
+                booking_ruangan.waktu_selesai,
+                booking_ruangan.status,
+                booking_ruangan.keperluan,
+                booking_ruangan.nama_penanggung_jawab,
+                booking_ruangan.unit_organisasi,
+                booking_ruangan.jumlah_peserta,
+                ruangan.nama_ruangan
+            ')
+            ->join('ruangan', 'ruangan.id = booking_ruangan.ruangan_id')
+            ->where('booking_ruangan.status', 'aktif')
+            ->where('booking_ruangan.tanggal >=', $today);
+
+        if ($lokasi) {
+            $bookingLangsung->where('ruangan.lokasi', $lokasi);
+        }
+
+        $bookingLangsung = $bookingLangsung->findAll();
 
 
-    $bookingModel = new \App\Models\BookingRuanganModel();
-    $pinjamModel  = new \App\Models\PinjamRuanganModel();
+        // PINJAM / CONFIRM
+        $confirm = $pinjamModel
+            ->select('
+                pinjam_ruangan.id,
+                pinjam_ruangan.tanggal,
+                pinjam_ruangan.waktu_mulai,
+                pinjam_ruangan.waktu_selesai,
+                pinjam_ruangan.status,
+                pinjam_ruangan.keperluan,
+                pinjam_ruangan.nama_penanggung_jawab,
+                pinjam_ruangan.unit_organisasi,
+                pinjam_ruangan.jumlah_peserta,
+                ruangan.nama_ruangan
+            ')
+            ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
+            ->whereIn('pinjam_ruangan.status', ['disetujui','dipinjam','pending'])
+            ->where('pinjam_ruangan.deleted_at', null)
+            ->where('pinjam_ruangan.tanggal >=', $today);
 
-    // 1️⃣ Booking langsung (TIDAK pakai deleted_at)
-    $bookingLangsung = $bookingModel
-        ->select('
-            booking_ruangan.id,
-            booking_ruangan.tanggal,
-            booking_ruangan.waktu_mulai,
-            booking_ruangan.waktu_selesai,
-            booking_ruangan.status,
-            booking_ruangan.keperluan,
-            booking_ruangan.nama_penanggung_jawab,
-            booking_ruangan.unit_organisasi,
-            booking_ruangan.jumlah_peserta,
-            ruangan.nama_ruangan
-        ')
-        ->join('ruangan', 'ruangan.id = booking_ruangan.ruangan_id')
-        ->where('booking_ruangan.status', 'aktif')
-        ->where('booking_ruangan.tanggal >=', $today)
-        ->findAll();
+        if ($lokasi) {
+            $confirm->where('ruangan.lokasi', $lokasi);
+        }
 
-    // 2️⃣ Pinjam / confirm (PAKAI soft delete)
-    $confirm = $pinjamModel
-        ->select('
-            pinjam_ruangan.id,
-            pinjam_ruangan.tanggal,
-            pinjam_ruangan.waktu_mulai,
-            pinjam_ruangan.waktu_selesai,
-            pinjam_ruangan.status,
-            pinjam_ruangan.keperluan,
-            pinjam_ruangan.nama_penanggung_jawab,
-            pinjam_ruangan.unit_organisasi,
-            pinjam_ruangan.jumlah_peserta,
-            ruangan.nama_ruangan
-        ')
-        ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
-        ->whereIn('pinjam_ruangan.status', ['disetujui', 'dipinjam', 'pending'])
-        ->where('pinjam_ruangan.deleted_at', null)
-        ->where('pinjam_ruangan.tanggal >=', $today)
-        ->findAll();
+        $confirm = $confirm->findAll();
 
-    // 3️⃣ Gabungkan
-    $allData = array_merge($bookingLangsung, $confirm);
 
-    // 4️⃣ Sort tanggal + waktu
-    usort($allData, function ($a, $b) {
-        return strtotime($a['tanggal'].' '.$a['waktu_mulai'])
-             - strtotime($b['tanggal'].' '.$b['waktu_mulai']);
-    });
+        $allData = array_merge($bookingLangsung, $confirm);
 
-    return $this->response->setJSON([
-        'success' => true,
-        'data'    => $allData
-    ]);
+        usort($allData, function ($a, $b) {
+            return strtotime($a['tanggal'].' '.$a['waktu_mulai'])
+                 - strtotime($b['tanggal'].' '.$b['waktu_mulai']);
+        });
 
-} catch (\Throwable $e) {
-    return $this->response->setJSON([
-        'success' => false,
-        'message' => 'Gagal memuat data kalender',
-        'error'   => $e->getMessage()
-    ], 500);
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $allData
+        ]);
+
+    } catch (\Throwable $e) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Gagal memuat data kalender',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 }
-
-}
-
 
 /**
  * Check availability untuk booking langsung  
@@ -2425,6 +2379,31 @@ public function getDaftarBookingSaya()
         // Format data untuk response
         $formattedBookings = [];
         foreach ($allBookings as $booking) {
+
+        // CEK apakah sudah ada user lain yang disetujui di waktu yang sama
+$takenByOther = false;
+
+$conflict = $db->query("
+    SELECT id FROM pinjam_ruangan
+    WHERE ruangan_id = ?
+    AND tanggal = ?
+    AND status = 'disetujui'
+    AND user_id != ?
+    AND waktu_mulai < ?
+    AND waktu_selesai > ?
+    AND deleted_at IS NULL
+    LIMIT 1
+", [
+    $booking['ruangan_id'],
+    $booking['tanggal'],
+    $booking['user_id'],
+    $booking['waktu_selesai'],
+    $booking['waktu_mulai']
+])->getRowArray();
+
+if ($conflict) {
+    $takenByOther = true;
+}
             $formattedBookings[] = [
                 'id' => $booking['id'],
                 'source_table' => $booking['source_table'],
@@ -2438,6 +2417,7 @@ public function getDaftarBookingSaya()
                 'nomor_hp_penanggung_jawab' => $booking['nomor_hp_penanggung_jawab'],
                 'keperluan' => $booking['keperluan'] ?? '',
                 'status' => $booking['status'] ?? 'aktif',
+                'taken_by_other' => $takenByOther,
                 'user_id' => $booking['user_id'],
                 'email' => $booking['email'] ?? '',
                 'fullname' => $booking['fullname'] ?? '',

@@ -244,4 +244,18 @@ public function validateTimeSlot($waktuMulai, $waktuSelesai)
             ->get()
             ->getResultArray();
     }
+    // CEK apakah waktu sudah disetujui oleh user lain
+public function isConfirmedByOtherUser($ruanganId, $tanggal, $waktuMulai, $waktuSelesai, $userId)
+{
+    return $this->where('ruangan_id', $ruanganId)
+        ->where('tanggal', $tanggal)
+        ->where('status', self::STATUS_DISETUJUI)
+        ->where('user_id !=', $userId)
+        ->groupStart()
+            ->where('waktu_mulai <', $waktuSelesai)
+            ->where('waktu_selesai >', $waktuMulai)
+        ->groupEnd()
+        ->where('deleted_at', null)
+        ->first();
+}
 }

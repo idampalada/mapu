@@ -79,58 +79,7 @@ use App\Models\PinjamRuanganModel;
                         Booking akan langsung aktif setelah disubmit.
                     </div>
                     
-                    <!-- Filter untuk Booking -->
-                    <div class="filter-section mb-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0">Filter Ruangan - Booking</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Cari Nama Ruangan</label>
-                                        <input type="text" class="form-control" id="filterNamaBooking" placeholder="Cari ruangan...">
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Filter Kapasitas</label>
-                                        <select class="form-select" id="filterKapasitasBooking">
-                                            <option value="">Semua Kapasitas</option>
-                                            <option value="1-10">1-10 Orang</option>
-                                            <option value="11-30">11-30 Orang</option>
-                                            <option value="31-50">31-50 Orang</option>
-                                            <option value="50+">>50 Orang</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Filter Status</label>
-                                        <select class="form-select" id="filterStatusBooking">
-                                            <option value="">Semua Status</option>
-                                            <option value="Tersedia">Tersedia</option>
-                                            <option value="Dibooking">Sedang Dipinjam</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Filter Fasilitas</label>
-                                        <select class="form-select" id="filterFasilitasBooking">
-                                            <option value="">Semua Fasilitas</option>
-                                            <option value="Projector">Projektor</option>
-                                            <option value="Sound System">Sound System</option>
-                                            <option value="AC">AC</option>
-                                            <option value="Wifi">WiFi</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <button class="btn btn-primary" onclick="resetFilterBooking()">
-                                            <i class="bi bi-arrow-clockwise"></i> Reset Filter
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
+                   
                     <!-- Daftar Ruangan untuk Booking -->
                     <div class="card-grid" id="ruanganGridBooking">
                         <?php if (!empty($ruangans)): ?>
@@ -235,19 +184,6 @@ use App\Models\PinjamRuanganModel;
                                                 Booking Sekarang
                                             </button>
 
-                                                
-                                                <!-- Button Request Confirm - DENGAN CLASS DAN DATA YANG SAMA SEPERTI ASLI -->
-                                            <button class="btn btn-secondary btn-sm rounded-pill shadow-sm hover-effect
-                                                        d-flex align-items-center justify-content-center btn-pinjam-ruangan"
-                                                    style="height: 2.2rem; background-color: #28A745; border: none; color: #fff;"
-                                                    data-ruangan-id="<?= $ruangan['id'] ?>"
-                                                    data-ruangan-nama="<?= $cleanRuanganName ?>"
-                                                    data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
-                                                    data-ruangan-fasilitas="<?= $cleanFasilitas ?>"
-                                                    data-booking-type="confirm">
-                                                Request Confirm
-                                            </button>
-
                                             <?php else: ?>
                                                 <button class="btn btn-secondary btn-sm rounded-pill d-flex align-items-center justify-content-center gap-2"
                                                         style="height: 2.2rem; cursor: not-allowed;" disabled>
@@ -347,60 +283,6 @@ use App\Models\PinjamRuanganModel;
                             Anda dapat mengedit atau menghapus ruangan dari section ini.
                         </div>
                         
-                        <!-- Filter untuk Pengaturan -->
-                        <div class="filter-section mb-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="mb-0">Filter Ruangan - Pengaturan Admin</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label">Cari Nama Ruangan</label>
-                                            <input type="text" class="form-control" id="filterNamaPengaturan" placeholder="Cari ruangan...">
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label">Filter Kapasitas</label>
-                                            <select class="form-select" id="filterKapasitasPengaturan">
-                                                <option value="">Semua Kapasitas</option>
-                                                <option value="1-10">1-10 Orang</option>
-                                                <option value="11-30">11-30 Orang</option>
-                                                <option value="31-50">31-50 Orang</option>
-                                                <option value="50+">>50 Orang</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label">Filter Status</label>
-                                            <select class="form-select" id="filterStatusPengaturan">
-                                                <option value="">Semua Status</option>
-                                                <option value="active">Aktif</option>
-                                                <option value="maintenance">Maintenance</option>
-                                                <option value="Tersedia">Tersedia</option>
-                                                <option value="Dibooking">Sedang Dipinjam</option>
-                                                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label class="form-label">Filter Fasilitas</label>
-                                            <select class="form-select" id="filterFasilitasPengaturan">
-                                                <option value="">Semua Fasilitas</option>
-                                                <option value="Projector">Projektor</option>
-                                                <option value="Sound System">Sound System</option>
-                                                <option value="AC">AC</option>
-                                                <option value="Wifi">WiFi</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <button class="btn btn-primary" onclick="resetFilterPengaturan()">
-                                                <i class="bi bi-arrow-clockwise"></i> Reset Filter
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         
                         <!-- Daftar Ruangan untuk Pengaturan - MENGGUNAKAN STRUKTUR ASLI LENGKAP -->
                         <div class="card-grid" id="ruanganGridPengaturan">
@@ -1451,6 +1333,8 @@ use App\Models\PinjamRuanganModel;
 </style>
 
 <script>
+
+const LOKASI_GEDUNG = "<?= $lokasi ?>";
 document.addEventListener('DOMContentLoaded', function() {
     // Event listener untuk tombol booking langsung
     document.addEventListener('click', function(e) {
@@ -1549,7 +1433,7 @@ function deleteRuangan(ruanganId) {
 }
 
 function loadBookingNotices() {
-    fetch("<?= base_url('User/Ruangan/getBookingPublik') ?>")
+    fetch("<?= base_url('User/Ruangan/getBookingPublik') ?>/" + encodeURIComponent(LOKASI_GEDUNG))
         .then(res => res.json())
         .then(data => {
             const noticeContainer = document.getElementById("bookingNotice");
@@ -1614,8 +1498,5 @@ const baseUrl = '<?= base_url() ?>';
 </script>
 
 
-<!-- Load JavaScript files -->
-<script src="<?= base_url('assets/js/pinjam-ruangan.js') ?>"></script>
-<script src="<?= base_url('assets/js/booking-ruangan.js') ?>"></script>
 
 <?= $this->endSection() ?>

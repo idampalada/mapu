@@ -86,9 +86,10 @@ public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSeles
     }
 
     // =============================
-    // 1. CEK KONFLIK USER
+    // 1. CEK BOOKING USER SENDIRI
     // =============================
     $userConflict = $this->where('user_id', $userId)
+        ->where('ruangan_id', $ruanganId)
         ->where('tanggal', $tanggal)
         ->where('status', 'aktif')
         ->groupStart()
@@ -102,37 +103,21 @@ public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSeles
     }
 
     // =============================
-    // 2. CEK KONFLIK RUANGAN
-    // =============================
-    $roomConflict = $this->where('ruangan_id', $ruanganId)
-        ->where('tanggal', $tanggal)
-        ->where('status', 'aktif')
-        ->groupStart()
-            ->where('waktu_mulai <', $waktuSelesai)
-            ->where('waktu_selesai >', $waktuMulai)
-        ->groupEnd()
-        ->first();
-
-    if ($roomConflict) {
-        return $roomConflict;
-    }
-
-    // =============================
-    // 3. CEK pinjam_ruangan
+    // 2. CEK PINJAM RUANGAN (CONFIRM)
     // =============================
     $pinjamModel = new \App\Models\PinjamRuanganModel();
 
-    $pinjamConflict = $pinjamModel->where('ruangan_id', $ruanganId)
+    $confirmConflict = $pinjamModel->where('ruangan_id', $ruanganId)
         ->where('tanggal', $tanggal)
-        ->where('status', 'disetujui')
+        ->where('status', 'disetujui') // CONFIRM
         ->groupStart()
             ->where('waktu_mulai <', $waktuSelesai)
             ->where('waktu_selesai >', $waktuMulai)
         ->groupEnd()
         ->first();
 
-    if ($pinjamConflict) {
-        return $pinjamConflict;
+    if ($confirmConflict) {
+        return $confirmConflict;
     }
 
     return null;
@@ -273,4 +258,5 @@ public function checkAvailability($ruanganId, $tanggal, $waktuMulai, $waktuSeles
             ->set('status', 'selesai')
             ->update();
     }
+    
 }

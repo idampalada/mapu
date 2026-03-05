@@ -55,7 +55,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -74,9 +73,9 @@
     <script src="<?= base_url(); ?>/assets/js/laporan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/dashboard.js"></script>
     <script src="<?= base_url(); ?>/assets/js/auth.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/pinjam-ruangan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/ubah-jam.js"></script>
     <script src="<?= base_url(); ?>/assets/js/daftar-booking.js"></script>
+<script src="<?= base_url(); ?>/assets/js/calendar-booking.js?v=<?= filemtime(FCPATH.'assets/js/calendar-booking.js'); ?>"></script>
     <script src="<?= base_url(); ?>/assets/js/letterhead-surat.js"></script>
     <script src="<?= base_url(); ?>/assets/js/booking-ruangan.js"></script>
     <script src="<?= base_url(); ?>/assets/js/ttesuratpermohonan.js"></script>

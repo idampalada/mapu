@@ -127,7 +127,7 @@ $routes->get('user/barang/debug-status', 'User\Barang::debugStatus');
     $routes->post('cancelBooking/(:num)', 'User\Ruangan::cancelBooking/$1'); // Cancel booking
     
     // API routes untuk booking langsung
-    $routes->get('getBookingPublik', 'User\Ruangan::getBookingPublik'); // Untuk notifikasi
+
     $routes->get('checkBookingAvailability', 'User\Ruangan::checkBookingAvailability'); // Cek availability
     
     // API routes HARUS DI ATAS (:segment)
@@ -360,6 +360,7 @@ $routes->get('uploads/documents/(:any)', function ($filename) {
 // Tambahkan route langsung tanpa group (untuk debug)
 // $routes->get('User/Ruangan/getBookingSaya', 'User\Ruangan::getBookingSaya');
 $routes->get('User/Ruangan/getBookingPublik', 'User\Ruangan::getBookingPublik');
+$routes->get('User/Ruangan/getBookingPublik/(:segment)', 'User\Ruangan::getBookingPublik/$1');
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) {
     $routes->get('barangkategori', 'BarangKategori::index');
 });

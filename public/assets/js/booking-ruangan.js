@@ -550,10 +550,7 @@ function initializeBookingTimePicker(ruanganId) {
     bookedSlots: [],
     timeSlots: generateBookingTimeSlots(),
   };
-
-  renderBookingTimeSlots();
 }
-
 function generateBookingTimeSlots() {
   const slots = [];
   for (let hour = 7; hour <= 17; hour++) {
@@ -572,14 +569,18 @@ function renderBookingTimeSlots() {
 
   timeRuler.innerHTML = "";
 
-  window.bookingTimePickerState.timeSlots.forEach((timeSlot) => {
+  const state = window.bookingTimePickerState;
+
+  console.log("Rendering slots with booked:", state.bookedSlots);
+
+  state.timeSlots.forEach((timeSlot) => {
     const slotElement = document.createElement("div");
+
     slotElement.className = "time-slot";
     slotElement.textContent = timeSlot;
     slotElement.dataset.time = timeSlot;
 
-    // Check if this slot is booked
-    if (window.bookingTimePickerState.bookedSlots.includes(timeSlot)) {
+    if (state.bookedSlots.includes(timeSlot)) {
       slotElement.classList.add("booked");
       slotElement.title = "Waktu sudah dibooking";
     } else {
@@ -744,8 +745,10 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
     `Loading existing bookings for ruangan ${ruanganId} on ${tanggal}`,
   );
 
-  // Clear previous bookings
-  window.bookingTimePickerState.bookedSlots = [];
+  const state = window.bookingTimePickerState;
+
+  // reset booked slots
+  state.bookedSlots = [];
 
   const baseUrl =
     document.querySelector("base")?.href || window.location.origin;
@@ -756,82 +759,94 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
     .then((response) => response.json())
     .then((data) => {
       console.log("Booking data received:", data);
+      console.log("TYPE:", typeof data.data);
+      console.log("IS ARRAY:", Array.isArray(data.data));
+      console.log("DATA LENGTH:", data.data?.length);
 
-      // TAMBAHKAN DEBUG DI SINI
-      console.log("Bookings count:", data.data.length);
+      const existingBookingsDiv = document.getElementById(
+        "booking_existing_bookings",
+      );
+      const bookingList = document.getElementById("booking_booking_list");
 
-      if (data.success && data.data && data.data.length > 0) {
-        // Show existing bookings
-        const existingBookingsDiv = document.getElementById(
-          "booking_existing_bookings",
-        );
-        const bookingList = document.getElementById("booking_booking_list");
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        console.log("Bookings count:", data.data.length);
 
-        if (existingBookingsDiv && bookingList) {
-          existingBookingsDiv.style.display = "block";
-          bookingList.innerHTML = "";
+        if (existingBookingsDiv) existingBookingsDiv.style.display = "block";
+        if (bookingList) bookingList.innerHTML = "";
 
-          data.data.forEach((booking) => {
-            console.log("Processing booking:", booking);
+        data.data.forEach((booking) => {
+          console.log("Processing booking:", booking);
 
+          if (bookingList) {
             const bookingItem = document.createElement("div");
             bookingItem.className = "booking-item";
+
             bookingItem.innerHTML = `
-      <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong><br>
-      <small>${booking.nama_penanggung_jawab} (${booking.keperluan})</small>
-    `;
+              <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong><br>
+              <small>${booking.nama_penanggung_jawab} (${booking.keperluan})</small>
+            `;
 
             bookingList.appendChild(bookingItem);
+          }
 
-            // ambil waktu
-            let startTime = booking.waktu_mulai;
-            let endTime = booking.waktu_selesai;
+          // normalize time format
+          let startTime = booking.waktu_mulai.substring(0, 5);
+          let endTime = booking.waktu_selesai.substring(0, 5);
 
-            // normalize format (handle 09:00:00 -> 09:00)
-            startTime = startTime.substring(0, 5);
-            endTime = endTime.substring(0, 5);
+          console.log("Marking slot:", startTime, "-", endTime);
 
-            console.log("Marking slot:", startTime, "-", endTime);
-
-            // block slot
-            markBookingTimeSlots(startTime, endTime);
-          });
-        }
+          markBookingTimeSlots(startTime, endTime);
+        });
       } else {
-        // Hide existing bookings if none
-        const existingBookingsDiv = document.getElementById(
-          "booking_existing_bookings",
-        );
+        console.log("No bookings found");
+
         if (existingBookingsDiv) {
           existingBookingsDiv.style.display = "none";
         }
       }
 
-      // Re-render time slots with new booking data
+      console.log("Booked slots after processing:", state.bookedSlots);
+
+      // render slot setelah semua booking diproses
       renderBookingTimeSlots();
     })
     .catch((error) => {
       console.error("Error loading existing bookings:", error);
-      // Still render time slots even if loading fails
+
       renderBookingTimeSlots();
     });
 }
-
 function markBookingTimeSlots(startTime, endTime) {
-  const state = window.bookingTimePickerState;
+  if (!window.bookingTimePickerState) {
+    window.bookingTimePickerState = { bookedSlots: [] };
+  }
 
-  startTime = startTime.substring(0, 5);
-  endTime = endTime.substring(0, 5);
+  const start = startTime.substring(0, 5);
+  const end = endTime.substring(0, 5);
 
-  state.timeSlots.forEach((slot) => {
-    if (slot >= startTime && slot < endTime) {
-      if (!state.bookedSlots.includes(slot)) {
-        state.bookedSlots.push(slot);
-      }
+  let current = start;
+
+  while (current <= end) {
+    // 🔥 PERBAIKAN DI SINI
+    if (!window.bookingTimePickerState.bookedSlots.includes(current)) {
+      window.bookingTimePickerState.bookedSlots.push(current);
     }
-  });
-}
 
+    const parts = current.split(":");
+    let hour = parseInt(parts[0]);
+    let minute = parseInt(parts[1]);
+
+    minute += 30;
+
+    if (minute >= 60) {
+      hour += 1;
+      minute = 0;
+    }
+
+    current =
+      String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+  }
+}
 function handleBookingRuanganSubmit(event, formData) {
   event.preventDefault();
 

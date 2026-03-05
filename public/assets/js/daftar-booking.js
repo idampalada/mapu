@@ -156,7 +156,7 @@ function displayBookings(bookings, responseData) {
                 <div class="mb-2">
                     <small class="text-muted">Email User:</small><br>
                     <span class="fw-semibold text-primary">${escapeHtml(
-                      booking.email || ""
+                      booking.email || "",
                     )}</span>
                 </div>
                 ${
@@ -165,7 +165,7 @@ function displayBookings(bookings, responseData) {
                 <div class="mb-2">
                     <small class="text-muted">Nama User:</small><br>
                     <span class="fw-semibold">${escapeHtml(
-                      booking.fullname
+                      booking.fullname,
                     )}</span>
                 </div>`
                     : ""
@@ -176,7 +176,7 @@ function displayBookings(bookings, responseData) {
                 <div class="mb-2">
                     <small class="text-muted">Gedung:</small><br>
                     <span class="fw-semibold text-info">${escapeHtml(
-                      booking.gedung
+                      booking.gedung,
                     )}</span>
                 </div>`
                     : ""
@@ -201,16 +201,16 @@ function displayBookings(bookings, responseData) {
                                 <div class="col-6">
                                     <small class="text-muted">Tanggal:</small><br>
                                     <span class="fw-semibold">${formatTanggal(
-                                      booking.tanggal
+                                      booking.tanggal,
                                     )}</span>
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted">Waktu:</small><br>
                                     <span class="fw-semibold">${formatWaktu(
-                                      booking.waktu_mulai
+                                      booking.waktu_mulai,
                                     )} - ${formatWaktu(
-      booking.waktu_selesai
-    )}</span>
+                                      booking.waktu_selesai,
+                                    )}</span>
                                 </div>
                             </div>
                             <div class="mb-2">
@@ -224,7 +224,7 @@ function displayBookings(bookings, responseData) {
                                 <div class="mb-2">
                                     <small class="text-muted">Keperluan:</small><br>
                                     <span class="text-truncate d-block" style="max-height: 2.5em; overflow: hidden;">${escapeHtml(
-                                      booking.keperluan
+                                      booking.keperluan,
                                     )}</span>
                                 </div>
                             `
@@ -236,7 +236,7 @@ function displayBookings(bookings, responseData) {
                                 <div class="mb-2">
                                     <small class="text-muted">Catatan Admin:</small><br>
                                     <span class="text-warning">${escapeHtml(
-                                      booking.catatan_admin
+                                      booking.catatan_admin,
                                     )}</span>
                                 </div>
                             `
@@ -277,22 +277,33 @@ function getActionButton(booking) {
   const safeId = escapeHtml(booking.id || "");
   const safeNamaRuangan = escapeHtml(booking.nama_ruangan || "").replace(
     /'/g,
-    "\\'"
+    "\\'",
   );
   const sourceTable = booking.source_table || "booking";
 
   // Berdasarkan status dan source table
   switch (booking.status) {
     case "aktif":
-      // Hanya dari booking_ruangan yang bisa request confirm
+      // 🔴 jika sudah diambil user lain
+      if (booking.taken_by_other) {
+        return `
+        <button class="btn btn-secondary btn-sm w-100" disabled>
+            <i class="bi bi-lock me-1"></i>
+            Telah dipinjam user lain
+        </button>
+    `;
+      }
+
+      // 🟡 jika masih bisa request confirm
       if (sourceTable === "booking") {
         return `
-                    <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
-                        <i class="bi bi-check-circle me-1"></i>
-                        Request Confirm
-                    </button>
-                `;
+        <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
+            <i class="bi bi-check-circle me-1"></i>
+            Request Confirm
+        </button>
+    `;
       }
+
       break;
     case "pending":
       // Dari pinjam_ruangan yang sudah di-request confirm
@@ -656,7 +667,7 @@ function requestConfirmBooking(bookingId, namaRuangan) {
 
   // Show modal
   const modal = new bootstrap.Modal(
-    document.getElementById("requestConfirmModal")
+    document.getElementById("requestConfirmModal"),
   );
   modal.show();
 }
@@ -721,7 +732,7 @@ function submitRequestConfirm() {
       if (data.success) {
         // Close modal
         const modal = bootstrap.Modal.getInstance(
-          document.getElementById("requestConfirmModal")
+          document.getElementById("requestConfirmModal"),
         );
         modal.hide();
 
@@ -771,7 +782,7 @@ function lihatDetailBooking(bookingId, sourceTable) {
   console.log("Lihat detail booking:", bookingId, "from table:", sourceTable);
   // Implementation untuk detail booking
   alert(
-    "Detail booking " + bookingId + " dari tabel " + (sourceTable || "booking")
+    "Detail booking " + bookingId + " dari tabel " + (sourceTable || "booking"),
   );
 }
 
