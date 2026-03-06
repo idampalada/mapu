@@ -1562,15 +1562,20 @@ function loadKetersediaanHariIni() {
 
                 bookingRuangan.forEach(b => {
 
-                    const start = addMinutes(b.waktu_mulai.substring(0,5), -30);
-                    const end = addMinutes(b.waktu_selesai.substring(0,5), 30);
+    const start = addMinutes(b.waktu_mulai.substring(0,5), -30);
+    const end = addMinutes(b.waktu_selesai.substring(0,5), 30);
 
-                    html += `
-                    <small class="text-success d-block">● ${nowTime} - ${start}</small>
-                    <small class="text-success d-block">● ${end} - ${endTime}</small>
-                    `;
+    // hanya tampilkan slot sebelum booking jika masih valid
+    if (nowTime < start) {
+        html += `<small class="text-success d-block">● ${nowTime} - ${start}</small>`;
+    }
 
-                });
+    // tampilkan slot setelah booking jika masih dalam jam operasional
+    if (end < endTime) {
+        html += `<small class="text-success d-block">● ${end} - ${endTime}</small>`;
+    }
+
+});
 
             }
 
