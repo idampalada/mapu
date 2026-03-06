@@ -571,7 +571,11 @@ function renderBookingTimeSlots() {
 
   const state = window.bookingTimePickerState;
 
-  console.log("Rendering slots with booked:", state.bookedSlots);
+  const tanggalInput = document.getElementById("booking_tanggal");
+  const selectedDate = tanggalInput ? tanggalInput.value : null;
+
+  const today = new Date().toISOString().split("T")[0];
+  const now = new Date().toTimeString().substring(0, 5);
 
   state.timeSlots.forEach((timeSlot) => {
     const slotElement = document.createElement("div");
@@ -580,10 +584,20 @@ function renderBookingTimeSlots() {
     slotElement.textContent = timeSlot;
     slotElement.dataset.time = timeSlot;
 
-    if (state.bookedSlots.includes(timeSlot)) {
+    // 🔴 jika waktu sudah lewat (hari ini)
+    if (selectedDate === today && timeSlot <= now) {
+      slotElement.classList.add("booked");
+      slotElement.title = "Waktu sudah lewat";
+    }
+
+    // 🔴 jika sudah dibooking
+    else if (state.bookedSlots.includes(timeSlot)) {
       slotElement.classList.add("booked");
       slotElement.title = "Waktu sudah dibooking";
-    } else {
+    }
+
+    // 🟢 tersedia
+    else {
       slotElement.classList.add("available");
       slotElement.addEventListener("click", handleBookingTimeSlotClick);
     }
