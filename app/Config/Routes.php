@@ -135,6 +135,9 @@ $routes->get('user/barang/debug-status', 'User\Barang::debugStatus');
     $routes->post('getBookingByDate', 'User\Ruangan::getBookingByDate');
     $routes->get('checkAvailability', 'User\Ruangan::checkAvailability');
 
+    $routes->get('getPinjamHariIni', 'User\Ruangan::getPinjamHariIni');
+$routes->get('getPinjamHariIni/(:segment)', 'User\Ruangan::getPinjamHariIni/$1');
+
     // 👇 TAMBAHKAN ROUTE AUTO-FILL DI SINI 👇
     $routes->get('getUserLatestBookingData', 'User\Ruangan::getUserLatestBookingData');
 

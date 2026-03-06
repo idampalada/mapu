@@ -166,6 +166,17 @@ use App\Models\PinjamRuanganModel;
                                                     <?= htmlspecialchars($ruangan['fasilitas']) ?>
                                                 </p>
                                             <?php endif; ?>
+
+                                            <div class="mt-2 ketersediaan-ruangan"
+     data-ruangan="<?= htmlspecialchars($ruangan['nama_ruangan']) ?>">
+     
+    <small class="text-muted"> Ketersediaan Hari Ini:</small>
+
+    <div class="ketersediaan-content">
+        <small class="text-muted">Memuat...</small>
+    </div>
+
+</div>
                                         </div>
                                     </div>
 
@@ -1005,6 +1016,8 @@ use App\Models\PinjamRuanganModel;
         </div>
     </div>
 
+
+
     <!-- Kalender Booking Ruangan -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -1339,6 +1352,8 @@ use App\Models\PinjamRuanganModel;
 
 const LOKASI_GEDUNG = "<?= $lokasi ?>";
 document.addEventListener('DOMContentLoaded', function() {
+
+loadKetersediaanHariIni();
     // Event listener untuk tombol booking langsung
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btn-booking-ruangan')) {
@@ -1511,6 +1526,72 @@ document.getElementById("toggleBookingNotice").addEventListener("click", functio
     }
 
 });
+
+
+function loadKetersediaanHariIni() {
+
+    const now = new Date();
+    const nowTime = now.toTimeString().substring(0,5);
+    const endTime = "17:30";
+
+    fetch(baseUrl + "/user/ruangan/getPinjamHariIni/" + encodeURIComponent(LOKASI_GEDUNG))
+    .then(res => res.json())
+    .then(response => {
+
+        if (!response.success) return;
+
+        const bookings = response.data || [];
+
+        // ambil semua container ketersediaan di card ruangan
+        const containers = document.querySelectorAll(".ketersediaan-ruangan");
+
+        containers.forEach(box => {
+
+            const namaRuangan = box.dataset.ruangan;
+            const content = box.querySelector(".ketersediaan-content");
+
+            const bookingRuangan = bookings.filter(b => b.nama_ruangan === namaRuangan);
+
+            let html = "";
+
+            if (bookingRuangan.length === 0) {
+
+                html += `<small class="text-success">● Tersedia ${nowTime} - ${endTime}</small>`;
+
+            } else {
+
+                bookingRuangan.forEach(b => {
+
+                    const start = addMinutes(b.waktu_mulai.substring(0,5), -30);
+                    const end = addMinutes(b.waktu_selesai.substring(0,5), 30);
+
+                    html += `
+                    <small class="text-success d-block">● ${nowTime} - ${start}</small>
+                    <small class="text-success d-block">● ${end} - ${endTime}</small>
+                    `;
+
+                });
+
+            }
+
+            content.innerHTML = html;
+
+        });
+
+    });
+
+}
+
+function addMinutes(time, minutes) {
+
+    const [h,m] = time.split(":").map(Number);
+
+    const date = new Date();
+    date.setHours(h);
+    date.setMinutes(m + minutes);
+
+    return date.toTimeString().substring(0,5);
+}
 
 // Set base URL untuk JavaScript
 const baseUrl = '<?= base_url() ?>';

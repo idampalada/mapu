@@ -2715,5 +2715,53 @@ public function getBookingByMonth()
         ]);
     }
 }
+public function getPinjamHariIni($lokasi)
+{
+    try {
+
+        $today = date('Y-m-d');
+
+        // mapping slug ke nama lokasi di database
+        $mapLokasi = [
+            'pusdatin' => 'Pusat Data dan Teknologi Informasi',
+            'gedungutama' => 'Gedung Utama',
+            'binamarga' => 'Bina Marga',
+            'ciptakarya' => 'Cipta Karya',
+            'sda' => 'Sumber Daya Air',
+            'gedungg' => 'Gedung G',
+            'heritage' => 'Heritage',
+            'auditorium' => 'Auditorium'
+        ];
+
+        $lokasiDB = $mapLokasi[$lokasi] ?? $lokasi;
+
+        $pinjamModel = new \App\Models\PinjamRuanganModel();
+
+        $data = $pinjamModel
+            ->select('
+                pinjam_ruangan.ruangan_id,
+                ruangan.nama_ruangan,
+                pinjam_ruangan.waktu_mulai,
+                pinjam_ruangan.waktu_selesai
+            ')
+            ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id')
+            ->where('ruangan.lokasi', $lokasiDB)
+            ->where('pinjam_ruangan.tanggal', $today)
+            ->where('pinjam_ruangan.deleted_at', null)
+            ->findAll();
+
+        return $this->response->setJSON([
+            'success' => true,
+            'data' => $data
+        ]);
+
+    } catch (\Exception $e) {
+
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => $e->getMessage()
+        ]);
+    }
+}
 
 }
