@@ -992,11 +992,14 @@ use App\Models\PinjamRuanganModel;
 
     <!-- Container Notifikasi Booking -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">🔔 Pemberitahuan Booking Ruangan</h5>
-        </div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">🔔 Pemberitahuan Booking Ruangan</h5>
+    <button class="btn btn-sm btn-outline-primary" id="toggleBookingNotice">
+        <i class="bi bi-eye"></i> Tampilkan
+    </button>
+</div>
         <div class="card-body">
-            <div id="bookingNotice">
+            <div id="bookingNotice" style="display:none;">
                 <div class="text-muted">Memuat data booking ruangan...</div>
             </div>
         </div>
@@ -1492,6 +1495,22 @@ function formatDateTime(dateStr, timeStr) {
         day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit"
     });
 }
+
+// Toggle show / hide pemberitahuan booking
+document.getElementById("toggleBookingNotice").addEventListener("click", function () {
+
+    const notice = document.getElementById("bookingNotice");
+    const btn = this;
+
+    if (notice.style.display === "none") {
+        notice.style.display = "block";
+        btn.innerHTML = '<i class="bi bi-eye-slash"></i> Sembunyikan';
+    } else {
+        notice.style.display = "none";
+        btn.innerHTML = '<i class="bi bi-eye"></i> Tampilkan';
+    }
+
+});
 
 // Set base URL untuk JavaScript
 const baseUrl = '<?= base_url() ?>';
