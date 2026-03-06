@@ -3,7 +3,7 @@
 
 <head>
         <!-- Style Css -->
-<link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
+<link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
@@ -67,24 +67,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="<?= base_url(); ?>/assets/js/main.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/timeline-peminjaman.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/homepage.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/laporan.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/dashboard.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/auth.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/ubah-jam.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/daftar-booking.js"></script>
-<script src="<?= base_url(); ?>/assets/js/calendar-booking.js?v=<?= filemtime(FCPATH.'assets/js/calendar-booking.js'); ?>"></script>
-    <script src="<?= base_url(); ?>/assets/js/letterhead-surat.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/booking-ruangan.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/ttesuratpermohonan.js"></script>
-<script src="<?= base_url(); ?>/assets/js/ttesurat.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/image-preview.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/mainpage.js"></script>
-    <script src="<?= base_url(); ?>/assets/js/scanbarang.js"></script>
+<script src="<?= asset('assets/js/main.js') ?>"></script>
+    <script src="<?= asset('assets/js/timeline-peminjaman.js') ?>"></script>
+    <script src="<?= asset('assets/js/homepage.js') ?>"></script>
+    <script src="<?= asset('assets/js/laporan.js') ?>"></script>
+    <script src="<?= asset('assets/js/dashboard.js') ?>"></script>
+    <script src="<?= asset('assets/js/auth.js') ?>"></script>
+    <script src="<?= asset('assets/js/ubah-jam.js') ?>"></script>
+    <script src="<?= asset('assets/js/daftar-booking.js') ?>"></script>
+<script src="<?= asset('assets/js/calendar-booking.js') ?>"></script>
+    <script src="<?= asset('assets/js/letterhead-surat.js') ?>"></script>
+    <script src="<?= asset('assets/js/booking-ruangan.js') ?>"></script>
+    <script src="<?= asset('assets/js/ttesuratpermohonan.js') ?>"></script>
+<script src="<?= asset('assets/js/ttesurat.js') ?>"></script>
+    <script src="<?= asset('assets/js/image-preview.js') ?>"></script>
+    <script src="<?= asset('assets/js/mainpage.js') ?>"></script>
+    <script src="<?= asset('assets/js/scanbarang.js') ?>"></script>
 
-    <script src="<?= base_url('assets/js/pinjam-barang.js') ?>"></script>
+    <script src="<?= asset('assets/js/pinjam-barang.js') ?>"></script>
 
 
 

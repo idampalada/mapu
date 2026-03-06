@@ -1539,18 +1539,47 @@ public function bookingLangsung()
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Validasi gagal',
-                'validation_errors' => $validation->getErrors()
-            ]);
-        }
+    $errors = $validation->getErrors();
+
+    return $this->response->setJSON([
+        'success' => false,
+        'error' => reset($errors) // ambil pesan error pertama saja
+    ]);
+}
 
         // Model untuk booking langsung
         $bookingModel = new \App\Models\BookingRuanganModel();
         
         // Cek availability - simple check tanpa blocking
-        $existingBooking = $bookingModel->checkAvailability(
+        // ===== CEK USER SUDAH BOOKING DI JAM YANG SAMA =====
+$db = \Config\Database::connect();
+
+$userConflict = $db->query("
+    SELECT id 
+    FROM booking_ruangan
+    WHERE user_id = ?
+    AND tanggal = ?
+    AND status = 'aktif'
+    AND waktu_mulai < ?
+    AND waktu_selesai > ?
+    LIMIT 1
+", [
+    user_id(),
+    $this->request->getPost('tanggal'),
+    $this->request->getPost('waktu_selesai'),
+    $this->request->getPost('waktu_mulai')
+])->getRowArray();
+
+if ($userConflict) {
+    return $this->response->setJSON([
+        'success' => false,
+        'error' => 'Anda tidak bisa booking ruangan di jam yang sama'
+    ]);
+}
+
+
+// ===== CEK KONFLIK RUANGAN =====
+$existingBooking = $bookingModel->checkAvailability(
     $this->request->getPost('ruangan_id'),
     $this->request->getPost('tanggal'),
     $this->request->getPost('waktu_mulai'),
@@ -1558,14 +1587,12 @@ public function bookingLangsung()
     user_id()
 );
 
-
-        if ($existingBooking) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Ruangan sudah dibooking pada waktu tersebut'
-            ]);
-        }
-
+if ($existingBooking) {
+    return $this->response->setJSON([
+        'success' => false,
+        'error' => 'Ruangan sudah dibooking pada waktu tersebut'
+    ]);
+}
         // Validasi tambahan - cek apakah user sudah login
         if (!user_id()) {
             return $this->response->setJSON([
