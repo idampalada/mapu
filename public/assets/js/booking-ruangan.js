@@ -544,6 +544,7 @@ function initializeBookingTimePicker(ruanganId) {
 
   window.bookingTimePickerState = {
     ruanganId: ruanganId,
+    currentRuanganId: ruanganId,
     selectedStart: null,
     selectedEnd: null,
     isSelectingEnd: false,
@@ -761,6 +762,9 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
 
   const state = window.bookingTimePickerState;
 
+  // 🔥 simpan reference state saat ini
+  const currentStateRef = state;
+
   // reset booked slots
   state.bookedSlots = [];
 
@@ -772,48 +776,31 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
   )
     .then((response) => response.json())
     .then((data) => {
+      // 🔥 kalau state sudah berubah → skip total
+      if (window.bookingTimePickerState !== currentStateRef) {
+        console.log("⛔ Skip: state sudah berubah (pindah ruangan)");
+        return;
+      }
+
       console.log("Booking data received:", data);
-      console.log("TYPE:", typeof data.data);
-      console.log("IS ARRAY:", Array.isArray(data.data));
-      console.log("DATA LENGTH:", data.data?.length);
 
       const existingBookingsDiv = document.getElementById(
         "booking_existing_bookings",
       );
       const bookingList = document.getElementById("booking_booking_list");
 
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-        console.log("Bookings count:", data.data.length);
+      if (bookingList) bookingList.innerHTML = "";
 
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         if (existingBookingsDiv) existingBookingsDiv.style.display = "block";
-        if (bookingList) bookingList.innerHTML = "";
 
         data.data.forEach((booking) => {
-          console.log("Processing booking:", booking);
-
-          if (bookingList) {
-            const bookingItem = document.createElement("div");
-            bookingItem.className = "booking-item";
-
-            bookingItem.innerHTML = `
-              <strong>${booking.waktu_mulai} - ${booking.waktu_selesai}</strong><br>
-              <small>${booking.nama_penanggung_jawab} (${booking.keperluan})</small>
-            `;
-
-            bookingList.appendChild(bookingItem);
-          }
-
-          // normalize time format
           let startTime = booking.waktu_mulai.substring(0, 5);
           let endTime = booking.waktu_selesai.substring(0, 5);
-
-          console.log("Marking slot:", startTime, "-", endTime);
 
           markBookingTimeSlots(startTime, endTime);
         });
       } else {
-        console.log("No bookings found");
-
         if (existingBookingsDiv) {
           existingBookingsDiv.style.display = "none";
         }
@@ -821,13 +808,14 @@ function loadBookingExistingBookings(ruanganId, tanggal) {
 
       console.log("Booked slots after processing:", state.bookedSlots);
 
-      // render slot setelah semua booking diproses
       renderBookingTimeSlots();
     })
     .catch((error) => {
       console.error("Error loading existing bookings:", error);
 
-      renderBookingTimeSlots();
+      if (window.bookingTimePickerState === currentStateRef) {
+        renderBookingTimeSlots();
+      }
     });
 }
 function markBookingTimeSlots(startTime, endTime) {

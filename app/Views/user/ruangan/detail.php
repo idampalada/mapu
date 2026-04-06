@@ -10,7 +10,7 @@ use App\Models\PinjamRuanganModel;
         <div class="page-title">
             <div class="row mb-4">
                 <div class="col-12 col-md-6 order-md-1 order-last">
-                    <h3>Gedung <?= $lokasi ?></h3>
+                    <h3>Sistem Peminjaman Ruangan <?= $lokasi ?></h3>
                 </div>
                 <div class="col-12 col-md-6 order-md-2 order-first">
                     <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
@@ -27,7 +27,7 @@ use App\Models\PinjamRuanganModel;
     <!-- Tab Navigation -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">Sistem Peminjaman Ruangan - <?= $lokasi ?></h5>
+            <h5 class="mb-0">Gedung - <?= $lokasi ?></h5>
             <p class="mb-0 text-muted">Pilih jenis peminjaman yang diinginkan</p>
         </div>
         <div class="card-body">
@@ -37,14 +37,12 @@ use App\Models\PinjamRuanganModel;
                     <button class="nav-link active" id="booking-tab" data-bs-toggle="tab" data-bs-target="#booking" 
                             type="button" role="tab" aria-controls="booking" aria-selected="true">
                         <i class="bi bi-calendar-plus me-2"></i>Booking Ruangan
-                        <span class="badge bg-success ms-2">Langsung</span>
                     </button>
                 </li>
                                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="daftar-booking-tab" data-bs-toggle="tab" data-bs-target="#daftar-booking" 
                             type="button" role="tab" aria-controls="daftar-booking" aria-selected="false">
                         <i class="bi bi-list-check me-2"></i>Daftar Booking Saya
-                        <span class="badge bg-primary ms-2">My Bookings</span>
                     </button>
                 </li>
 

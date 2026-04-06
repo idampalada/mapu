@@ -1037,7 +1037,7 @@ public function getBookingByDate()
             ->join('ruangan', 'ruangan.id = pinjam_ruangan.ruangan_id', 'left')
             ->where('pinjam_ruangan.ruangan_id', $ruanganId)
             ->where('pinjam_ruangan.tanggal', $tanggal)
-            ->whereIn('pinjam_ruangan.status', ['disetujui','pending','menunggu_verifikasi'])
+            ->where('pinjam_ruangan.status', 'disetujui')
             ->where('pinjam_ruangan.deleted_at', null)
             ->orderBy('pinjam_ruangan.waktu_mulai', 'ASC');
 
@@ -2748,7 +2748,8 @@ public function getPinjamHariIni($lokasi)
             ->where('ruangan.lokasi', $lokasiDB)
             ->where('pinjam_ruangan.tanggal', $today)
             ->where('pinjam_ruangan.deleted_at', null)
-            ->findAll();
+->where('pinjam_ruangan.status', 'disetujui') // 🔥 INI KUNCINYA
+->findAll();
 
         return $this->response->setJSON([
             'success' => true,
@@ -2762,6 +2763,35 @@ public function getPinjamHariIni($lokasi)
             'message' => $e->getMessage()
         ]);
     }
+}
+public function cancelPeminjaman($id)
+{
+    $pinjamModel = new \App\Models\PinjamRuanganModel();
+
+    $booking = $pinjamModel->find($id);
+
+    if (!$booking) {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Data tidak ditemukan'
+        ]);
+    }
+
+    if ($booking['status'] !== 'disetujui') {
+        return $this->response->setJSON([
+            'success' => false,
+            'message' => 'Hanya peminjaman disetujui yang bisa dibatalkan'
+        ]);
+    }
+
+    $pinjamModel->update($id, [
+        'status' => 'dibatalkan'
+    ]);
+
+    return $this->response->setJSON([
+        'success' => true,
+        'message' => 'Peminjaman berhasil dibatalkan'
+    ]);
 }
 
 }

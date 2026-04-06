@@ -325,21 +325,30 @@ function getActionButton(booking) {
             `;
     case "disetujui":
       return `
-                <div class="d-flex align-items-center">
-                    <button class="btn btn-success btn-sm flex-grow-1" onclick="lihatDetailBooking('${safeId}', '${sourceTable}')">
-                        <i class="bi bi-check2-circle me-1"></i>
-                        Disetujui
-                    </button>
-                    ${
-                      booking.surat_permohonan
-                        ? `
-                    <a href="/uploads/documents/${booking.surat_permohonan}" target="_blank" class="btn btn-outline-info btn-sm ms-2" title="Lihat Surat">
-                        <i class="bi bi-file-pdf"></i>
-                    </a>`
-                        : ""
-                    }
-                </div>
-            `;
+        <div class="d-grid gap-2">
+            
+            <button class="btn btn-success btn-sm" onclick="lihatDetailBooking('${safeId}', '${sourceTable}')">
+                <i class="bi bi-check2-circle me-1"></i>
+                Disetujui
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm cancel-peminjaman" data-id="${safeId}">
+                <i class="bi bi-x-circle me-1"></i>
+                Batalkan Peminjaman
+            </button>
+
+            ${
+              booking.surat_permohonan
+                ? `
+            <a href="/uploads/documents/${booking.surat_permohonan}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-file-pdf me-1"></i>
+                Lihat Surat
+            </a>`
+                : ""
+            }
+
+        </div>
+    `;
     case "ditolak":
       return `
                 <div class="d-grid gap-2">
@@ -789,3 +798,24 @@ function lihatDetailBooking(bookingId, sourceTable) {
 // Ensure global access
 window.requestConfirmBooking = requestConfirmBooking;
 window.submitRequestConfirm = submitRequestConfirm;
+
+document.addEventListener("click", function (e) {
+  if (e.target.classList.contains("cancel-peminjaman")) {
+    const id = e.target.dataset.id;
+
+    if (!confirm("Yakin ingin membatalkan peminjaman ini?")) return;
+
+    fetch(baseUrl + "/user/ruangan/cancelPeminjaman/" + id, {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.success) {
+          alert("Peminjaman berhasil dibatalkan");
+          loadDaftarBookingSaya(); // 🔥 jangan reload full page
+        } else {
+          alert(response.message);
+        }
+      });
+  }
+});

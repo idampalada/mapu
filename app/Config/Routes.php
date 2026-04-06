@@ -125,6 +125,7 @@ $routes->get('user/barang/debug-status', 'User\Barang::debugStatus');
     $routes->post('bookingLangsung', 'User\Ruangan::bookingLangsung');
     $routes->get('myBookings', 'User\Ruangan::myBookings'); // Riwayat booking user
     $routes->post('cancelBooking/(:num)', 'User\Ruangan::cancelBooking/$1'); // Cancel booking
+    $routes->post('cancelPeminjaman/(:num)', 'User\Ruangan::cancelPeminjaman/$1');
     
     // API routes untuk booking langsung
 
