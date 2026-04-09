@@ -10,7 +10,7 @@ use App\Models\PinjamRuanganModel;
         <div class="page-title">
             <div class="row mb-4">
                 <div class="col-12 col-md-6 order-md-1 order-last">
-                    <h3>Sistem Peminjaman Ruangan <?= $lokasi ?></h3>
+                    <h3>Sistem Peminjaman Ruangan</h3>
                 </div>
                 <div class="col-12 col-md-6 order-md-2 order-first">
                     <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
@@ -27,8 +27,7 @@ use App\Models\PinjamRuanganModel;
     <!-- Tab Navigation -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0">Gedung - <?= $lokasi ?></h5>
-            <p class="mb-0 text-muted">Pilih jenis peminjaman yang diinginkan</p>
+            <p class="mb-0 text-muted">Pilih jenis ruangan yang diinginkan</p>
         </div>
         <div class="card-body">
             <!-- Tabs Navigation -->
@@ -219,7 +218,7 @@ use App\Models\PinjamRuanganModel;
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Daftar Booking Saya:</strong> Kelola semua booking ruangan yang telah Anda buat. 
-                        Anda dapat melihat status booking dan melakukan request confirm untuk approval admin.
+                        Anda dapat melihat status booking dan melakukan upload surat permohonan untuk approval admin.
                     </div>
                     
                     <!-- Filter untuk Daftar Booking -->
@@ -232,7 +231,20 @@ use App\Models\PinjamRuanganModel;
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label">Cari Nama Ruangan</label>
-                                        <input type="text" class="form-control" id="filterNamaBookingSaya" placeholder="Cari ruangan...">
+<select class="form-select" id="filterNamaBookingSaya">
+    <option value="">Semua Ruangan</option>
+    <?php 
+    $uniqueRuangan = [];
+    foreach ($ruangans as $r) {
+        if (!in_array($r['nama_ruangan'], $uniqueRuangan)) {
+            $uniqueRuangan[] = $r['nama_ruangan'];
+            echo '<option value="'.htmlspecialchars($r['nama_ruangan']).'">'
+                . htmlspecialchars($r['nama_ruangan']) .
+                '</option>';
+        }
+    }
+    ?>
+</select>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label class="form-label">Filter Status</label>

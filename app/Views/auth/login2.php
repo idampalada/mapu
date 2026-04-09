@@ -37,7 +37,7 @@ html, body {
 .lp-hero-img {
   position: absolute;
   inset: 0;
-  background-image: url('/assets/images/logo/logo5.webp');
+  background-image: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&auto=format&fit=crop&q=80');
   background-size: cover;
   background-position: center;
   filter: brightness(0.42) saturate(0.75);

@@ -133,7 +133,7 @@ function displayBookings(bookings, responseData) {
       alertInfo.innerHTML =
         '<i class="bi bi-info-circle me-2"></i>' +
         responseData.title +
-        ": Kelola semua booking ruangan yang telah dibuat. Anda dapat melihat status booking dan melakukan request confirm untuk approval admin.";
+        ": Kelola semua booking ruangan yang telah dibuat. Anda dapat melihat status booking dan melakukan upload surat permohonan untuk approval admin.";
     }
   }
 
@@ -299,7 +299,7 @@ function getActionButton(booking) {
         return `
         <button class="btn btn-warning btn-sm w-100" onclick="requestConfirmBooking('${safeId}', '${safeNamaRuangan}')">
             <i class="bi bi-check-circle me-1"></i>
-            Request Confirm
+            Upload Surat Permohonan
         </button>
     `;
       }
@@ -387,19 +387,19 @@ function requestConfirmBooking(bookingId, namaRuangan) {
   console.log("Request confirm for booking:", bookingId);
 
   const confirmMessage =
-    'Apakah Anda yakin ingin melakukan request confirm untuk booking ruangan "' +
+    'Apakah Anda yakin ingin melakukan upload surat permohonan untuk booking ruangan "' +
     namaRuangan +
     '"?';
 
   if (typeof Swal !== "undefined") {
     Swal.fire({
-      title: "Konfirmasi Request Confirm",
+      title: "Konfirmasi Upload Surat Permohonan",
       text: confirmMessage,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#ffc107",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Ya, Request Confirm",
+      confirmButtonText: "Ya, Upload Surat",
       cancelButtonText: "Batal",
     }).then(function (result) {
       if (result.isConfirmed) {
@@ -437,7 +437,7 @@ function processRequestConfirm(bookingId) {
     .then(function (data) {
       if (data && data.success) {
         const successMessage =
-          "Request confirm berhasil dikirim. Menunggu approval dari admin.";
+          "Upload surat permohonan berhasil dikirim. Menunggu approval dari admin.";
 
         if (typeof Swal !== "undefined") {
           Swal.fire("Berhasil!", successMessage, "success");
@@ -448,7 +448,7 @@ function processRequestConfirm(bookingId) {
         loadDaftarBookingSaya();
       } else {
         const errorMessage =
-          (data && data.message) || "Gagal melakukan request confirm.";
+          (data && data.message) || "Gagal melakukan upload surat permohonan.";
 
         if (typeof Swal !== "undefined") {
           Swal.fire("Gagal!", errorMessage, "error");
@@ -628,7 +628,7 @@ function requestConfirmBooking(bookingId, namaRuangan) {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Request Confirm - ${namaRuangan}</h5>
+                        <h5 class="modal-title">Upload Surat Permohonan - ${namaRuangan}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -637,7 +637,7 @@ function requestConfirmBooking(bookingId, namaRuangan) {
                             
                             <div class="alert alert-info">
                                 <i class="bi bi-info-circle me-2"></i>
-                                Untuk melanjutkan request confirm, silakan upload surat permohonan dalam format PDF.
+                                Untuk melanjutkan proses, silakan mengunggah surat permohonan dalam format PDF.
                             </div>
                             
                             <div class="mb-3">
@@ -657,7 +657,7 @@ function requestConfirmBooking(bookingId, namaRuangan) {
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="button" class="btn btn-warning" onclick="submitRequestConfirm()">
                             <i class="bi bi-upload me-1"></i>
-                            Upload & Request Confirm
+                            Upload & Setujui
                         </button>
                     </div>
                 </div>

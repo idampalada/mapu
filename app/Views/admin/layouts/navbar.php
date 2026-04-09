@@ -74,7 +74,7 @@ $uriSegment = service('uri')->getSegment(2) ?? 'mainpage';
 
                 <li class="nav-item">
                     <a class="nav-link <?= ($uriSegment == 'ruangan') ? 'active' : '' ?>" href="<?= base_url('user/ruangan') ?>">
-                        <i class="bi bi-door-open"></i> Room
+                        <i class="bi bi-door-open"></i> Ruangan
                     </a>
                 </li>
                 <li>
