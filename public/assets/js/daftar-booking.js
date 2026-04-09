@@ -253,8 +253,36 @@ function displayBookings(bookings, responseData) {
   });
 
   container.innerHTML = cardsHTML;
+
+  // ✅ AUTO TRIGGER upload surat
+  if (window.lastBookingId) {
+    setTimeout(() => {
+      autoTriggerUpload(window.lastBookingId);
+      window.lastBookingId = null;
+    }, 500);
+  }
 }
 
+function autoTriggerUpload(bookingId) {
+  if (!bookingId) return;
+
+  const card = document.querySelector(`[data-booking-id="${bookingId}"]`);
+
+  if (!card) {
+    console.warn("Booking card tidak ditemukan");
+    return;
+  }
+
+  const uploadBtn = card.querySelector(
+    'button[onclick*="requestConfirmBooking"]',
+  );
+
+  if (uploadBtn) {
+    uploadBtn.click();
+  } else {
+    console.warn("Tombol upload tidak ditemukan");
+  }
+}
 // Get status badge HTML
 function getStatusBadge(status) {
   const statusConfig = {

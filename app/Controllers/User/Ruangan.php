@@ -1635,7 +1635,7 @@ if ($existingBooking) {
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => 'Booking ruangan berhasil! Ruangan langsung dapat digunakan.',
+            'message' => 'Booking ruangan berhasil! Silakan upload surat permohonan untuk approval admin.',
             'booking_id' => $insertResult
         ]);
         

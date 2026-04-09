@@ -887,13 +887,22 @@ function handleBookingRuanganSubmit(event, formData) {
           );
           modal.hide();
 
-          // Tidak perlu reload halaman
-          // Kalau mau refresh data saja:
+          // ✅ SIMPAN booking_id untuk auto trigger
+          window.lastBookingId = data.booking_id;
+
+          // ✅ tetap jalankan logic lama (JANGAN DIHAPUS)
           const tanggal = document.getElementById("booking_tanggal").value;
           loadBookingExistingBookings(
             window.bookingTimePickerState.ruanganId,
             tanggal,
           );
+
+          // ✅ PINDAH TAB ke "Daftar Booking Saya"
+          const tab = document.querySelector("#daftar-booking-tab");
+          if (tab) {
+            const bsTab = new bootstrap.Tab(tab);
+            bsTab.show();
+          }
         });
       } else {
         Swal.fire({
