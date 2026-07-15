@@ -78,7 +78,7 @@ class Database extends Config
     //     */
     public array $default = [
         'DSN' => '',
-        // 'hostname' => 'localhost',
+        'hostname' => 'localhost',
         'username' => 'postgres',
         'password' => '',
         'database' => '',

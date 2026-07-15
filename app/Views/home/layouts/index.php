@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet"
         type="text/css2" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="<?= base_url(); ?>/css2/styles.css" rel="stylesheet" />
+    <link href="<?= base_url(); ?>css2/styles.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 </head>
 
@@ -34,7 +34,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="<?= base_url(); ?>/js2/scripts.js"></script>
+    <script src="<?= base_url(); ?>js2/scripts.js"></script>
 
     <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
 

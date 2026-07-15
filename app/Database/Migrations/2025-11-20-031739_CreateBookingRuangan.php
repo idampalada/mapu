@@ -93,7 +93,6 @@ class CreateBookingRuangan extends Migration
 
         // Menambahkan constraints
         $this->db->query('ALTER TABLE booking_ruangan ADD CONSTRAINT chk_waktu_booking CHECK (waktu_selesai > waktu_mulai)');
-        $this->db->query('ALTER TABLE booking_ruangan ADD CONSTRAINT chk_tanggal_booking CHECK (tanggal >= CURRENT_DATE)');
         $this->db->query('ALTER TABLE booking_ruangan ADD CONSTRAINT chk_jumlah_peserta CHECK (jumlah_peserta > 0)');
         $this->db->query("ALTER TABLE booking_ruangan ADD CONSTRAINT chk_status CHECK (status IN ('aktif', 'selesai', 'dibatalkan'))");
 

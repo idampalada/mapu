@@ -47,9 +47,12 @@ RUN rm -rf /var/www/html/vendor/myth/auth \
     && cp -r /tmp/myth-auth-custom /var/www/html/vendor/myth/auth \
     && rm -rf /tmp/myth-auth-custom
 
-# Permissions untuk folder writable (log, cache, session, uploads)
+# Permissions untuk folder writable
 RUN chown -R www-data:www-data /var/www/html/writable \
     && chmod -R 775 /var/www/html/writable
+
+# Izinkan PHP-FPM membaca environment variables Docker
+RUN echo "clear_env = no" >> /usr/local/etc/php-fpm.d/www.conf
 
 EXPOSE 9000
 
