@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mapu-app
+    restart: unless-stopped
+    volumes:
+      - ./writable:/var/www/html/writable
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mapu-network
+
+  webserver:
+    image: nginx:1.27-alpine
+    container_name: mapu-nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - mapu-network
+
+  db:
+    image: postgres:15-alpine
+    container_name: mapu-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mapu
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    volumes:
+      - mapu-pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mapu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mapu-network
+
+networks:
+  mapu-network:
+    driver: bridge
+
+volumes:
+  mapu-pgdata:

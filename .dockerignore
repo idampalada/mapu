@@ -1,0 +1,18 @@
+.git
+.gitignore
+.gitlab-ci.yml
+node_modules
+tests
+builds
+
+# Ignore vendor kecuali myth/auth (yang sudah dimodifikasi manual)
+vendor/*
+!vendor/myth
+vendor/myth/*
+!vendor/myth/auth
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+.env
+README.md
