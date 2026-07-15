@@ -81,7 +81,7 @@ class Database extends Config
         'hostname' => 'db',
         'username' => 'postgres',
         'password' => '123',
-        'database' => '',
+        'database' => 'mapu',
         'schema' => 'public',
         'DBDriver' => 'Postgre',
         'DBPrefix' => '',
