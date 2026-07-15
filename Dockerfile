@@ -42,12 +42,16 @@ COPY . .
 # Install vendor lain via composer seperti biasa
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Timpa balik vendor/myth/auth dengan versi custom yang sudah dimodifikasi
+# Timpa balik vendor/myth/auth dengan versi custom
 RUN rm -rf /var/www/html/vendor/myth/auth \
     && cp -r /tmp/myth-auth-custom /var/www/html/vendor/myth/auth \
     && rm -rf /tmp/myth-auth-custom
 
-# Permissions untuk folder writable
+# Permissions agar PHP-FPM bisa membaca seluruh source code
+RUN find /var/www/html -type d -exec chmod 755 {} \; \
+    && find /var/www/html -type f -exec chmod 644 {} \;
+
+# Permissions khusus folder writable
 RUN chown -R www-data:www-data /var/www/html/writable \
     && chmod -R 775 /var/www/html/writable
 
