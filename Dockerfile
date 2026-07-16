@@ -51,8 +51,13 @@ RUN rm -rf /var/www/html/vendor/myth/auth \
 RUN find /var/www/html -type d -exec chmod 755 {} \; \
     && find /var/www/html -type f -exec chmod 644 {} \;
 
-# Permissions khusus folder writable
-RUN chown -R www-data:www-data /var/www/html/writable \
+# Siapkan folder writable
+RUN mkdir -p \
+    /var/www/html/writable/cache \
+    /var/www/html/writable/logs \
+    /var/www/html/writable/session \
+    /var/www/html/writable/uploads \
+    && chown -R www-data:www-data /var/www/html/writable \
     && chmod -R 775 /var/www/html/writable
 
 # Izinkan PHP-FPM membaca environment variables Docker
