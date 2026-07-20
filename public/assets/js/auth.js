@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const unitOrganisasiSelect = document.querySelector(
-    '[name="unit_organisasi"]'
+    '[name="unit_organisasi"]',
   );
   const unitKerjaSelect = document.querySelector('[name="unit_kerja"]');
   const unitKerjaOptions = {
@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (agreeButton.disabled) {
       event.preventDefault();
       alert(
-        "Anda harus menyetujui Syarat & Ketentuan dan Kebijakan Privasi terlebih dahulu."
+        "Anda harus menyetujui Syarat & Ketentuan dan Kebijakan Privasi terlebih dahulu.",
       );
       termsModal.show();
     }
@@ -394,12 +394,12 @@ class ForgotPasswordValidator {
 
     this.loadingOverlay = document.getElementById("loadingOverlay");
     this.emailSentModal = new bootstrap.Modal(
-      document.getElementById("emailSentModal")
+      document.getElementById("emailSentModal"),
     );
 
     this.debouncedEmailCheck = this.debounce(
       this.checkEmailExists.bind(this),
-      500
+      500,
     );
 
     this.setupValidation();
@@ -467,20 +467,19 @@ class ForgotPasswordValidator {
       formData.append("email", value);
 
       const csrfToken = document.querySelector(
-        'input[name="csrf_test_name"]'
+        'input[name="csrf_test_name"]',
       )?.value;
       if (csrfToken) {
         formData.append("csrf_test_name", csrfToken);
       }
 
-      const response = await fetch("/auth/check-email-forgot", {
+      const response = await fetch("/check-email-forgot", {
         method: "POST",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
         },
         body: formData,
       });
-
       const data = await response.json();
 
       if (!data.success) {
@@ -551,7 +550,7 @@ class ForgotPasswordValidator {
       console.error("Error:", error);
       this.showError(
         this.formInput.email.element,
-        "Terjadi kesalahan. Silakan coba lagi."
+        "Terjadi kesalahan. Silakan coba lagi.",
       );
     }
   }
@@ -613,10 +612,10 @@ class ResetPasswordValidator {
     };
 
     this.resetSuccessModal = new bootstrap.Modal(
-      document.getElementById("resetSuccessModal")
+      document.getElementById("resetSuccessModal"),
     );
     this.resetFailedModal = new bootstrap.Modal(
-      document.getElementById("resetFailedModal")
+      document.getElementById("resetFailedModal"),
     );
 
     this.setupValidation();
@@ -846,10 +845,10 @@ class FormValidator {
     };
 
     this.registerSuccessModal = new bootstrap.Modal(
-      document.getElementById("registerSuccessModal")
+      document.getElementById("registerSuccessModal"),
     );
     this.registerErrorModal = new bootstrap.Modal(
-      document.getElementById("registerErrorModal")
+      document.getElementById("registerErrorModal"),
     );
     this.loadingOverlay = document.getElementById("loadingOverlay");
     this.setupValidation();
@@ -1001,13 +1000,12 @@ class FormValidator {
       formData.append(inputName, value);
 
       const csrfToken = document.querySelector(
-        'input[name="csrf_test_name"]'
+        'input[name="csrf_test_name"]',
       )?.value;
       if (csrfToken) {
         formData.append("csrf_test_name", csrfToken);
       }
-
-      const response = await fetch(`/auth/check-${inputName}`, {
+      const response = await fetch(`/check-${inputName}`, {
         method: "POST",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
@@ -1053,7 +1051,7 @@ class FormValidator {
       } else {
         const fieldValid = this.validateBasicField(
           inputName,
-          field.element.value
+          field.element.value,
         );
         isValid = isValid && fieldValid;
       }
@@ -1399,10 +1397,10 @@ class UserManagement {
     if (!modalAddUser) return;
 
     this.unitOrganisasiSelect = modalAddUser.querySelector(
-      'select[name="unit_organisasi"]'
+      'select[name="unit_organisasi"]',
     );
     this.unitKerjaSelect = modalAddUser.querySelector(
-      'select[name="unit_kerja"]'
+      'select[name="unit_kerja"]',
     );
 
     if (this.unitOrganisasiSelect && this.unitKerjaSelect) {
@@ -1498,7 +1496,7 @@ class UserManagement {
         } else if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
           return this.showError(
             field,
-            "Username hanya boleh berisi huruf, angka, dan spasi"
+            "Username hanya boleh berisi huruf, angka, dan spasi",
           );
         }
         try {
@@ -1506,12 +1504,13 @@ class UserManagement {
           formData.append("username", value);
 
           const csrfToken = document.querySelector(
-            'input[name="csrf_test_name"]'
+            'input[name="csrf_test_name"]',
           )?.value;
           if (csrfToken) {
             formData.append("csrf_test_name", csrfToken);
           }
 
+          // Gunakan path absolute ke root agar tidak bergantung pada baseUrl
           const response = await fetch("/auth/check-username", {
             method: "POST",
             headers: {
@@ -1524,7 +1523,7 @@ class UserManagement {
           if (!data.available) {
             return this.showError(
               field,
-              data.message || "Username sudah digunakan"
+              data.message || "Username sudah digunakan",
             );
           }
         } catch (error) {
@@ -1538,7 +1537,7 @@ class UserManagement {
         } else if (!/@pu\.go\.id$/.test(value)) {
           return this.showError(
             field,
-            "Email harus menggunakan domain @pu.go.id"
+            "Email harus menggunakan domain @pu.go.id",
           );
         }
         try {
@@ -1546,12 +1545,14 @@ class UserManagement {
           formData.append("email", value);
 
           const csrfToken = document.querySelector(
-            'input[name="csrf_test_name"]'
+            'input[name="csrf_test_name"]',
           )?.value;
           if (csrfToken) {
             formData.append("csrf_test_name", csrfToken);
           }
 
+          // Ubah bagian ini
+          // Gunakan path absolute ke root agar tidak bergantung pada baseUrl
           const response = await fetch("/auth/check-email", {
             method: "POST",
             headers: {
@@ -1564,7 +1565,7 @@ class UserManagement {
           if (!data.available) {
             return this.showError(
               field,
-              data.message || "Email sudah terdaftar"
+              data.message || "Email sudah terdaftar",
             );
           }
         } catch (error) {
@@ -1578,7 +1579,7 @@ class UserManagement {
         if (!value) {
           return this.showError(
             field,
-            `${field.previousElementSibling.textContent} harus dipilih`
+            `${field.previousElementSibling.textContent} harus dipilih`,
           );
         }
         break;
@@ -1591,7 +1592,7 @@ class UserManagement {
         ) {
           return this.showError(
             field,
-            "Kata Sandi harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus"
+            "Kata Sandi harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus",
           );
         }
         break;

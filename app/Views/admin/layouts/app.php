@@ -72,7 +72,7 @@
     <script src="<?= asset('assets/js/homepage.js') ?>"></script>
     <script src="<?= asset('assets/js/laporan.js') ?>"></script>
     <script src="<?= asset('assets/js/dashboard.js') ?>"></script>
-    <script src="<?= asset('assets/js/auth.js') ?>"></script>
+    <script src="<?= asset('assets/js/auth.js?v=' . time()) ?>"></script>
     <script src="<?= asset('assets/js/ubah-jam.js') ?>"></script>
     <script src="<?= asset('assets/js/daftar-booking.js') ?>"></script>
 <script src="<?= asset('assets/js/calendar-booking.js') ?>"></script>
@@ -91,7 +91,10 @@
     <?= $this->renderSection('javascript') ?>
     
 
-    <script>
+<script>
+        // Tambahkan variabel baseUrl di sini
+        const baseUrl = "<?= base_url('/') ?>"; 
+        
         const csrfToken = {
             name: '<?= csrf_token() ?>',
             hash: '<?= csrf_hash() ?>'

@@ -21,11 +21,12 @@
         </div>
     </div>
 
-    <!-- Filter & Search Section -->
-    <div class="mb-4 p-3 bg-white rounded-lg shadow-sm">
-        <div class="row align-items-center g-3">
+
+    <!-- Filter & Search -->
+    <div class="filter-bar mb-4">
+        <div class="row g-2 align-items-center">
             <div class="col-md-3">
-                <select class="form-select form-select-sm border-0 bg-light" id="filterKategori">
+                <select class="form-select form-select-modern" id="filterKategori">
                     <option value="">Semua Kategori</option>
                     <option value="KDJ">Kendaraan Dinamis Jalan</option>
                     <option value="KDO">Kendaraan Dinamis Off-road</option>
@@ -33,7 +34,7 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <select class="form-select form-select-sm border-0 bg-light" id="filterStatus">
+                <select class="form-select form-select-modern" id="filterStatus">
                     <option value="">Semua Status</option>
                     <option value="Tersedia">Tersedia</option>
                     <option value="Dipinjam">Dipinjam</option>
@@ -41,244 +42,199 @@
                 </select>
             </div>
             <div class="col-md-4">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control border-0 bg-light" placeholder="Cari kendaraan..." id="searchKendaraan">
+                <div class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control form-control-modern" placeholder="Cari kendaraan..." id="searchKendaraan">
                 </div>
             </div>
             <div class="col-md-2 text-end">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-sm btn-outline-primary active"><i class="bi bi-grid-3x3-gap"></i></button>
-                    <button type="button" class="btn btn-sm btn-outline-primary"><i class="bi bi-list"></i></button>
+                <div class="btn-group view-toggle" role="group">
+                    <button type="button" class="btn btn-view active"><i class="bi bi-grid-3x3-gap"></i></button>
+                    <button type="button" class="btn btn-view"><i class="bi bi-list"></i></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Vehicle Cards Section -->
+    <!-- Vehicle Cards -->
     <div class="vehicles-container">
-        <div class="row g-4">
+        <div class="vehicle-grid">
             <?php foreach ($aset as $item): ?>
-                <div class="col-12 col-md-6 col-lg-4 col-xl-3 vehicle-card">
-                    <div class="card border-0 h-100 vehicle-item" style="border-radius: 16px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-                        <!-- Card Header with Image and Badge -->
-                        <div class="position-relative vehicle-image-container">
-                            <?php 
+                <div class="vehicle-card">
+                    <div class="vc-card">
+                        <!-- Image -->
+                        <div class="vc-image-wrap">
+                            <?php
                             $images = json_decode($item['gambar_mobil'], true);
                             $images = is_array($images) ? $images : [$item['gambar_mobil']];
                             $mainImage = !empty($images) ? $images[0] : null;
                             ?>
-                            <div class="vehicle-image-wrapper" style="height: 180px; overflow: hidden;">
-                                <?php if (!empty($mainImage) && file_exists(ROOTPATH . 'public/uploads/images/' . $mainImage)): ?>
-                                    <img src="<?= base_url('/uploads/images/' . $mainImage) ?>"
-                                        class="w-100 h-100 object-fit-cover image-preview-trigger" 
-                                        data-images='<?= htmlspecialchars(json_encode($images)) ?>'
-                                        alt="<?= $item['merk'] ?>"
-                                        style="cursor: pointer; transition: transform 0.5s;">
-                                <?php else: ?>
-                                    <img src="<?= base_url('/assets/images/faces/1.jpg') ?>" 
-                                        class="w-100 h-100 object-fit-cover"
-                                        alt="<?= $item['merk'] ?>"
-                                        style="transition: transform 0.5s;">
-                                <?php endif; ?>
-                            </div>
-                            
-                            <!-- Status Badge & Condition Indicator -->
-                            <div class="position-absolute top-0 end-0 p-3">
-                                <?php 
-                                $statusClass = '';
-                                switch($item['status_pinjam']) {
-                                    case 'Tersedia':
-                                        $statusClass = 'bg-success';
-                                        $statusIcon = 'bi-check-circle-fill';
-                                        break;
-                                    case 'Pending':
-                                    case 'Dalam Verifikasi':
-                                        $statusClass = 'bg-warning';
-                                        $statusIcon = 'bi-clock-fill';
-                                        break;
-                                    default:
-                                        $statusClass = 'bg-info';
-                                        $statusIcon = 'bi-arrow-repeat';
-                                }
-                                ?>
-                                <span class="badge <?= $statusClass ?> pill-badge">
-                                    <i class="bi <?= $statusIcon ?> me-1"></i>
-                                    <?= $item['status_pinjam'] ?>
+                            <?php if (!empty($mainImage) && file_exists(ROOTPATH . 'public/uploads/images/' . $mainImage)): ?>
+                                <img src="<?= base_url('/uploads/images/' . $mainImage) ?>"
+                                    class="vc-image image-preview-trigger"
+                                    data-images='<?= htmlspecialchars(json_encode($images)) ?>'
+                                    alt="<?= $item['merk'] ?>">
+                            <?php else: ?>
+                                <img src="<?= base_url('/assets/images/faces/1.jpg') ?>"
+                                    class="vc-image"
+                                    alt="<?= $item['merk'] ?>">
+                            <?php endif; ?>
+
+                            <?php
+                            $statusClass = '';
+                            switch ($item['status_pinjam']) {
+                                case 'Tersedia':
+                                    $statusClass = 'status-available';
+                                    $statusIcon = 'bi-check-circle-fill';
+                                    break;
+                                case 'Pending':
+                                case 'Dalam Verifikasi':
+                                    $statusClass = 'status-pending';
+                                    $statusIcon = 'bi-clock-fill';
+                                    break;
+                                default:
+                                    $statusClass = 'status-borrowed';
+                                    $statusIcon = 'bi-arrow-repeat';
+                            }
+                            ?>
+                            <span class="vc-status-badge <?= $statusClass ?>">
+                                <i class="bi <?= $statusIcon ?>"></i> <?= $item['status_pinjam'] ?>
+                            </span>
+
+                            <?php if (!empty($item['keterangan'])): ?>
+                                <span class="vc-info-badge" data-bs-toggle="tooltip" title="<?= $item['keterangan'] ?>">
+                                    <i class="bi bi-info-circle"></i>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="vc-body">
+                            <div class="vc-title-row">
+                                <h3 class="vc-title"><?= $item['merk'] ?></h3>
+                                <span class="vc-condition-badge cond-<?= $item['kondisi'] === 'Baik' ? 'good' : ($item['kondisi'] === 'Rusak Ringan' ? 'warn' : 'bad') ?>">
+                                    <?= $item['kondisi'] ?>
                                 </span>
                             </div>
-                            
-                            <!-- Condition Indicator (at bottom of image) -->
-                            <div class="position-absolute bottom-0 start-0 p-3 w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
-                                <h5 class="text-white mb-0 text-shadow fw-bold"><?= $item['merk'] ?></h5>
-                                <div class="d-flex mt-1">
-                                    <span class="badge <?= $item['kondisi'] === 'Baik' ? 'bg-success' :
-                                        ($item['kondisi'] === 'Rusak Ringan' ? 'bg-warning' : 'bg-danger') ?> me-2">
-                                        <?= $item['kondisi'] ?>
-                                    </span>
-                                    
-                                    <?php if (!empty($item['keterangan'])): ?>
-                                        <span class="badge bg-danger" data-bs-toggle="tooltip" title="<?= $item['keterangan'] ?>">
-                                            <i class="bi bi-info-circle"></i> Info
-                                        </span>
-                                    <?php endif; ?>
+
+                            <div class="vc-meta-grid">
+                                <div class="vc-meta">
+                                    <i class="bi bi-car-front"></i>
+                                    <div>
+                                        <span class="vc-meta-label">No. Polisi</span>
+                                        <span class="vc-meta-value"><?= $item['no_polisi'] ?></span>
+                                    </div>
+                                </div>
+                                <div class="vc-meta">
+                                    <i class="bi bi-calendar3"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Tahun</span>
+                                        <span class="vc-meta-value"><?= $item['tahun_pembuatan'] ?></span>
+                                    </div>
+                                </div>
+                                <div class="vc-meta">
+                                    <i class="bi bi-people"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Kapasitas</span>
+                                        <span class="vc-meta-value"><?= $item['kapasitas'] ?> Orang</span>
+                                    </div>
+                                </div>
+                                <div class="vc-meta">
+                                    <i class="bi bi-upc-scan"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Kode Barang</span>
+                                        <span class="vc-meta-value"><?= $item['kode_barang'] ?></span>
+                                    </div>
+                                </div>
+                                <div class="vc-meta">
+                                    <i class="bi bi-tag"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Tipe</span>
+                                        <span class="vc-meta-value"><?= $item['kategori_id'] ?></span>
+                                    </div>
+                                </div>
+                                <div class="vc-meta">
+                                    <i class="bi bi-palette"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Warna</span>
+                                        <span class="vc-meta-value"><?= $item['warna'] ?? 'Tidak Diketahui' ?></span>
+                                    </div>
                                 </div>
                             </div>
+
+                            <?php if (!empty($item['tanggal_kembali'])): ?>
+                                <div class="vc-return-date">
+                                    <span class="vc-meta-label">Tanggal Kembali</span>
+                                    <span class="vc-return-value"><?= date('d/m/Y', strtotime($item['tanggal_kembali'])) ?></span>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                        
-                       <div class="card-body">
-<!-- Primary Details -->
-    <div class="vehicle-details mb-3">
-        <div class="row g-3">
-            <!-- No Polisi -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-primary fs-5"><i class="bi bi-car-front"></i></div>
-                    <div>
-                        <small class="text-muted">No. Polisi</small>
-                        <div class="fw-medium"><?= $item['no_polisi'] ?></div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Tahun -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-info fs-5"><i class="bi bi-calendar3"></i></div>
-                    <div>
-                        <small class="text-muted">Tahun</small>
-                        <div class="fw-medium"><?= $item['tahun_pembuatan'] ?></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kapasitas -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-success fs-5"><i class="bi bi-people"></i></div>
-                    <div>
-                        <small class="text-muted">Kapasitas</small>
-                        <div class="fw-medium"><?= $item['kapasitas'] ?> Orang</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Kode Barang -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-primary fs-5"><i class="bi bi-upc-scan"></i></div>
-                    <div>
-                        <small class="text-muted">Kode Barang</small>
-                        <div class="fw-medium"><?= $item['kode_barang'] ?></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tipe -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-warning fs-5"><i class="bi bi-tag"></i></div>
-                    <div>
-                        <small class="text-muted">Tipe</small>
-                        <div class="fw-medium"><?= $item['kategori_id'] ?></div>
-                    </div>
-                </div>
-            </div>
-
-                        <!-- Warna -->
-            <div class="col-6">
-                <div class="d-flex align-items-center">
-                    <div class="me-2 text-danger fs-5"><i class="bi bi-palette"></i></div>
-                    <div>
-                        <small class="text-muted">Warna</small>
-                        <div class="fw-medium"><?= $item['warna'] ?? 'Tidak Diketahui' ?></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tanggal Kembali -->
-        <?php if (!empty($item['tanggal_kembali'])): ?>
-        <div class="mt-3 p-2 rounded text-center" style="background-color: #f0f8ff; border-left: 3px solid #0d6efd;">
-            <small class="text-muted">Tanggal Kembali</small>
-            <div class="fw-bold"><?= date('d/m/Y', strtotime($item['tanggal_kembali'])) ?></div>
-        </div>
-        <?php endif; ?>
-    </div>
-</div>
-
-                        
-                        <!-- Card Footer with Action Buttons -->
-                        <div class="card-footer bg-white border-0 pt-0">
-                            <div class="d-grid">
-                                <div class="d-flex flex-column gap-2">
-                                    <?php if ($item['status_pinjam'] === 'Tersedia' || $item['status_pinjam'] === 'Dalam Verifikasi'): ?>
-                                        <?php if ($item['status_pinjam'] === 'Dalam Verifikasi'): ?>
-                                            <button type="button" class="btn btn-light btn-sm rounded-pill" disabled>
-                                                <i class="bi bi-clock"></i> Menunggu Verifikasi
-                                            </button>
-                                        <?php else: ?>
-                                            <button type="button" class="btn btn-primary btn-sm rounded-pill action-button"
+                        <!-- Footer / Actions -->
+                        <div class="vc-footer">
+                            <div class="d-flex flex-column gap-2">
+                                <?php if ($item['status_pinjam'] === 'Tersedia' || $item['status_pinjam'] === 'Dalam Verifikasi'): ?>
+                                    <?php if ($item['status_pinjam'] === 'Dalam Verifikasi'): ?>
+                                        <button type="button" class="vc-btn vc-btn-muted" disabled>
+                                            <i class="bi bi-clock"></i> Menunggu Verifikasi
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="button" class="vc-btn vc-btn-primary"
                                             onclick="openPeminjamanModal('<?= $item['id'] ?>')">
-                                                <i class="bi bi-plus-circle"></i> Pinjam Kendaraan
-                                            </button>
-                                        <?php endif; ?>
-                                                                            <button type="button" class="btn btn-success btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-1"
+                                            <i class="bi bi-plus-circle"></i> Pinjam Kendaraan
+                                        </button>
+                                    <?php endif; ?>
+                                    <button type="button" class="vc-btn vc-btn-success"
                                         onclick="trackKendaraan('<?= $item['no_polisi'] ?>')">
                                         <i class="bi bi-geo-alt"></i> Status
                                     </button>
-                <button type="button" class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-1"
-                    onclick="showTimelineModal('<?= $item['id'] ?>')">
-                    <i class="bi bi-clock-history"></i> Timeline Peminjaman
-                </button>
-                                    <?php else: ?>
-                                        <button type="button" class="btn btn-info btn-sm rounded-pill action-button"
-                                            onclick="openPengembalianModal('<?= $item['id'] ?>')">
-                                            <i class="bi bi-box-arrow-in-down"></i> Kembalikan Kendaraan
-                                        </button>
-
-                <button type="button" class="btn btn-secondary btn-sm rounded-pill shadow-sm d-flex align-items-center justify-content-center gap-1 mt-2"
-                    onclick="showTimelineModal('<?= $item['id'] ?>')">
-                    <i class="bi bi-clock-history"></i> Timeline Peminjaman
-                </button>
-
-                                        <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
-                                            <div class="mt-2 document-section">
-                                                <div class="document-header px-2 py-1 rounded bg-light">
-                                                    <small class="fw-medium"><i class="bi bi-file-earmark"></i> Dokumen</small>
-                                                </div>
-                                                <div class="document-links mt-1">
-                                                    <?php if (!empty($item['surat_permohonan']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_permohonan'])): ?>
-                                                        <a href="<?= base_url('/uploads/documents/' . $item['surat_permohonan']) ?>"
-                                                            target="_blank" class="btn btn-sm btn-outline-primary mb-1 w-100 rounded-pill btn-document">
-                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
-                                                        </a>
-                                                    <?php endif; ?>
-
-                                                    <?php if (!empty($item['surat_jalan_admin']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_jalan_admin'])): ?>
-                                                        <a href="<?= base_url('/uploads/documents/' . $item['surat_jalan_admin']) ?>"
-                                                            target="_blank" class="btn btn-sm btn-outline-primary mb-1 w-100 rounded-pill btn-document">
-                                                            <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
-                                                        </a>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
+                                    <button type="button" class="vc-btn vc-btn-secondary"
+                                        onclick="showTimelineModal('<?= $item['id'] ?>')">
+                                        <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="vc-btn vc-btn-info"
+                                        onclick="openPengembalianModal('<?= $item['id'] ?>')">
+                                        <i class="bi bi-box-arrow-in-down"></i> Kembalikan Kendaraan
+                                    </button>
+                                    <button type="button" class="vc-btn vc-btn-secondary"
+                                        onclick="showTimelineModal('<?= $item['id'] ?>')">
+                                        <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                                    </button>
 
                                     <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
-                                        <div class="d-flex gap-2 mt-2">
-                                            <button type="button" class="btn btn-outline-primary btn-sm flex-grow-1 rounded-pill"
-                                                onclick="openEditModal('<?= $item['id'] ?>')">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm flex-grow-1 rounded-pill" 
-                                                onclick="deleteAset('<?= $item['id'] ?>')">
-                                                <i class="bi bi-trash"></i> Hapus
-                                            </button>
+                                        <div class="vc-documents">
+                                            <div class="vc-documents-header">
+                                                <i class="bi bi-file-earmark"></i> Dokumen
+                                            </div>
+                                            <?php if (!empty($item['surat_permohonan']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_permohonan'])): ?>
+                                                <a href="<?= base_url('/uploads/documents/' . $item['surat_permohonan']) ?>"
+                                                    target="_blank" class="vc-doc-link">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
+                                                </a>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['surat_jalan_admin']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_jalan_admin'])): ?>
+                                                <a href="<?= base_url('/uploads/documents/' . $item['surat_jalan_admin']) ?>"
+                                                    target="_blank" class="vc-doc-link">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
+                                                </a>
+                                            <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
-                                </div>
+                                <?php endif; ?>
+
+                                <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="vc-btn vc-btn-outline flex-grow-1"
+                                            onclick="openEditModal('<?= $item['id'] ?>')">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button type="button" class="vc-btn vc-btn-outline-danger flex-grow-1"
+                                            onclick="deleteAset('<?= $item['id'] ?>')">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -288,12 +244,18 @@
     </div>
 </div>
 
-<!-- Modal Pengembalian - DIPERBAIKI UNTUK FIELD KENDARAAN -->
-<!-- Modal Pengembalian - FINAL VERSION -->
+<!-- ============================================================ -->
+<!-- Semua modal di bawah ini SAMA PERSIS strukturnya dengan versi -->
+<!-- sebelumnya (id, name, action, JS hook tidak diubah) — hanya   -->
+<!-- kelas Bootstrap dasarnya dipertahankan agar semua script lama -->
+<!-- (validasi, kamera, tab, dsb) tetap berjalan tanpa perubahan.  -->
+<!-- ============================================================ -->
+
+<!-- Modal Pengembalian -->
 <div class="modal fade" id="modalPengembalian" tabindex="-1" aria-labelledby="modalPengembalianLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-gradient-primary text-white">
+        <div class="modal-content border-0 shadow modal-modern">
+            <div class="modal-header modal-header-modern">
                 <h5 class="modal-title" id="modalPengembalianLabel">Form Pengembalian Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -303,31 +265,27 @@
                 <div class="modal-body p-4">
                     <div class="row">
                         <input type="hidden" id="kendaraan_id_hidden" name="kendaraan_id" value="">
-                        <!-- Hidden fields untuk keterlambatan -->
                         <input type="hidden" id="is_late_return" name="is_late_return" value="false">
                         <input type="hidden" id="days_late" name="days_late" value="0">
 
-                        <!-- Tab navigation -->
                         <ul class="nav nav-tabs mb-3" id="pengembalianTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pihak-kesatu-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#pihak-kesatu" type="button" role="tab" 
+                                <button class="nav-link active" id="pihak-kesatu-tab" data-bs-toggle="tab"
+                                    data-bs-target="#pihak-kesatu" type="button" role="tab"
                                     aria-controls="pihak-kesatu" aria-selected="true">Pihak Kesatu</button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="detail-kendaraan-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#detail-kendaraan" type="button" role="tab" 
+                                <button class="nav-link" id="detail-kendaraan-tab" data-bs-toggle="tab"
+                                    data-bs-target="#detail-kendaraan" type="button" role="tab"
                                     aria-controls="detail-kendaraan" aria-selected="false">Detail Kendaraan</button>
                             </li>
                         </ul>
 
                         <div class="tab-content" id="pengembalianTabContent">
-                            <!-- Tab 1: Pihak Kesatu -->
-                            <div class="tab-pane fade show active" id="pihak-kesatu" role="tabpanel" 
+                            <div class="tab-pane fade show active" id="pihak-kesatu" role="tabpanel"
                                 aria-labelledby="pihak-kesatu-tab">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nama_penanggung_jawab" class="form-label">Nama Penanggung Jawab</label>
                                             <input type="text" class="form-control" id="nama_penanggung_jawab"
@@ -335,14 +293,12 @@
                                             <div class="invalid-feedback">Nama penanggung jawab harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="nip_nrp" class="form-label">NIP / NRP</label>
                                             <input type="text" class="form-control" id="nip_nrp" name="nip_nrp" required readonly>
                                             <div class="invalid-feedback">NIP/NRP harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="pangkat_golongan" class="form-label">Pangkat / Golongan</label>
                                             <input type="text" class="form-control" id="pangkat_golongan" name="pangkat_golongan"
@@ -350,36 +306,31 @@
                                             <div class="invalid-feedback">Pangkat/Golongan harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="jabatan" class="form-label">Jabatan</label>
                                             <input type="text" class="form-control" id="jabatan" name="jabatan" required readonly>
                                             <div class="invalid-feedback">Jabatan harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="unit_organisasi" class="form-label">Unit Organisasi</label>
                                             <input type="text" class="form-control" id="unit_organisasi" name="unit_organisasi"
                                                 required readonly>
                                             <div class="invalid-feedback">Unit organisasi harus diisi.</div>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="alamat_rumah" class="form-label">Alamat Rumah</label>
                                             <input type="text" class="form-control" id="alamat_rumah" name="alamat_rumah" required readonly>
                                             <div class="invalid-feedback">Alamat rumah harus diisi.</div>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="no_ktp" class="form-label">No. KTP</label>
                                             <input type="text" class="form-control" id="no_ktp" name="no_ktp" required readonly>
                                             <div class="invalid-feedback">No. KTP harus diisi.</div>
                                         </div>
-                                        
-                                        <!-- ADA * karena user input -->
+
                                         <div class="form-group mb-3">
                                             <label for="rating_pengguna" class="form-label">Rating Penggunaan Kendaraan <span class="text-danger"> *</span></label>
                                             <div class="rating-container">
@@ -387,16 +338,16 @@
                                                     <div class="rating-stars">
                                                         <input type="radio" id="star5" name="rating_pengguna" value="5" required />
                                                         <label for="star5" title="Sangat Baik"><i class="bi bi-star-fill"></i></label>
-                                                        
+
                                                         <input type="radio" id="star4" name="rating_pengguna" value="4" />
                                                         <label for="star4" title="Baik"><i class="bi bi-star-fill"></i></label>
-                                                        
+
                                                         <input type="radio" id="star3" name="rating_pengguna" value="3" />
                                                         <label for="star3" title="Cukup"><i class="bi bi-star-fill"></i></label>
-                                                        
+
                                                         <input type="radio" id="star2" name="rating_pengguna" value="2" />
                                                         <label for="star2" title="Kurang"><i class="bi bi-star-fill"></i></label>
-                                                        
+
                                                         <input type="radio" id="star1" name="rating_pengguna" value="1" />
                                                         <label for="star1" title="Sangat Kurang"><i class="bi bi-star-fill"></i></label>
                                                     </div>
@@ -413,7 +364,6 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <!-- TIDAK ADA * karena data auto-load -->
                                         <div class="form-group mb-3">
                                             <label for="kendaraan_id" class="form-label">Kendaraan</label>
                                             <select class="form-control" id="kendaraan_id_kembali" name="kendaraan_id" required>
@@ -422,21 +372,18 @@
                                             <div class="invalid-feedback">Kendaraan harus dipilih.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="pengemudi" class="form-label">Nama Pengemudi</label>
                                             <input type="text" class="form-control" id="pengemudi" name="pengemudi" required readonly>
                                             <div class="invalid-feedback">Nama pengemudi harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="no_hp" class="form-label">Nomor HP</label>
                                             <input type="text" class="form-control" id="no_hp" name="no_hp" required readonly>
                                             <div class="invalid-feedback">Nomor HP harus diisi.</div>
                                         </div>
 
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
                                             <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam"
@@ -444,7 +391,6 @@
                                             <div class="invalid-feedback">Tanggal pinjam harus diisi.</div>
                                         </div>
 
-                                        <!-- ADA * karena user input -->
                                         <div class="form-group mb-3">
                                             <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
                                             <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali"
@@ -454,8 +400,7 @@
                                             </small>
                                             <div class="invalid-feedback">Tanggal kembali harus diisi.</div>
                                         </div>
-                                        
-                                        <!-- ADA * karena user input -->
+
                                         <div class="form-group mb-3">
                                             <label for="kondisi_kembali" class="form-label">Kondisi Kendaraan Saat Pengembalian <span class="text-danger"> *</span></label>
                                             <select class="form-control" id="kondisi_kembali" name="kondisi_kembali" required>
@@ -468,8 +413,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Section keterlambatan -->
+
                                 <div id="late_return_section" class="col-12 mb-3 d-none">
                                     <div class="card border-danger">
                                         <div class="card-header bg-danger text-white">
@@ -483,19 +427,17 @@
                                                 <p><strong>Perhatian:</strong> Anda terlambat mengembalikan kendaraan selama <span id="late_days_display" class="fw-bold">0</span> hari.</p>
                                                 <p class="mb-0">Mohon berikan alasan keterlambatan untuk melanjutkan proses pengembalian.</p>
                                             </div>
-                                            
-                                            <!-- ADA * karena user input (jika terlambat) -->
+
                                             <div class="form-group mb-3">
                                                 <label for="alasan_keterlambatan" class="form-label">Alasan Keterlambatan <span class="text-danger"> *</span></label>
-                                                <textarea class="form-control" id="alasan_keterlambatan" name="alasan_keterlambatan" rows="3" 
+                                                <textarea class="form-control" id="alasan_keterlambatan" name="alasan_keterlambatan" rows="3"
                                                     placeholder="Jelaskan alasan keterlambatan pengembalian kendaraan"></textarea>
                                                 <div class="invalid-feedback">Alasan keterlambatan wajib diisi untuk pengembalian yang terlambat.</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- ADA * karena user input -->
+
                                 <div class="form-group mb-3">
                                     <label class="form-label">Ambil Foto Kendaraan <span class="text-danger"> *</span></label>
                                     <div>
@@ -503,8 +445,7 @@
                                             <i class="bi bi-camera"></i> Ambil Foto
                                         </button>
                                     </div>
-                                    
-                                    <!-- Container untuk kamera dan preview -->
+
                                     <div id="camera-container" class="mt-2" style="display:none;">
                                         <video id="camera-feed" autoplay style="width:100%; max-width:640px;"></video>
                                         <div class="mt-2">
@@ -524,128 +465,112 @@
                                         Foto kendaraan harus diambil.
                                     </div>
                                 </div>
-                                
+
                                 <div class="d-flex justify-content-end">
                                     <button type="button" class="btn btn-primary" id="btn-next-tab">Selanjutnya</button>
                                 </div>
                             </div>
-                            
-                            <!-- Tab 2: Detail Kendaraan -->
-                            <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel" 
+
+                            <div class="tab-pane fade" id="detail-kendaraan" role="tabpanel"
                                 aria-labelledby="detail-kendaraan-tab">
                                 <div class="card p-3 mb-3">
                                     <h6 class="card-title fw-bold">Pihak Kedua <small class="text-muted">(Dapat diedit)</small></h6>
-                                    
-                                    <!-- ADA * karena user bisa edit -->
+
                                     <div class="row mb-2">
                                         <div class="col-md-3">Nama <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama" 
+                                            <input type="text" class="form-control" id="pihak_kedua_nama" name="pihak_kedua_nama"
                                                 value="Pak Udin" required>
                                             <div class="invalid-feedback">Nama pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- ADA * karena user bisa edit -->
+
                                     <div class="row mb-2">
                                         <div class="col-md-3">NIP <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip" 
+                                            <input type="text" class="form-control" id="pihak_kedua_nip" name="pihak_kedua_nip"
                                                 value="12345678" required>
                                             <div class="invalid-feedback">NIP pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- ADA * karena user bisa edit -->
+
                                     <div class="row mb-2">
                                         <div class="col-md-3">Jabatan <span class="text-danger"> *</span></div>
                                         <div class="col-md-9">
-                                            <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan" 
+                                            <input type="text" class="form-control" id="pihak_kedua_jabatan" name="pihak_kedua_jabatan"
                                                 value="Kepala Satuan Kerja Selaku Kuasa Pengguna Barang" required>
                                             <div class="invalid-feedback">Jabatan pihak kedua harus diisi.</div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- ADA * karena user input -->
+
                                 <div class="form-group mb-3">
                                     <label for="nomor_sip" class="form-label">Nomor SIP / Surat Penanggung Jawab <span class="text-danger"> *</span></label>
                                     <input type="text" class="form-control" id="nomor_sip" name="nomor_sip" required>
                                     <div class="invalid-feedback">Nomor SIP/Surat Penanggung Jawab harus diisi.</div>
                                 </div>
-                                
+
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="kategori_id" class="form-label">Jenis Kendaraan</label>
                                             <input type="text" class="form-control" id="kategori_id" name="kategori_id" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="no_polisi_detail" class="form-label">Nomor Polisi</label>
                                             <input type="text" class="form-control" id="no_polisi_detail" name="no_polisi_detail" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="kode_barang_detail" class="form-label">Kode Barang</label>
                                             <input type="text" class="form-control" id="kode_barang_detail" name="kode_barang_detail" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="nup_detail" class="form-label">NUP</label>
                                             <input type="text" class="form-control" id="nup_detail" name="nup_detail" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
                                             <input type="text" class="form-control" id="tahun_pembuatan" name="tahun_pembuatan" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="nomor_stnk" class="form-label">Nomor STNK</label>
                                             <input type="text" class="form-control" id="nomor_stnk" name="nomor_stnk" readonly>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-6">
-                                        <!-- TIDAK ADA * karena readonly -->
                                         <div class="form-group mb-3">
                                             <label for="merk_detail" class="form-label">Merk</label>
                                             <input type="text" class="form-control" id="merk_detail" name="merk_detail" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="warna" class="form-label">Warna</label>
                                             <input type="text" class="form-control" id="warna" name="warna" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="nomor_mesin" class="form-label">Nomor Mesin</label>
                                             <input type="text" class="form-control" id="nomor_mesin" name="nomor_mesin" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="nomor_rangka" class="form-label">Nomor Rangka</label>
                                             <input type="text" class="form-control" id="nomor_rangka" name="nomor_rangka" readonly>
                                         </div>
-                                        
-                                        <!-- TIDAK ADA * karena readonly -->
+
                                         <div class="form-group mb-3">
                                             <label for="nomor_bpkb" class="form-label">Nomor BPKB</label>
                                             <input type="text" class="form-control" id="nomor_bpkb" name="nomor_bpkb" readonly>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div class="d-flex justify-content-between">
                                     <button type="button" class="btn btn-secondary" id="btn-prev-tab">Kembali</button>
                                     <button type="submit" class="btn btn-primary rounded-pill">Konfirmasi Pengembalian</button>
@@ -654,7 +579,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="modal-footer d-none">
                     <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Tutup</button>
                 </div>
@@ -663,157 +588,18 @@
     </div>
 </div>
 
-<!-- CSS untuk membuat select readonly tapi terlihat normal -->
-<style>
-#kendaraan_id_kembali[readonly] {
-    background-color: #e9ecef !important;
-    pointer-events: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-#kendaraan_id_kembali option {
-    background-color: #e9ecef;
-}
-#kendaraan_id_kembali {
-    background-color: #e9ecef !important;
-    color: #6c757d !important;
-    pointer-events: none !important;
-    cursor: not-allowed !important;
-    border-color: #ced4da !important;
-}
-
-#kendaraan_id_kembali:focus {
-    background-color: #e9ecef !important;
-    border-color: #ced4da !important;
-    box-shadow: none !important;
-}
-
-/* Styling khusus untuk option di dalam select */
-#kendaraan_id_kembali option {
-    background-color: #e9ecef !important;
-    color: #6c757d !important;
-}
-
-/* Alternatif: Gunakan attribute readonly untuk styling otomatis */
-#kendaraan_id_kembali[readonly] {
-    background-color: #e9ecef !important;
-    color: #6c757d !important;
-    pointer-events: none !important;
-    cursor: not-allowed !important;
-    border-color: #ced4da !important;
-}
-
-/* Pastikan tidak ada dropdown arrow yang muncul */
-#kendaraan_id_kembali {
-    -webkit-appearance: none !important;
-    -moz-appearance: none !important;
-    appearance: none !important;
-    background-image: none !important;
-}
-
-/* Styling untuk semua readonly inputs agar konsisten */
-.form-control[readonly] {
-    background-color: #e9ecef;
-    color: #6c757d;
-    opacity: 1;
-}
-</style>
-
-<style>
-/* Bisa ditambahkan ke file CSS utama atau di head template */
-.keterlambatan-readonly {
-  background-color: #ffeeee !important;
-  border-color: #dc3545 !important;
-  color: #dc3545 !important;
-  font-weight: bold !important;
-}
-
-.hitungan-telat-section {
-  background-color: #f8d7da;
-  border-left: 4px solid #dc3545;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-}
-
-.hitungan-telat-section .value {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #dc3545;
-}
-
-.icon-telat {
-  font-size: 2rem;
-  color: #dc3545;
-  margin-right: 10px;
-}
-
-@keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 5px rgba(220, 53, 69, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
-  }
-}
-
-.pulse-animation {
-  animation: pulse-border 1.5s infinite;
-}
-</style>
-<style>
-/* CSS untuk rating stars */
-.rating-stars {
-    direction: rtl;
-    display: inline-block;
-}
-
-.rating-stars input[type="radio"] {
-    display: none;
-}
-
-.rating-stars label {
-    color: #bbb;
-    font-size: 1.5rem;
-    padding: 0;
-    cursor: pointer;
-    margin: 0 2px;
-}
-
-.rating-stars label:hover,
-.rating-stars label:hover ~ label,
-.rating-stars input[type="radio"]:checked ~ label {
-    color: #ffb700;
-}
-
-.rating-text {
-    font-size: 1rem;
-    align-self: center;
-}
-
-/* Pastikan style tidak rusak */
-.rating-container {
-    margin-bottom: 10px;
-}
-</style>
-
+<!-- Modal Peminjaman -->
 <div class="modal fade" id="modalPeminjaman" tabindex="-1" aria-labelledby="modalPeminjamanLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-gradient-primary text-white">
+        <div class="modal-content border-0 shadow modal-modern">
+            <div class="modal-header modal-header-modern">
                 <h5 class="modal-title" id="modalPeminjamanLabel">Form Peminjaman Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <form id="formPeminjaman" action="<?= base_url('/AsetKendaraan/pinjam'); ?>" method="post" class="pinjam"
                 enctype="multipart/form-data">
-                
-                <!-- Halaman 1: Data Peminjam -->
+
                 <div id="page1" class="modal-body p-4">
                     <div class="row">
                         <div class="col-md-6">
@@ -832,7 +618,7 @@
                                 <label for="no_ktp" class="form-label">No. KTP</label>
                                 <input type="text" class="form-control" id="no_ktp" name="no_ktp" required>
                             </div>
-                            
+
                             <div class="form-group mb-3">
                                 <label for="alamat_rumah" class="form-label">Alamat Rumah</label>
                                 <textarea class="form-control" id="alamat_rumah" name="alamat_rumah" rows="2"
@@ -906,7 +692,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
-                                <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam" 
+                                <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam"
                                     required min="<?= date('Y-m-d') ?>">
                             </div>
                         </div>
@@ -925,79 +711,79 @@
                                 required></textarea>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex justify-content-end mt-3">
                         <button type="button" id="nextBtn" class="btn btn-primary rounded-pill">Selanjutnya &raquo;</button>
                     </div>
                 </div>
 
-                <!-- Halaman 2: Data Kendaraan -->
-<div id="page2" class="modal-body p-4" style="display: none;">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group mb-3">
-                <label for="detail_jenis_kendaraan" class="form-label">Jenis Kendaraan</label>
-                <input type="text" class="form-control" id="detail_jenis_kendaraan" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_nopol" class="form-label">Nomor Polisi</label>
-                <input type="text" class="form-control" id="detail_nopol" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_merk" class="form-label">Merk/Type</label>
-                <input type="text" class="form-control" id="detail_merk" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_warna" class="form-label">Warna</label>
-                <input type="text" class="form-control" id="detail_warna" readonly>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="form-group mb-3">
-                <label for="detail_nomor_mesin" class="form-label">Nomor Mesin</label>
-                <input type="text" class="form-control" id="detail_nomor_mesin" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_no_rangka" class="form-label">Nomor Rangka</label>
-                <input type="text" class="form-control" id="detail_no_rangka" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_kode_barang" class="form-label">Kode Barang</label>
-                <input type="text" class="form-control" id="detail_kode_barang" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_nup" class="form-label">NUP</label>
-                <input type="text" class="form-control" id="detail_nup" readonly>
-            </div>
-            
-            <div class="form-group mb-3">
-                <label for="detail_tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
-                <input type="text" class="form-control" id="detail_tahun_pembuatan" readonly>
-            </div>
-        </div>
-    </div>
-    
-    <div class="d-flex justify-content-between mt-3">
-        <button type="button" id="prevBtn" class="btn btn-light rounded-pill">&laquo; Kembali</button>
-        <button type="submit" class="btn btn-primary rounded-pill">Ajukan Peminjaman</button>
-    </div>
-</div>
+                <div id="page2" class="modal-body p-4" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="detail_jenis_kendaraan" class="form-label">Jenis Kendaraan</label>
+                                <input type="text" class="form-control" id="detail_jenis_kendaraan" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_nopol" class="form-label">Nomor Polisi</label>
+                                <input type="text" class="form-control" id="detail_nopol" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_merk" class="form-label">Merk/Type</label>
+                                <input type="text" class="form-control" id="detail_merk" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_warna" class="form-label">Warna</label>
+                                <input type="text" class="form-control" id="detail_warna" readonly>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="detail_nomor_mesin" class="form-label">Nomor Mesin</label>
+                                <input type="text" class="form-control" id="detail_nomor_mesin" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_no_rangka" class="form-label">Nomor Rangka</label>
+                                <input type="text" class="form-control" id="detail_no_rangka" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_kode_barang" class="form-label">Kode Barang</label>
+                                <input type="text" class="form-control" id="detail_kode_barang" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_nup" class="form-label">NUP</label>
+                                <input type="text" class="form-control" id="detail_nup" readonly>
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label for="detail_tahun_pembuatan" class="form-label">Tahun Pembuatan</label>
+                                <input type="text" class="form-control" id="detail_tahun_pembuatan" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" id="prevBtn" class="btn btn-light rounded-pill">&laquo; Kembali</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Ajukan Peminjaman</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Modal Edit Aset -->
 <div class="modal fade" id="modalEditAset" tabindex="-1" aria-labelledby="modalEditAsetLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-gradient-primary text-white">
+        <div class="modal-content border-0 shadow modal-modern">
+            <div class="modal-header modal-header-modern">
                 <h5 class="modal-title" id="modalEditAsetLabel">Form Edit Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -1094,9 +880,10 @@
     </div>
 </div>
 
+<!-- Modal Image Preview -->
 <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content border-0 shadow modal-modern">
             <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title">Foto Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1121,34 +908,30 @@
     </div>
 </div>
 
+<!-- Modal Tracking Map -->
 <div class="modal fade" id="trackingMapModal" tabindex="-1" aria-labelledby="trackingMapLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="trackingMapLabel">Peta Lokasi Kendaraan</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-0" style="height: 500px;">
-        <div id="trackingMap" style="height: 100%;"></div>
-      </div>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow modal-modern">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="trackingMapLabel">Peta Lokasi Kendaraan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="height: 500px;">
+                <div id="trackingMap" style="height: 100%;"></div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Modal Timeline Peminjaman -->
-<!-- Modal Timeline Peminjaman dengan Tab Section -->
-<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
-<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
-<!-- Modal Timeline Peminjaman dengan Tab dan Table Section -->
 <div class="modal fade" id="modalTimeline" tabindex="-1" aria-labelledby="modalTimelineLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content border-0 shadow modal-modern">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalTimelineLabel">Verifikasi Peminjaman & Pengembalian</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0">
-                <!-- Tab Navigation -->
                 <ul class="nav nav-tabs border-0" id="timelineTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="peminjaman-tab" data-bs-toggle="tab" data-bs-target="#peminjaman" type="button" role="tab" aria-controls="peminjaman" aria-selected="true">
@@ -1161,10 +944,8 @@
                         </button>
                     </li>
                 </ul>
-                
-                <!-- Tab Content -->
+
                 <div class="tab-content p-3" id="timelineTabContent">
-                    <!-- Peminjaman Pending -->
                     <div class="tab-pane fade show active" id="peminjaman" role="tabpanel" aria-labelledby="peminjaman-tab">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -1194,212 +975,248 @@
                             </table>
                         </div>
                     </div>
-                    
-                    <!-- Pengembalian Pending -->
-<div class="tab-pane fade" id="pengembalian" role="tabpanel" aria-labelledby="pengembalian-tab">
-    <div class="table-responsive">
-        <h5 class="mb-3">Pengembalian Pending</h5>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Penanggung Jawab</th>
-                    <th>Kendaraan</th>
-                    <th>Urusan Kedinasan</th>
-                    <th>Status</th>
-                    <th>Dokumen</th>
-                    <th>Tanggal Pinjam</th>
-                    <th>Tanggal Kembali</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="pengembalianPendingTable">
-                <tr>
-                    <td colspan="9" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-3">Memuat data pengembalian...</p>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
 
-        <!-- Histori Penolakan dalam tab yang sama -->
-        <h5 class="mt-4 mb-3">Histori Penolakan Pengembalian</h5>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Tanggal</th>
-                    <th>Penanggung Jawab</th>
-                    <th>Kendaraan</th>
-                    <th>Status</th>
-                    <th>Alasan Penolakan</th>
-                    <th>Dokumen</th>
-                    <th>Tanggal Pinjam</th>
-                    <th>Tanggal Kembali</th>
-                </tr>
-            </thead>
-            <tbody id="penolakanHistoryTable">
-                <tr>
-                    <td colspan="8" class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                    <div class="tab-pane fade" id="pengembalian" role="tabpanel" aria-labelledby="pengembalian-tab">
+                        <div class="table-responsive">
+                            <h5 class="mb-3">Pengembalian Pending</h5>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Penanggung Jawab</th>
+                                        <th>Kendaraan</th>
+                                        <th>Urusan Kedinasan</th>
+                                        <th>Status</th>
+                                        <th>Dokumen</th>
+                                        <th>Tanggal Pinjam</th>
+                                        <th>Tanggal Kembali</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pengembalianPendingTable">
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3">Memuat data pengembalian...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5 class="mt-4 mb-3">Histori Penolakan Pengembalian</h5>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Penanggung Jawab</th>
+                                        <th>Kendaraan</th>
+                                        <th>Status</th>
+                                        <th>Alasan Penolakan</th>
+                                        <th>Dokumen</th>
+                                        <th>Tanggal Pinjam</th>
+                                        <th>Tanggal Kembali</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="penolakanHistoryTable">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3">Memuat histori penolakan...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <p class="mt-3">Memuat histori penolakan...</p>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>
-</div>
-</div>
-<div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-</div>
-</div>
-</div>
-</div>
 
-
-
-<!-- Enhanced CSS for modern look -->
+<!-- ================= MODERN STYLESHEET ================= -->
 <style>
-    /* Modern Card Styles */
-    .vehicle-card .card {
-        transition: all 0.3s ease;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    
-    .vehicle-card .card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
-    }
-    
-    /* Image hover effect */
-    .vehicle-image-wrapper img:hover {
-        transform: scale(1.05);
-    }
-    
-    /* Detail items styling */
-    .detail-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 10px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        margin-bottom: 8px;
-        transition: all 0.2s;
-    }
-    
-    .detail-item:hover {
-        background-color: #e9ecef;
-    }
-    
-    .detail-icon {
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background-color: rgba(13, 110, 253, 0.1);
-        margin-right: 10px;
-        font-size: 14px;
-    }
-    
-    /* Status badge styling */
-    .pill-badge {
-        padding: 0.5em 1em;
-        border-radius: 50px;
-        font-weight: 500;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    /* Text shadow for better readability on image overlays */
-    .text-shadow {
-        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    }
-    
-    /* Action buttons styling */
-    .action-button {
-        transition: all 0.2s;
-        border: none;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    
-    .action-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    /* Document button styling */
-    .btn-document {
-        transition: all 0.2s;
-        font-size: 0.8rem;
-    }
-    
-    .btn-document:hover {
-        background-color: #e7f1ff;
-        color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    
-    /* Modal styling */
-    .modal-content {
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    
-    /* Header gradient */
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-    }
-    
-    /* Form controls styling */
-    .form-control, .form-select {
-        border-radius: 8px;
-        padding: 0.6rem 1rem;
-    }
-    
-    .form-control:focus, .form-select:focus {
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: #adb5bd;
-        border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: #6c757d;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .header-section {
-            text-align: center;
-        }
-        
-        .header-section nav {
-            justify-content: center !important;
-            margin-top: 1rem;
-        }
-    }
-</style>
+:root{
+    --kv-bg:#f6f7fb;
+    --kv-surface:#ffffff;
+    --kv-border:#e7e9f0;
+    --kv-text:#1c2333;
+    --kv-text-muted:#6b7280;
+    --kv-primary:#3950A2;
+    --kv-primary-dark:#2c3d80;
+    --kv-radius:16px;
+}
 
+.kendaraan-page{ color:var(--kv-text); }
+
+/* Header */
+.page-header .page-title{
+    font-size:28px; font-weight:700; margin:0 0 2px; color:var(--kv-text);
+}
+.page-header .page-subtitle{ color:var(--kv-text-muted); margin:0; font-size:14px; }
+.page-header .breadcrumb{ background:transparent; padding:0; }
+.page-header .breadcrumb-item a{ color:var(--kv-text-muted); text-decoration:none; }
+.page-header .breadcrumb-item.active{ color:var(--kv-text); }
+
+/* Filter bar */
+.filter-bar{
+    background:var(--kv-surface);
+    border:1px solid var(--kv-border);
+    border-radius:14px;
+    padding:14px 16px;
+}
+.form-select-modern, .form-control-modern{
+    border:1px solid var(--kv-border);
+    background:#fafbff;
+    border-radius:10px;
+    font-size:14px;
+    padding:8px 12px;
+}
+.form-select-modern:focus, .form-control-modern:focus{
+    border-color:var(--kv-primary);
+    box-shadow:0 0 0 3px rgba(79,93,246,0.12);
+}
+.search-wrapper{ position:relative; }
+.search-wrapper i{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:var(--kv-text-muted); font-size:14px;
+}
+.search-wrapper .form-control-modern{ padding-left:34px; }
+.view-toggle .btn-view{
+    border:1px solid var(--kv-border); background:#fafbff; color:var(--kv-text-muted);
+}
+.view-toggle .btn-view.active{ background:var(--kv-primary); color:#fff; border-color:var(--kv-primary); }
+
+/* Grid */
+.vehicle-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:20px;
+}
+
+/* Card */
+.vc-card{
+    background:var(--kv-surface);
+    border:1px solid var(--kv-border);
+    border-radius:var(--kv-radius);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    transition:transform .25s ease, box-shadow .25s ease;
+}
+.vc-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 14px 30px rgba(28,35,51,0.08);
+}
+
+.vc-image-wrap{ position:relative; height:170px; background:#eef0f6; }
+.vc-image{ width:100%; height:100%; object-fit:cover; transition:transform .5s ease; }
+.vc-card:hover .vc-image{ transform:scale(1.05); }
+
+.vc-status-badge{
+    position:absolute; top:12px; right:12px;
+    font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px;
+    display:inline-flex; align-items:center; gap:5px;
+    backdrop-filter:blur(2px);
+}
+.status-available{ background:rgba(34,197,94,0.14); color:#16803d; }
+.status-pending{ background:rgba(245,158,11,0.16); color:#92650a; }
+.status-borrowed{ background:rgba(59,130,246,0.16); color:#1d4ed8; }
+
+.vc-info-badge{
+    position:absolute; top:12px; left:12px;
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(220,53,69,0.9); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+    cursor:pointer;
+}
+
+.vc-body{ padding:16px; flex:1; }
+.vc-title-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:12px; }
+.vc-title{ font-size:16px; font-weight:700; margin:0; color:var(--kv-text); }
+.vc-condition-badge{
+    font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; white-space:nowrap;
+}
+.cond-good{ background:rgba(34,197,94,0.14); color:#16803d; }
+.cond-warn{ background:rgba(245,158,11,0.16); color:#92650a; }
+.cond-bad{ background:rgba(220,53,69,0.14); color:#b91c1c; }
+
+.vc-meta-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.vc-meta{ display:flex; align-items:flex-start; gap:8px; }
+.vc-meta i{ color:var(--kv-primary); font-size:15px; margin-top:2px; }
+.vc-meta-label{ display:block; font-size:11px; color:var(--kv-text-muted); }
+.vc-meta-value{ display:block; font-size:13px; font-weight:600; color:var(--kv-text); }
+
+.vc-return-date{
+    margin-top:14px; padding:8px 12px; border-radius:10px;
+    background:#eef2ff; border-left:3px solid var(--kv-primary);
+    display:flex; justify-content:space-between; align-items:center;
+}
+.vc-return-value{ font-weight:700; font-size:13px; color:var(--kv-text); }
+
+.vc-footer{ padding:0 16px 16px; }
+
+.vc-btn{
+    border:none; border-radius:999px; padding:11px 16px; font-size:14px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:opacity .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.vc-btn:hover{ opacity:.92; }
+.vc-btn:active{ transform:scale(0.98); }
+.vc-btn-primary{ background:#3950A2; color:#fff; box-shadow:0 4px 10px rgba(57,80,162,0.25); }
+.vc-btn-success{ background:#157347; color:#fff; box-shadow:0 4px 10px rgba(21,115,71,0.22); }
+.vc-btn-info{ background:#3950A2; color:#fff; box-shadow:0 4px 10px rgba(57,80,162,0.22); }
+.vc-btn-secondary{ background:#5C636A; color:#fff; box-shadow:0 4px 10px rgba(92,99,106,0.2); }
+.vc-btn-muted{ background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; }
+.vc-btn-outline{ background:#fff; border:1.5px solid #3950A2; color:#3950A2; }
+.vc-btn-outline-danger{ background:#fff; border:1.5px solid #dc3545; color:#dc3545; }
+
+.vc-documents{ margin-top:4px; }
+.vc-documents-header{ font-size:12px; font-weight:600; color:var(--kv-text-muted); margin-bottom:6px; }
+.vc-doc-link{
+    display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
+    color:var(--kv-primary); border:1px solid var(--kv-border); border-radius:10px;
+    padding:7px 10px; margin-bottom:6px; text-decoration:none;
+}
+.vc-doc-link:hover{ background:#f4f5ff; }
+
+/* Modals */
+.modal-content.modal-modern{ border-radius:16px; overflow:hidden; }
+.modal-header-modern{ background:linear-gradient(135deg,var(--kv-primary) 0%, var(--kv-primary-dark) 100%); color:#fff; }
+
+/* Rating stars kept from original */
+.rating-stars{ direction:rtl; display:inline-block; }
+.rating-stars input[type="radio"]{ display:none; }
+.rating-stars label{ color:#bbb; font-size:1.5rem; padding:0; cursor:pointer; margin:0 2px; }
+.rating-stars label:hover, .rating-stars label:hover ~ label, .rating-stars input[type="radio"]:checked ~ label{ color:#ffb700; }
+.rating-text{ font-size:1rem; align-self:center; }
+.rating-container{ margin-bottom:10px; }
+
+#kendaraan_id_kembali[readonly]{
+    background-color:#e9ecef !important; pointer-events:none; -webkit-appearance:none; -moz-appearance:none; appearance:none;
+}
+#kendaraan_id_kembali{
+    background-color:#e9ecef !important; color:#6c757d !important; pointer-events:none !important;
+    cursor:not-allowed !important; border-color:#ced4da !important;
+}
+.form-control[readonly]{ background-color:#e9ecef; color:#6c757d; opacity:1; }
+
+@media (max-width:768px){
+    .page-header{ text-align:center; }
+    .page-header nav{ justify-content:center !important; margin-top:8px; }
+    .vehicle-grid{ grid-template-columns:1fr; }
+}
+</style>
 <script>
     const BASE_URL = '<?= base_url() ?>';
     

@@ -26,10 +26,17 @@ $routes->get('/', 'Beranda::index');
 $routes->get('/login', 'Auth::login'); // Tambahan route untuk akses langsung ke login
 
 
-    $routes->get('register', 'Auth::register');
-    $routes->post('check-username', 'Auth::checkUsername');
-    $routes->post('check-email', 'Auth::checkEmail');
-    $routes->post('check-email-forgot', 'Auth::checkEmailForgot');
+// Routes yang sudah ada
+$routes->get('register', 'Auth::register');
+$routes->post('check-username', 'Auth::checkUsername');
+$routes->post('check-email', 'Auth::checkEmail');
+$routes->post('check-email-forgot', 'Auth::checkEmailForgot');
+
+// 👇 TAMBAHKAN 3 BARIS INI TEPAT DI BAWAHNYA 👇
+// Ini untuk menangkap request dari JS lama (Cache) agar tidak error
+$routes->post('auth/check-username', 'Auth::checkUsername');
+$routes->post('auth/check-email', 'Auth::checkEmail');
+$routes->post('auth/check-email-forgot', 'Auth::checkEmailForgot');
     $routes->get('login', 'Auth::login');
     $routes->get('logout', 'Auth::logout');
 
