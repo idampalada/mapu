@@ -38,6 +38,7 @@ class Filters extends BaseFilters
         'role' => \Myth\Auth\Filters\RoleFilter::class,
         'permission' => \Myth\Auth\Filters\PermissionFilter::class,
         'accesslogger' => \App\Filters\AccessLogger::class,
+        'key-auth'      => \App\Filters\KeyAuthFilter::class,
     ];
 
     /**

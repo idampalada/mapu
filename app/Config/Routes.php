@@ -372,10 +372,119 @@ $routes->get('uploads/documents/(:any)', function ($filename) {
 // $routes->get('User/Ruangan/getBookingSaya', 'User\Ruangan::getBookingSaya');
 $routes->get('User/Ruangan/getBookingPublik', 'User\Ruangan::getBookingPublik');
 $routes->get('User/Ruangan/getBookingPublik/(:segment)', 'User\Ruangan::getBookingPublik/$1');
-$routes->group('api', ['namespace' => 'App\Controllers\Api'], function($routes) {
-    $routes->get('barangkategori', 'BarangKategori::index');
-});
 
+// Di Routes.php
+$routes->get('AsetKendaraan/checkFile/(:any)', 'AsetKendaraan::checkFile/$1');
+$routes->get('AsetKendaraan/checkFile', 'AsetKendaraan::checkFile');
+
+// TEMPLATE SURAT JALAN
+// Route untuk generate surat jalan
+$routes->post('/SuratJalan/generate', 'SuratJalanController::generate', ['filter' => 'role:admin,admin_gedungutama']);
+
+// Route untuk generate surat penanggung jawab KDF
+// Route untuk generate surat penanggung jawab KDF
+$routes->post('/AsetKendaraan/generateSuratPenanggungJawabKdf', 'AsetKendaraan::generateSuratPenanggungJawabKdf', ['filter' => 'role:admin,admin_gedungutama']);
+
+// Route untuk mendapatkan data peminjaman
+// Route untuk mendapatkan data peminjaman
+   $routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'role:admin,admin_gedungutama']);
+
+//Route Untuk TIMELINE PEMINJAMAN
+$routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ================== AWAL ROUTES BARANG ==================
 // Routes utama
 $routes->get('user/tanah', 'User\Tanah::kelompokTanah');
 $routes->get('user/tanah/kelompoktanah', 'User\Tanah::kelompokTanah');
@@ -1486,22 +1595,4 @@ $routes->get('siman-extract/(:segment)/(:num)', 'SimanApi::extractAllDataSafe/$1
 $routes->get('siman-auto-sync', 'SimanApi::autoSyncWithDynamicColumns');
 $routes->get('siman-auto-sync/(:segment)', 'SimanApi::autoSyncWithDynamicColumns/$1');
 
-// Di Routes.php
-$routes->get('AsetKendaraan/checkFile/(:any)', 'AsetKendaraan::checkFile/$1');
-$routes->get('AsetKendaraan/checkFile', 'AsetKendaraan::checkFile');
-
-// TEMPLATE SURAT JALAN
-// Route untuk generate surat jalan
-$routes->post('/SuratJalan/generate', 'SuratJalanController::generate', ['filter' => 'auth:admin,admin_gedungutama']);
-
-// Route untuk generate surat penanggung jawab KDF
-// Route untuk generate surat penanggung jawab KDF
-$routes->post('/AsetKendaraan/generateSuratPenanggungJawabKdf', 'AsetKendaraan::generateSuratPenanggungJawabKdf', ['filter' => 'role:admin,admin_gedungutama']);
-
-// Route untuk mendapatkan data peminjaman
-// Route untuk mendapatkan data peminjaman
-   $routes->post('/AsetKendaraan/getPeminjamanData', 'AsetKendaraan::getPeminjamanData', ['filter' => 'role:admin,admin_gedungutama']);
-
-//Route Untuk TIMELINE PEMINJAMAN
-$routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');
-
+// ================== AKHIR ROUTES BARANG ==================

@@ -70,6 +70,7 @@
 <script src="<?= asset('assets/js/main.js') ?>"></script>
     <script src="<?= asset('assets/js/timeline-peminjaman.js') ?>"></script>
     <script src="<?= asset('assets/js/homepage.js') ?>"></script>
+        <script src="<?= asset('assets/js/homepageextend.js') ?>"></script>
     <script src="<?= asset('assets/js/laporan.js') ?>"></script>
     <script src="<?= asset('assets/js/dashboard.js') ?>"></script>
     <script src="<?= asset('assets/js/auth.js?v=' . time()) ?>"></script>
