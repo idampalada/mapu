@@ -3,62 +3,29 @@
 <?= $this->section('content') ?>
 
 <div class="container-fluid px-4">
-    <!-- ===================== Page header ===================== -->
-<header class="kv-hero">
-<div class="kv-hero__bg"></div>
-    <div class="kv-hero__content">
-        <nav aria-label="breadcrumb" class="kv-hero__breadcrumb">
-            <a href="#">Beranda</a>
-            <span class="kv-hero__sep">/</span>
-            <span class="kv-hero__current">Kendaraan</span>
-        </nav>
-
-        <h1 class="kv-hero__title">Kendaraan</h1>
-        <p class="kv-hero__subtitle">Kelola dan pantau aset kendaraan dengan mudah</p>
+    <!-- Modern Header with Gradient Background -->
+    <div class="header-section py-4 px-3 mb-4 rounded-lg" style="background: linear-gradient(135deg, #2D3748 0%, #1E293B 100%);">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2 class="text-white mb-0 display-6 fw-bold">Kendaraan</h2>
+                <p class="text-light mb-0 opacity-75">Kelola dan pantau aset kendaraan dengan mudah</p>
+            </div>
+            <div class="col-md-6">
+                <nav aria-label="breadcrumb" class="d-flex justify-content-md-end">
+                    <ol class="breadcrumb mb-0 bg-transparent py-2 px-3 rounded" style="background-color: rgba(255,255,255,0.1);">
+                        <li class="breadcrumb-item"><a href="#" class="text-light">Beranda</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Kendaraan</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
     </div>
 
-    <?php
-    $totalArmada   = count($aset);
-    $totalTersedia = 0;
-    $totalDipinjam = 0;
-    foreach ($aset as $itemHitung) {
-        if ($itemHitung['status_pinjam'] === 'Tersedia') {
-            $totalTersedia++;
-        } elseif ($itemHitung['status_pinjam'] !== 'Dalam Verifikasi' && $itemHitung['status_pinjam'] !== 'Pending') {
-            $totalDipinjam++;
-        }
-    }
-    ?>
-    <dl class="kv-hero__stats" id="kvStats">
-        <div class="kv-hero__stat">
-            <dt>Total armada</dt>
-            <dd><span data-kv-stat="total"><?= $totalArmada ?></span></dd>
-        </div>
-        <div class="kv-hero__stat kv-hero__stat--available">
-            <dt><span class="kv-dot"></span>Tersedia</dt>
-            <dd><span data-kv-stat="tersedia"><?= $totalTersedia ?></span></dd>
-        </div>
-        <div class="kv-hero__stat kv-hero__stat--borrowed">
-            <dt><span class="kv-dot"></span>Dipinjam</dt>
-            <dd><span data-kv-stat="dipinjam"><?= $totalDipinjam ?></span></dd>
-        </div>
-    </dl>
-</header>
 
-    <!-- ===================== Filter toolbar ===================== -->
-    <div class="filter-bar" role="search">
-        <div class="kv-toolbar">
-            <div class="kv-field kv-field--search">
-                <label class="kv-field__label" for="searchKendaraan">Cari</label>
-                <div class="search-wrapper">
-                    <i class="bi bi-search" aria-hidden="true"></i>
-                    <input type="text" class="form-control form-control-modern" placeholder="Cari kendaraan..." id="searchKendaraan"
-                        autocomplete="off">
-                </div>
-            </div>
-
-            <div class="kv-field">
-                <label class="kv-field__label" for="filterKategori">Kategori</label>
+    <!-- Filter & Search -->
+    <div class="filter-bar mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
                 <select class="form-select form-select-modern" id="filterKategori">
                     <option value="">Semua Kategori</option>
                     <option value="KDJ">Kendaraan Dinamis Jalan</option>
@@ -66,9 +33,7 @@
                     <option value="KDF">Kendaraan Dinamis Fasilitas</option>
                 </select>
             </div>
-
-            <div class="kv-field">
-                <label class="kv-field__label" for="filterStatus">Status</label>
+            <div class="col-md-3">
                 <select class="form-select form-select-modern" id="filterStatus">
                     <option value="">Semua Status</option>
                     <option value="Tersedia">Tersedia</option>
@@ -76,31 +41,18 @@
                     <option value="Verifikasi">Dalam Verifikasi</option>
                 </select>
             </div>
-
-            <div class="kv-field kv-field--toggle">
-                <span class="kv-field__label" id="kvViewLabel">Tampilan</span>
-                <div class="btn-group view-toggle" role="group" aria-labelledby="kvViewLabel">
-                    <button type="button" class="btn btn-view active" data-kv-view="grid"
-                        aria-pressed="true" title="Tampilan kartu">
-                        <i class="bi bi-grid-3x3-gap" aria-hidden="true"></i>
-                        <span class="visually-hidden">Tampilan kartu</span>
-                    </button>
-                    <button type="button" class="btn btn-view" data-kv-view="list"
-                        aria-pressed="false" title="Tampilan daftar">
-                        <i class="bi bi-list" aria-hidden="true"></i>
-                        <span class="visually-hidden">Tampilan daftar</span>
-                    </button>
+            <div class="col-md-4">
+                <div class="search-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control form-control-modern" placeholder="Cari kendaraan..." id="searchKendaraan">
                 </div>
             </div>
-        </div>
-
-        <div class="kv-toolbar__meta">
-            <p class="kv-result-count" id="kvResultCount" role="status" aria-live="polite">
-                Menampilkan <strong id="kvResultShown"><?= $totalArmada ?></strong> dari <strong id="kvResultTotal"><?= $totalArmada ?></strong> kendaraan
-            </p>
-            <button type="button" class="kv-reset" id="kvResetFilter" hidden>
-                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Atur ulang filter
-            </button>
+            <div class="col-md-2 text-end">
+                <div class="btn-group view-toggle" role="group">
+                    <button type="button" class="btn btn-view active"><i class="bi bi-grid-3x3-gap"></i></button>
+                    <button type="button" class="btn btn-view"><i class="bi bi-list"></i></button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -118,14 +70,12 @@
                             $mainImage = !empty($images) ? $images[0] : null;
                             ?>
                             <?php if (!empty($mainImage) && file_exists(ROOTPATH . 'public/uploads/images/' . $mainImage)): ?>
-                                <img loading="lazy" decoding="async"
-                                    src="<?= base_url('/uploads/images/' . $mainImage) ?>"
+                                <img src="<?= base_url('/uploads/images/' . $mainImage) ?>"
                                     class="vc-image image-preview-trigger"
                                     data-images='<?= htmlspecialchars(json_encode($images)) ?>'
                                     alt="<?= $item['merk'] ?>">
                             <?php else: ?>
-                                <img loading="lazy" decoding="async"
-                                    src="<?= base_url('/assets/images/faces/1.jpg') ?>"
+                                <img src="<?= base_url('/assets/images/faces/1.jpg') ?>"
                                     class="vc-image"
                                     alt="<?= $item['merk'] ?>">
                             <?php endif; ?>
@@ -148,7 +98,7 @@
                             }
                             ?>
                             <span class="vc-status-badge <?= $statusClass ?>">
-                                <i class="bi <?= $statusIcon ?>" aria-hidden="true"></i> <?= $item['status_pinjam'] ?>
+                                <i class="bi <?= $statusIcon ?>"></i> <?= $item['status_pinjam'] ?>
                             </span>
 
                             <?php if (!empty($item['keterangan'])): ?>
@@ -160,57 +110,69 @@
 
                         <!-- Body -->
                         <div class="vc-body">
-                            <div class="vc-head">
-                                <h3 class="vc-title" title="<?= $item['merk'] ?>"><?= $item['merk'] ?></h3>
-                                <span class="vc-plate" title="Nomor polisi"><?= $item['no_polisi'] ?></span>
+                            <div class="vc-title-row">
+                                <h3 class="vc-title"><?= $item['merk'] ?></h3>
+                                <span class="vc-condition-badge cond-<?= $item['kondisi'] === 'Baik' ? 'good' : ($item['kondisi'] === 'Rusak Ringan' ? 'warn' : 'bad') ?>">
+                                    <?= $item['kondisi'] ?>
+                                </span>
                             </div>
 
-                            <dl class="vc-specs">
-                                <div class="vc-spec">
-                                    <dt>Tahun</dt>
-                                    <dd><?= $item['tahun_pembuatan'] ?></dd>
+                            <div class="vc-meta-grid">
+                                <div class="vc-meta">
+                                    <i class="bi bi-car-front"></i>
+                                    <div>
+                                        <span class="vc-meta-label">No. Polisi</span>
+                                        <span class="vc-meta-value"><?= $item['no_polisi'] ?></span>
+                                    </div>
                                 </div>
-                                <div class="vc-spec">
-                                    <dt>Kapasitas</dt>
-                                    <dd><?= $item['kapasitas'] ?> Orang</dd>
+                                <div class="vc-meta">
+                                    <i class="bi bi-calendar3"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Tahun</span>
+                                        <span class="vc-meta-value"><?= $item['tahun_pembuatan'] ?></span>
+                                    </div>
                                 </div>
-                                <div class="vc-spec">
-                                    <dt>Tipe</dt>
-                                    <dd><?= $item['kategori_id'] ?></dd>
+                                <div class="vc-meta">
+                                    <i class="bi bi-people"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Kapasitas</span>
+                                        <span class="vc-meta-value"><?= $item['kapasitas'] ?> Orang</span>
+                                    </div>
                                 </div>
-                            </dl>
-
-                            <dl class="vc-sub">
-                                <div class="vc-sub__item">
-                                    <dt>Kode barang</dt>
-                                    <dd><?= $item['kode_barang'] ?></dd>
+                                <div class="vc-meta">
+                                    <i class="bi bi-upc-scan"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Kode Barang</span>
+                                        <span class="vc-meta-value"><?= $item['kode_barang'] ?></span>
+                                    </div>
                                 </div>
-                                <div class="vc-sub__item">
-                                    <dt>Warna</dt>
-                                    <dd><?= $item['warna'] ?? 'Tidak Diketahui' ?></dd>
+                                <div class="vc-meta">
+                                    <i class="bi bi-tag"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Tipe</span>
+                                        <span class="vc-meta-value"><?= $item['kategori_id'] ?></span>
+                                    </div>
                                 </div>
-                                <div class="vc-sub__item">
-                                    <dt>Kondisi</dt>
-                                    <dd>
-                                        <span class="vc-condition-badge cond-<?= $item['kondisi'] === 'Baik' ? 'good' : ($item['kondisi'] === 'Rusak Ringan' ? 'warn' : 'bad') ?>">
-                                            <?= $item['kondisi'] ?>
-                                        </span>
-                                    </dd>
+                                <div class="vc-meta">
+                                    <i class="bi bi-palette"></i>
+                                    <div>
+                                        <span class="vc-meta-label">Warna</span>
+                                        <span class="vc-meta-value"><?= $item['warna'] ?? 'Tidak Diketahui' ?></span>
+                                    </div>
                                 </div>
-                            </dl>
+                            </div>
 
                             <?php if (!empty($item['tanggal_kembali'])): ?>
-                                <p class="vc-return-date">
-                                    <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                                    <span class="vc-return-label">Tanggal kembali</span>
+                                <div class="vc-return-date">
+                                    <span class="vc-meta-label">Tanggal Kembali</span>
                                     <span class="vc-return-value"><?= date('d/m/Y', strtotime($item['tanggal_kembali'])) ?></span>
-                                </p>
+                                </div>
                             <?php endif; ?>
                         </div>
 
                         <!-- Footer / Actions -->
                         <div class="vc-footer">
-                            <div class="vc-actions">
+                            <div class="d-flex flex-column gap-2">
                                 <?php if ($item['status_pinjam'] === 'Tersedia' || $item['status_pinjam'] === 'Dalam Verifikasi'): ?>
                                     <?php if ($item['status_pinjam'] === 'Dalam Verifikasi'): ?>
                                         <button type="button" class="vc-btn vc-btn-muted" disabled>
@@ -222,62 +184,58 @@
                                             <i class="bi bi-plus-circle"></i> Pinjam Kendaraan
                                         </button>
                                     <?php endif; ?>
-                                    <div class="vc-actions__row">
-                                        <button type="button" class="vc-btn vc-btn-success"
-                                            onclick="trackKendaraan('<?= $item['no_polisi'] ?>')">
-                                            <i class="bi bi-geo-alt"></i> Status
-                                        </button>
-                                        <button type="button" title="Timeline Peminjaman" aria-label="Timeline Peminjaman"
-                                            class="vc-btn vc-btn-secondary" onclick="showTimelineModal('<?= $item['id'] ?>')">
-                                            <i class="bi bi-clock-history"></i> Timeline
-                                        </button>
-                                    </div>
+                                    <button type="button" class="vc-btn vc-btn-success"
+                                        onclick="trackKendaraan('<?= $item['no_polisi'] ?>')">
+                                        <i class="bi bi-geo-alt"></i> Status
+                                    </button>
+                                    <button type="button" class="vc-btn vc-btn-secondary"
+                                        onclick="showTimelineModal('<?= $item['id'] ?>')">
+                                        <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                                    </button>
                                 <?php else: ?>
                                     <button type="button" class="vc-btn vc-btn-info"
                                         onclick="openPengembalianModal('<?= $item['id'] ?>')">
                                         <i class="bi bi-box-arrow-in-down"></i> Kembalikan Kendaraan
                                     </button>
-                                    <div class="vc-actions__row">
-                                        <button type="button" title="Timeline Peminjaman" aria-label="Timeline Peminjaman"
-                                            class="vc-btn vc-btn-secondary" onclick="showTimelineModal('<?= $item['id'] ?>')">
-                                            <i class="bi bi-clock-history"></i> Timeline
+                                    <button type="button" class="vc-btn vc-btn-secondary"
+                                        onclick="showTimelineModal('<?= $item['id'] ?>')">
+                                        <i class="bi bi-clock-history"></i> Timeline Peminjaman
+                                    </button>
+
+                                    <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
+                                        <div class="vc-documents">
+                                            <div class="vc-documents-header">
+                                                <i class="bi bi-file-earmark"></i> Dokumen
+                                            </div>
+                                            <?php if (!empty($item['surat_permohonan']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_permohonan'])): ?>
+                                                <a href="<?= base_url('/uploads/documents/' . $item['surat_permohonan']) ?>"
+                                                    target="_blank" class="vc-doc-link">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
+                                                </a>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['surat_jalan_admin']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_jalan_admin'])): ?>
+                                                <a href="<?= base_url('/uploads/documents/' . $item['surat_jalan_admin']) ?>"
+                                                    target="_blank" class="vc-doc-link">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+
+                                <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="vc-btn vc-btn-outline flex-grow-1"
+                                            onclick="openEditModal('<?= $item['id'] ?>')">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </button>
+                                        <button type="button" class="vc-btn vc-btn-outline-danger flex-grow-1"
+                                            onclick="deleteAset('<?= $item['id'] ?>')">
+                                            <i class="bi bi-trash"></i> Hapus
                                         </button>
                                     </div>
                                 <?php endif; ?>
                             </div>
-
-                            <?php if ($item['status_pinjam'] !== 'Tersedia' && $item['status_pinjam'] !== 'Dalam Verifikasi' && in_groups(['admin', 'admin_gedungutama'])): ?>
-                                <div class="vc-documents">
-                                    <div class="vc-documents-header">
-                                        <i class="bi bi-file-earmark"></i> Dokumen
-                                    </div>
-                                    <?php if (!empty($item['surat_permohonan']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_permohonan'])): ?>
-                                        <a href="<?= base_url('/uploads/documents/' . $item['surat_permohonan']) ?>"
-                                            target="_blank" class="vc-doc-link">
-                                            <i class="bi bi-file-earmark-pdf"></i> Surat Permohonan
-                                        </a>
-                                    <?php endif; ?>
-                                    <?php if (!empty($item['surat_jalan_admin']) && file_exists(ROOTPATH . 'public/uploads/documents/' . $item['surat_jalan_admin'])): ?>
-                                        <a href="<?= base_url('/uploads/documents/' . $item['surat_jalan_admin']) ?>"
-                                            target="_blank" class="vc-doc-link">
-                                            <i class="bi bi-file-earmark-pdf"></i> Surat Jalan
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if (in_groups(['admin', 'admin_gedungutama'])): ?>
-                                <div class="vc-admin-actions">
-                                    <button type="button" class="vc-btn vc-btn-admin-edit"
-                                        onclick="openEditModal('<?= $item['id'] ?>')" aria-label="Edit <?= $item['merk'] ?>">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </button>
-                                    <button type="button" class="vc-btn vc-btn-admin-delete"
-                                        onclick="deleteAset('<?= $item['id'] ?>')" aria-label="Hapus <?= $item['merk'] ?>">
-                                        <i class="bi bi-trash"></i> Hapus
-                                    </button>
-                                </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -285,29 +243,6 @@
         </div>
     </div>
 </div>
-
-<script>
-/* Pengalih tampilan kartu/daftar — satu-satunya JS baru untuk sinkronisasi
-   desain ini: toggle class .vehicle-grid--list saat tombol diklik.
-   Tidak ada localStorage/persist. */
-(function initViewToggle() {
-    var grid = document.querySelector('.vehicle-grid');
-    var buttons = document.querySelectorAll('.view-toggle .btn-view[data-kv-view]');
-    if (!grid || !buttons.length) return;
-
-    buttons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var mode = btn.dataset.kvView;
-            buttons.forEach(function (other) {
-                var on = other === btn;
-                other.classList.toggle('active', on);
-                other.setAttribute('aria-pressed', on ? 'true' : 'false');
-            });
-            grid.classList.toggle('vehicle-grid--list', mode === 'list');
-        });
-    });
-})();
-</script>
 
 <!-- ============================================================ -->
 <!-- Semua modal di bawah ini SAMA PERSIS strukturnya dengan versi -->
@@ -321,7 +256,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow modal-modern">
             <div class="modal-header modal-header-modern">
-                <h5 class="modal-title" id="modalPengembalianLabel" style="color:#fff !important;">Form Pengembalian Kendaraan</h5>
+                <h5 class="modal-title" id="modalPengembalianLabel">Form Pengembalian Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -849,7 +784,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow modal-modern">
             <div class="modal-header modal-header-modern">
-                <h5 class="modal-title" id="modalEditAsetLabel" style="color:#fff !important;">Form Edit Kendaraan</h5>
+                <h5 class="modal-title" id="modalEditAsetLabel">Form Edit Kendaraan</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formEditAset" method="post" enctype="multipart/form-data">
@@ -1109,4 +1044,8 @@
 <script>
     const BASE_URL = '<?= base_url() ?>';
 </script>
-<?= $this->endSection() ?>
+<?= $this->endSection() ?>="fw-bold text-dark" value="KDJ">Kendaraan Dinamis Jalan (KDJ)</option>
+                                    <option class="text-muted" disabled selected>Sedan, Hatchback, dan SUV</option>
+                                    <option class="fw-bold text-dark" value="KDO">Kendaraan Dinamis Off-road (KDO)</option>
+                                    <option class="text-muted" disabled selected>Bus, Truk, dan Kendaraan Box</option>
+                                    <option class

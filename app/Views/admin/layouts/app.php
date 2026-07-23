@@ -5,7 +5,7 @@
         <!-- Style Css -->
 <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+<link rel="stylesheet" href="<?= base_url('assets/css/homepage.css') ?>">
 
     <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -14,6 +14,7 @@
 
 <!-- Time Picker CSS -->
 <link rel="stylesheet" href="<?= base_url('assets/css/time-picker.css') ?>">
+
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -28,7 +29,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="shortcut icon" href="<?= base_url(); ?>/assets/images/favicon.svg" type="image/x-icon">
 
     <link rel="stylesheet" href="<?= base_url(); ?>/assets/css/bootstrap.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -39,6 +39,9 @@
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css" rel="stylesheet">
 
+<!-- CSS Custom (DIPINDAH KE BAWAH + DITAMBAH CACHE BUSTING) -->
+    <!-- Tambahkan "?v=<?= time() ?>" agar Cloudflare & Browser tidak me-load file lama -->
+    <link rel="stylesheet" href="<?= base_url('assets/css/homepage.css?v=' . time()) ?>">
     <?= $this->renderSection('styles') ?>
 </head>
 

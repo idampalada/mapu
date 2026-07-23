@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="<?= base_url(); ?>/assets/vendors/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" href="<?= base_url(); ?>/assets/css/app.css">
     <?= $this->renderSection('styles') ?>
-    <link rel="shortcut icon" href="<?= base_url(); ?>/assets/images/favicon.svg" type="image/x-icon">
 </head>
 
 <body>
