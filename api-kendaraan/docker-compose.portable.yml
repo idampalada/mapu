@@ -1,0 +1,72 @@
+# ============================================================================
+#  VERSI PORTABLE (self-contained) — untuk menguji API di laptop lain
+#  Jalankan:  docker-compose -f docker-compose.portable.yml up -d --build
+#
+#  Bedanya dengan docker-compose.yml biasa:
+#  - Membawa database PostgreSQL SENDIRI (service "db"), TIDAK bergantung
+#    pada container/network milik mapu.
+#  - Database otomatis di-restore dari db-init/01-mapu.sql saat pertama start.
+#  - Network internal sendiri (bukan external mapu_mapu-network).
+#
+#  Prasyarat di laptop tujuan: cukup Docker Desktop. Tidak perlu folder mapu.
+# ============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mapuapikendaraan-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mapu
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    volumes:
+      - mapuapi-pgdata:/var/lib/postgresql/data
+      # File .sql di folder ini otomatis dijalankan saat DB PERTAMA KALI dibuat
+      - ./db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mapu"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mapuapi-net
+
+  api-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mapuapikendaraan-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/var/www/html/.env:ro
+      - api-writable:/var/www/html/writable
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mapuapi-net
+
+  api-web:
+    image: nginx:1.27-alpine
+    container_name: mapuapikendaraan-nginx
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    volumes:
+      - ./public:/var/www/html/public:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api-app
+    networks:
+      - mapuapi-net
+
+networks:
+  mapuapi-net:
+    driver: bridge
+
+volumes:
+  mapuapi-pgdata:
+  api-writable:
