@@ -70,11 +70,13 @@ use App\Models\PinjamRuanganModel;
             <div class="tab-content mt-3" id="peminjamanTabsContent">
                 <!-- Tab Booking -->
                 <div class="tab-pane fade show active" id="booking" role="tabpanel" aria-labelledby="booking-tab">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Booking Ruangan:</strong> User dapat melakukan booking ruangan secara bebas tanpa perlu persetujuan admin. 
-                        Booking akan langsung aktif setelah disubmit.
-                    </div>
+<div class="alert alert-info-booking-custom d-flex align-items-start">
+    <i class="bi bi-info-circle me-2 mt-1"></i>
+    <div>
+        <div class="fw-bold">Kebijakan Booking Ruangan</div>
+        <div>User dapat melakukan booking ruangan secara bebas tanpa perlu persetujuan admin. Booking akan langsung aktif setelah disubmit.</div>
+    </div>
+</div>
                     
                    
                     <!-- Daftar Ruangan untuk Booking -->
@@ -114,11 +116,11 @@ use App\Models\PinjamRuanganModel;
                                         </div>
                                         
                                         <!-- Badge Booking Type -->
-                                        <div class="position-absolute top-0 start-0 p-2">
-                                            <span class="badge bg-success booking-type-badge">
-                                                 BOOKING
-                                            </span>
-                                        </div>
+<div class="position-absolute top-0 start-0 p-2">
+    <span class="badge badge-booking-custom booking-type-badge">
+        BOOKING
+    </span>
+</div>
                                     </div>
 
                                     <?php 
@@ -183,7 +185,7 @@ use App\Models\PinjamRuanganModel;
                                                 <!-- Button Booking Sekarang -->
                                             <button class="btn btn-primary btn-sm rounded-pill shadow-sm hover-effect 
                                                         d-flex align-items-center justify-content-center btn-booking-ruangan"
-                                                    style="height: 2.2rem; background-color: #0056B3; border: none;"
+                                                    style="height: 2.2rem; background-color: #081E52; border: none;"
                                                     data-ruangan-id="<?= $ruangan['id'] ?>"
                                                     data-ruangan-nama="<?= $cleanRuanganName ?>"
                                                     data-ruangan-kapasitas="<?= $ruangan['kapasitas'] ?>"
@@ -1009,35 +1011,61 @@ use App\Models\PinjamRuanganModel;
         min-height: 32px;
     }
 }
+.alert-info-booking-custom {
+    background-color: #223468;
+    border-color: #223468;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+}
+
+.alert-info-booking-custom .bi-info-circle {
+    color: #8D9ED9;
+    font-size: 1.1rem;
+}
+
+.alert-info-booking-custom .fw-bold {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.alert-info-booking-custom div div:not(.fw-bold) {
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+.badge-booking-custom {
+    background-color: #2C4068;
+    color: #ffffff;
+}
 </style>
 
     <!-- Container Notifikasi Booking -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">🔔 Pemberitahuan Booking Ruangan</h5>
-    <button class="btn btn-sm btn-outline-primary" id="toggleBookingNotice">
-        <i class="bi bi-eye"></i> Tampilkan
-    </button>
-</div>
-        <div class="card-body">
-            <div id="bookingNotice" style="display:none;">
-                <div class="text-muted">Memuat data booking ruangan...</div>
-            </div>
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center card-header-notif-booking">
+        <h5 class="mb-0">🔔 Pemberitahuan Booking Ruangan</h5>
+<button class="btn btn-sm btn-outline-custom-blue rounded-pill" id="toggleBookingNotice">
+    <i class="bi bi-eye"></i> Tampilkan
+</button>
+    </div>
+    <div class="card-body">
+        <div id="bookingNotice" style="display:none;">
+            <div class="text-muted">Memuat data booking ruangan...</div>
         </div>
     </div>
+</div>
 
 
 
     <!-- Kalender Booking Ruangan -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">📅 Kalender Booking Ruangan - <?= $lokasi ?></h5>
-            <button class="btn btn-primary" id="toggleCalendar" style="background-color: #133E87; border: none;">
-                <i class="bi bi-calendar3" id="calendarIcon"></i>
-                <span id="calendarButtonText">Tampilkan Kalender</span>
-            </button>
-        </div>
-        <div class="card-body" id="calendarContainer" style="display: none;">
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center card-header-notif-booking">
+        <h5 class="mb-0">📅 Kalender Booking Ruangan - <?= $lokasi ?></h5>
+        <button class="btn btn-primary" id="toggleCalendar" style="background-color: #081E52; border: none;">
+            <i class="bi bi-calendar3" id="calendarIcon"></i>
+            <span id="calendarButtonText">Tampilkan Kalender</span>
+        </button>
+    </div>
+    <div class="card-body" id="calendarContainer" style="display: none;">
             <div class="calendar-container">
                 <div class="calendar-header">
                     <div class="calendar-nav">
@@ -1356,6 +1384,19 @@ use App\Models\PinjamRuanganModel;
             font-size: 0.6rem;
         }
     }
+    .card-header-notif-booking {
+    background-color: #EFF4FF;
+}
+.btn-outline-custom-blue {
+    color: #081E52;
+    border-color: #081E52;
+    background-color: transparent;
+}
+
+.btn-outline-custom-blue:hover {
+    background-color: #081E52;
+    color: #ffffff;
+}
 </style>
 
 <script>
