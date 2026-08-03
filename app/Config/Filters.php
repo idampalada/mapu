@@ -39,6 +39,7 @@ class Filters extends BaseFilters
         'permission' => \Myth\Auth\Filters\PermissionFilter::class,
         'accesslogger' => \App\Filters\AccessLogger::class,
         'key-auth'      => \App\Filters\KeyAuthFilter::class,
+        'jwt' => \App\Filters\JwtFilter::class,
     ];
 
     /**

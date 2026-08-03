@@ -17,11 +17,11 @@
  * ============================================================================
  */
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
 use CodeIgniter\RESTful\ResourceController;
 use App\Libraries\ApiToken;
-use App\Models\UserModel;
+use App\Models\Api\UserModel;
 
 class Auth extends ResourceController
 {

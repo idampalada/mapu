@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-namespace App\Models;
+namespace App\Models\Api;
 
 use CodeIgniter\Model;
 

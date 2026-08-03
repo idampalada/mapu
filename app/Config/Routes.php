@@ -392,9 +392,18 @@ $routes->post('/AsetKendaraan/generateSuratPenanggungJawabKdf', 'AsetKendaraan::
 //Route Untuk TIMELINE PEMINJAMAN
 $routes->get('aset/get-timeline-data/(:num)', 'AsetKendaraan::getTimelineData/$1');
 
+$routes->group('api/v1', function ($routes) {
 
+    // Login
+    $routes->post('auth/token', 'Api\Auth::token');
 
+    // Kendaraan
+    $routes->get('kendaraan', 'Api\Kendaraan::index', ['filter' => 'jwt']);
+    $routes->get('kendaraan/statistik', 'Api\Kendaraan::statistik', ['filter' => 'jwt']);
+    $routes->get('kendaraan/(:num)', 'Api\Kendaraan::show/$1', ['filter' => 'jwt']);
+    $routes->post('kendaraan', 'Api\Kendaraan::create', ['filter' => 'jwt']);
 
+});
 
 
 

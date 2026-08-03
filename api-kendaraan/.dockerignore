@@ -1,8 +1,0 @@
-# Jangan kirim ke Docker build context (vendor di-install ulang di dalam image)
-vendor/
-writable/cache/*
-writable/logs/*
-writable/session/*
-.env
-.git
-docker-compose.yml

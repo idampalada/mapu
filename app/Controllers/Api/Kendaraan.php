@@ -9,10 +9,10 @@
  * ============================================================================
  */
 
-namespace App\Controllers;
+namespace App\Controllers\Api;
 
 use CodeIgniter\RESTful\ResourceController;
-use App\Models\KendaraanModel;
+use App\Models\Api\KendaraanModel;
 
 class Kendaraan extends ResourceController
 {
