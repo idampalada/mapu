@@ -26,9 +26,7 @@ use App\Models\PinjamRuanganModel;
 
     <!-- Tab Navigation -->
     <div class="card mb-4">
-        <div class="card-header">
-            <p class="mb-0 text-muted">Pilih jenis ruangan yang diinginkan</p>
-        </div>
+
         <div class="card-body">
             <!-- Tabs Navigation -->
             <ul class="nav nav-tabs" id="peminjamanTabs" role="tablist">
